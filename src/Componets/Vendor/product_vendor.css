@@ -1,0 +1,123 @@
+.product_Containers{
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 90px;
+    flex-wrap: wrap;
+
+    position: relative;
+}
+
+.Product_Heading1{
+    display: block;
+    padding-left: 12px;
+    font-size: 15px;
+    font-weight: 400;
+}
+.Product_Heading2{
+    display: block;
+    padding-left: 12px;
+    font-size: 23px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+.Customer_Reviews_product{
+    font-size: 12px;
+     position: absolute;
+    left: 26.8%;
+    top: 51%;
+}
+.prodcuts_cards {
+    width: 120px;
+    height: 120px;
+    background-color: whitesmoke;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    position: relative;
+    padding: 12px;
+    box-sizing: border-box;
+    flex: 1 1 280px; /* makes it shrink and grow */
+    min-width: 50px;
+    max-width: 40%;
+  }
+  
+  .prodcuts_cards i {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #e6f0ff;
+    color: #007bff;
+    font-size: 25px;
+    padding: 6px;
+    border-radius: 25%;
+    transition: transform 0.2s ease;
+
+  }
+  
+  .prodcuts_cards i:hover {
+    transform: scale(1.1);
+  }
+  
+  .product_Containers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 90px;
+    padding: 0 20px;
+  }
+  
+  .full_width_chart_container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 40px auto 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .chart_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .full_width_chart_container button{
+    position: relative;
+    left:  17%;
+  }
+  
+  
+  .recent_orders_table_container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+  
+  .recent_orders_table_container .Product_Heading3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .table-responsive .badge{
+    width:fit-content;
+    height: 18px;
+    border: 1px solid transparent;
+    border-radius: 10%;
+    text-align: center;
+    display: block;
+    align-items: center;
+  }
+  .table-responsive tr{
+    background-color: white;
+  }
+  
+  

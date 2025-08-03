@@ -1,0 +1,232 @@
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    top: 100px;
+}
+.Upcoming_job {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 150px; /* use margin instead of top */
+    max-width: 100%; /* makes it responsive */
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 3px 3px 3px 3px whitesmoke;
+    margin-left: 90px;
+}
+.card_jobs .badge{
+    margin-top:23px;
+    backdrop-filter: blur(10px);
+    background-color: rgb(0, 229, 255);
+    height: fit-content;
+    width: fit-content;
+    padding-right: 15px;
+    margin-left: 12px;
+    font-weight: 600;
+}
+.Job_Headings{
+    font-size: 20px;
+}
+.perfomance_heading{
+    font-size: 20px;
+    margin-left: 15px;
+    margin-top: 15px;
+}
+.Job_Title{
+    font-size: 16.5px;
+    padding-top: 7px;
+    padding-left: 12px;
+}
+.Job_location{
+    font-size: 14.5px;
+    margin-top: -8px;
+    padding-right: 72%;
+    width: 100%;
+    white-space: nowrap;
+    font-weight: 400;
+
+}
+.card_jobs label{
+    font-size: 14.5px;
+    position: absolute;
+    left: 1.4%;
+    font-weight: 400;
+}
+.Job_Money{
+    font-size: 14.5px;
+    padding-right: 553px;
+    font-weight: 400;
+    margin-top: -4px;
+
+}
+.card_jobs .btn-secondary{
+    position: absolute;
+  top: 15px;
+  right: 150px;
+    
+}
+.card_jobs .btn-primary{
+    position: absolute;
+  top: 15px;
+  right: 50px;
+}
+
+
+.card_jobs{
+    width: 80%;
+    height: 134px;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+
+
+}
+
+.cards {
+    width: 300px;
+    height: 134px;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.cards i {
+    color: rgb(0, 4, 255);
+    font-size: 25px;
+}
+
+
+.i-name {
+    width: 50px;
+    height: 50px;
+    background-color: aqua;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20%;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding-left: 12px;
+}
+
+.cards span {
+    display: block;
+    font-weight: 500;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+    text-align: left;
+}
+
+.cards h3 {
+    font-weight: 700;
+    font-size: 22px;
+    color: #000;
+    text-align: left;
+    margin: 0;
+}
+.perfomance_continer{
+    width: 100%;
+    height: 100%;
+    border: 1px solid transparent;
+    background-color:white;
+    border-radius: 12px;
+    box-shadow: 3px 3px 3px 3px whitesmoke;
+    
+    
+}
+.perfomance_cards{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 20px;
+    padding-left: 20px;
+}
+.perfomance_card1{
+    width: 320px;
+    height: 120px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background-color: whitesmoke;
+    text-align: center;
+   margin-top: 60px;
+   margin-left: 12px;
+   padding-top: -10px;
+
+}
+.Perfomance_money{
+    font-size: 25px;
+    font-weight: 500;
+}
+.bi-star-fill{
+    color: rgb(255, 166, 0);
+}
+.customer_review{
+    padding-top: 15px;
+    padding-left: 12px;
+    
+}
+.customer_review h4{
+    font-size: 20px;
+
+}
+.customer_cards{
+    width: 80%;
+    height: fit-content;
+    border: 1px solid transparent;
+    background-color: whitesmoke;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+.customer_cards img{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-left: 31px;
+    margin-top: 20px;
+}
+.star-rating{
+    display: flex;
+    
+    flex-direction: row;
+    gap: 2px;
+    position: relative;
+    white-space: nowrap;
+}
+
+
+.star-rating i {
+    margin: 1px;         /* Remove default margin */
+    padding: 1px;        /* Remove default padding */
+    font-size: 16px;   /* Optional: adjust star size */
+    color:orange;       /* Star color */
+    line-height: 1;    /* Remove extra line height spacing */
+    position:relative;
+    left: 10%;
+    top: -47px;
+}
+.star-rating span{
+    position:relative;
+    left: -30%;
+    top: -74px;
+}
+.Customer_text{
+   position: relative;
+   left: 85px;
+   top: -70px;
+   width: 75%;
+}
+
