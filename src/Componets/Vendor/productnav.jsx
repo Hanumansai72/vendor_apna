@@ -21,8 +21,8 @@ function ProductNavbar() {
 
           <ul className="navbar-nav mx-auto mb-2 mb-lg-0 d-flex flex-row gap-3">
             <li className="nav-item"><Link to={`/product/${productId}`} className="nav-link">Home</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/orders`} className="nav-link">Orders</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/history`} className="nav-link">Order History</Link></li>
+            <li className="nav-item"><Link to={`/product/${productId}/order`} className="nav-link">Orders</Link></li>
+            <li className="nav-item"><Link to={`/product/${productId}/order/history`} className="nav-link">Order History</Link></li>
           </ul>
 
           <div className="d-flex align-items-center">
