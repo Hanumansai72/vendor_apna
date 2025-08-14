@@ -141,6 +141,7 @@ export default function Registration() {
       });
 
       toast.success('Registration successful!');
+      console.log(data)
       navigate('/login');
     } catch (err) {
       console.error(err);
