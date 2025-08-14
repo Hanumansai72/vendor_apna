@@ -1,0 +1,101 @@
+.nav-next {
+    position: absolute;
+    left: 38%;
+}
+
+
+.container-fluid .navbar-brand {
+    color: #ff7600;
+    font-size: 24px;
+    margin-left: 5rem;
+    width: 138px;
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px;
+}
+
+.navbar {
+    box-shadow: 5px 5px 5px 5px whitesmoke;
+    position: sticky;
+    background-color: transparent;
+}
+
+.form-switch {
+    position: absolute;
+    left: 80%;
+    width: 70%;
+}
+
+.form-check-input:checked {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.location-text {
+    position: absolute;
+    top: -15px;
+    left: 120px;
+}
+
+.imag-dropdown .dropdown-toggle {
+    border: none;
+    background-color: transparent;
+    padding-right: 10%;
+}
+
+.imag-dropdown .dropdown-toggle:hover {
+    border: none;
+    background-color: transparent;
+}
+
+.imag-dropdown .dropdown-toggle::before,
+.imag-dropdown .dropdown-toggle::after {
+    border: none;
+    background-color: transparent;
+}
+
+.form-check-input:focus {
+    border-color: #28a745 !important;
+}
+
+.form-check-input:checked::before {
+    background-color: white !important;
+}
+
+.nav-item a {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    font-size: 20px;
+    color: black;
+}
+
+.profile-notifcation i {
+    font-size: 20px;
+    top: 10px;
+}
+
+.profile-notifcation img {
+    border: 1px solid transparent;
+    border-radius: 40px;
+    height: 38px;
+    width: 38px;
+    margin-right: 50px;
+}
+
+.profile-notifcation {
+    position: relative;
+    right: 0;
+}
+
+.profile-notifcation .dropdown-menu {
+    right: 0 !important;  /* Make sure dropdown aligns properly to the right */
+}
+.Linkers{
+    color: black;
+    text-decoration: none;
+    list-style: none;
+    padding-left: 13px;
+}
