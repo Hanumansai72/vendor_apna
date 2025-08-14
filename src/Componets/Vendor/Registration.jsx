@@ -40,13 +40,10 @@ export default function Registration() {
     Password: '',
     Latitude: '',
     Longitude: '',
-    ProductUrls: [],
     ID_Type: 'PAN',
     Account_Number: '',
     IFSC_Code: '',
-    Charge_Per_Hour_or_Day: '',
     Charge_Type: 'Day',
-    Profile_Image: '',
   });
 
   useEffect(() => {
@@ -121,45 +118,32 @@ export default function Registration() {
     }
   };
 
-  const uploadImagesToCloudinary = async filesArray => {
-    const urls = [];
-    for (const file of filesArray) {
-      const data = new FormData();
-      data.append('file', file);
-      data.append('upload_preset', 'myupload');
-      data.append('cloud_name', 'dqxsgmf33');
-      const res = await fetch('https://api.cloudinary.com/v1_1/dqxsgmf33/image/upload', {
-        method: 'POST',
-        body: data,
-      });
-      const cloudData = await res.json();
-      if (cloudData.secure_url) urls.push(cloudData.secure_url);
-      else throw new Error('Upload failed');
-    }
-    return urls;
-  };
-
   const handleSubmit = async e => {
     e.preventDefault();
+
     if (formData.Password !== confirmPassword) return toast.error('Passwords do not match');
     if (!otpVerified) return toast.error('Please verify your OTP');
 
     try {
-      const productUrls = imageFiles.length ? await uploadImagesToCloudinary(imageFiles) : [];
-      const profileUrl = profilePic ? (await uploadImagesToCloudinary([profilePic]))[0] : '';
+      const data = new FormData();
 
-      const payload = {
-        ...formData,
-        ProductUrls: productUrls,
-        ID_Type: idType,
-        Profile_Image: profileUrl,
-        Charge_Type: registrationType === 'Service' ? chargeType : '',
-      };
+      // Append text fields
+      Object.keys(formData).forEach(key => data.append(key, formData[key]));
 
-      await axios.post('https://backend-d6mx.vercel.app/register', payload);
-      toast.success('Vendor registered successfully!');
+      // Append product images
+      imageFiles.forEach(file => data.append("productImages", file));
+
+      // Append profile image
+      if (profilePic) data.append("profileImage", profilePic);
+
+      await axios.post('https://backend-d6mx.vercel.app/register', data, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      toast.success('Registration successful!');
       navigate('/login');
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error('Registration failed');
     }
   };
@@ -174,6 +158,7 @@ export default function Registration() {
         <h2 className="text-center mb-4">Register as a {registrationType}</h2>
         <div className="row g-3">
 
+          {/* Business & Owner */}
           <div className="col-md-6">
             <label>Business Name</label>
             <input className="form-control" name="Business_Name" value={formData.Business_Name} onChange={handleChange} required />
@@ -183,6 +168,7 @@ export default function Registration() {
             <input className="form-control" name="Owner_name" value={formData.Owner_name} onChange={handleChange} required />
           </div>
 
+          {/* Email & OTP */}
           <div className="col-md-6">
             <label>Email</label>
             <div className="input-group">
@@ -204,12 +190,6 @@ export default function Registration() {
               </button>
             </div>
           </div>
-
-          <div className="col-md-6">
-            <label>Phone</label>
-            <input className="form-control" name="Phone_number" value={formData.Phone_number} onChange={handleChange} required />
-          </div>
-
           {showOtp && (
             <div className="col-md-6">
               <label>Enter OTP</label>
@@ -218,6 +198,11 @@ export default function Registration() {
             </div>
           )}
 
+          {/* Phone & Address */}
+          <div className="col-md-6">
+            <label>Phone</label>
+            <input className="form-control" name="Phone_number" value={formData.Phone_number} onChange={handleChange} required />
+          </div>
           <div className="col-md-9">
             <label>Business Address</label>
             <input className="form-control" name="Business_address" value={formData.Business_address} onChange={handleChange} required />
@@ -226,6 +211,7 @@ export default function Registration() {
             <button type="button" className="btn btn-outline-secondary w-100" onClick={handleLocateMe}>📍 Locate Me</button>
           </div>
 
+          {/* Service/Product Type */}
           {registrationType === 'Service' ? (
             <>
               <div className="col-12 text-center">
@@ -281,6 +267,7 @@ export default function Registration() {
             </div>
           )}
 
+          {/* ID & Password */}
           <div className="col-md-6">
             <label>ID Type</label>
             <select className="form-control" value={idType} onChange={e => setIdType(e.target.value)}>
@@ -289,10 +276,9 @@ export default function Registration() {
             </select>
           </div>
           <div className="col-md-6">
-            <label>PAN or Aadhar Number</label>
+            <label>PAN/Aadhar Number</label>
             <input className="form-control" name="Tax_ID" value={formData.Tax_ID} onChange={handleChange} required />
           </div>
-
           <div className="col-md-6">
             <label>Password</label>
             <input type="password" className="form-control" name="Password" value={formData.Password} onChange={handleChange} required />
@@ -302,6 +288,7 @@ export default function Registration() {
             <input type="password" className="form-control" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
           </div>
 
+          {/* Images */}
           <div className="col-md-12">
             <label>Upload Business Images / Certificates</label>
             <input type="file" className="form-control" accept="image/*" multiple onChange={e => setImageFiles(Array.from(e.target.files))} />
@@ -311,7 +298,7 @@ export default function Registration() {
             <input type="file" className="form-control" accept="image/*" onChange={e => setProfilePic(e.target.files[0])} />
           </div>
 
-          {/* Bank Details */}
+          {/* Bank & Charges */}
           <div className={registrationType === 'Product' ? 'col-md-6' : 'col-md-4'}>
             <label>Account Number</label>
             <input className="form-control" name="Account_Number" value={formData.Account_Number} onChange={handleChange} required />
@@ -321,7 +308,6 @@ export default function Registration() {
             <input className="form-control" name="IFSC_Code" value={formData.IFSC_Code} onChange={handleChange} required />
           </div>
 
-          {/* Charges for Service Only */}
           {registrationType === 'Service' && (
             <>
               <div className="col-md-2">
@@ -341,6 +327,7 @@ export default function Registration() {
           <div className="col-12 text-center mt-4">
             <button className="btn btn-dark px-5" type="submit">Register</button>
           </div>
+
         </div>
       </form>
     </div>
