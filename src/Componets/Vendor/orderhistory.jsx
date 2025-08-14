@@ -83,16 +83,7 @@ const OrderHistory = () => {
 
   return (
     <div>
-      <Navbar
-        homeLabel="Home"
-        homeUrl={`/Product/${id}`}
-        jobsLabel="Products"
-        jobsUrl={`/product/${id}/ViewProduct`}
-        historyLabel="New Orders"
-        historyUrl={`/product/${id}/order`}
-        earningsLabel="Order History"
-        earningsUrl={`/product/${id}/order/history`}
-      />
+      <ProductNavbar></ProductNavbar>
 
       <div className="container mt-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
