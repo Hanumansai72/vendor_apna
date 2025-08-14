@@ -44,6 +44,7 @@ export default function Registration() {
     Account_Number: '',
     IFSC_Code: '',
     Charge_Type: 'Day',
+    Charge_Per_Hour_or_Day: '',
   });
 
   useEffect(() => {
@@ -127,21 +128,20 @@ export default function Registration() {
     try {
       const data = new FormData();
 
-      // Append text fields
+      // Append all text fields
       Object.keys(formData).forEach(key => data.append(key, formData[key]));
 
       // Append product images
-      imageFiles.forEach(file => data.append("productImages", file));
+      imageFiles.forEach(file => data.append('productImages', file));
 
       // Append profile image
-      if (profilePic) data.append("profileImage", profilePic);
+      if (profilePic) data.append('profileImage', profilePic);
 
       await axios.post('https://backend-d6mx.vercel.app/register', data, {
-        headers: { "Content-Type": "multipart/form-data" }
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       toast.success('Registration successful!');
-      console.log(data)
       navigate('/login');
     } catch (err) {
       console.error(err);
