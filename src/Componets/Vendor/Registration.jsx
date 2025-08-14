@@ -137,6 +137,16 @@ export default function Registration() {
       // Append profile image
       if (profilePic) data.append('profileImage', profilePic);
 
+      // **Debug logs**
+      console.log('--- Form Data ---');
+      for (let pair of data.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(pair[0], pair[1].name, pair[1].size, 'bytes');
+        } else {
+          console.log(pair[0], pair[1]);
+        }
+      }
+
       await axios.post('https://backend-d6mx.vercel.app/register', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
