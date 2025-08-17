@@ -19,6 +19,7 @@ import AddProductForm from './Componets/Vendor/addnewproduct';
 import BulkProductUpload from './Componets/Vendor/Bulkupload';
 import ProductList from './Componets/Vendor/viewproduct';
 import ProtectedRoute from './Componets/Vendor/ProtectedRoute';
+import VendorCard from './Componets/projectupload';
 
 const Protected = ({ element }) => (
   <ProtectedRoute>
@@ -33,6 +34,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<Registration />} />
+        <Route path='/vendor/projectupload/:id' element={<VendorCard></VendorCard>}/>
 
         {/* Protected Routes */}
         <Route path="/vendor/:id/" element={<Protected element={<TechnicalNonDashboard />} />} />
