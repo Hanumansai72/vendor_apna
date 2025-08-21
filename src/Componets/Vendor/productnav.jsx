@@ -9,7 +9,7 @@ function ProductNavbar() {
   function signout() {
     localStorage.removeItem("vendorId");
     localStorage.removeItem("role");
-    navigate("/login");
+    navigate("/");
   }
 
   return (

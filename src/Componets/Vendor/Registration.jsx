@@ -45,7 +45,7 @@ export default function Registration() {
     IFSC_Code: '',
     Charge_Type: 'Day',
     Charge_Per_Hour_or_Day: '',
-    descripition:""
+    descripition:'',
   });
 
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function Registration() {
       });
 
       toast.success('Registration successful!');
-      navigate('/login');
+      navigate('/');
     } catch (err) {
       console.error(err);
       toast.error('Registration failed');

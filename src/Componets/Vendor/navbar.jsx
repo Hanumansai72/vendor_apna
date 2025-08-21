@@ -10,7 +10,7 @@ function Navbar() {
   function signout() {
     localStorage.removeItem("vendorId");
     localStorage.removeItem("role");
-    navigate("/login");
+    navigate("/");
   }
 
   return (
