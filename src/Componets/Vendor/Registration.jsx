@@ -160,7 +160,7 @@ export default function Registration() {
     }
   };
 
-  const handleCreateAccount = () => navigate('/login');
+  const handleCreateAccount = () => navigate('/');
 
   return (
     <div className="container my-5">
