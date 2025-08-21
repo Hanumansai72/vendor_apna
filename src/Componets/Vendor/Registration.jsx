@@ -45,6 +45,7 @@ export default function Registration() {
     IFSC_Code: '',
     Charge_Type: 'Day',
     Charge_Per_Hour_or_Day: '',
+    descripition:""
   });
 
   useEffect(() => {
@@ -332,6 +333,10 @@ export default function Registration() {
                   <option value="Hour">Hour</option>
                 </select>
               </div>
+               <div className="col-md-6">
+            <label>Tell Us About YourSelf</label>
+            <input className="form-control" name="descripition" value={formData.descripition} onChange={handleChange} required />
+          </div>
             </>
           )}
 

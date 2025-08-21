@@ -36,18 +36,6 @@ function Navbar() {
             <li className="nav-item">
               <Link to={`/vendor/${vendorId}/earnings`} className="nav-link">Earnings</Link>
             </li>
-            <li className="nav-item">
-              <Link to={`/wallet/${vendorId}`} className="nav-link">Wallet</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/signup" className="nav-link">Signup</Link>
-            </li>
-            <li className="nav-item">
-              <Link to={`/vendor/Viewproject/${vendorId}`} className="nav-link">View Projects</Link>
-            </li>
-            <li className="nav-item">
-              <Link to={`/vendor/projectupload/${vendorId}`} className="nav-link">Upload Project</Link>
-            </li>
           </ul>
 
           {/* Right Side */}
@@ -73,6 +61,16 @@ function Navbar() {
                 <Dropdown.Item as={Link} to={`/vendor/${vendorId}/settings`}>
                   My Profile
                 </Dropdown.Item>
+                <Dropdown.Item as={Link} to={`/wallet/${vendorId}`}>
+                  Wallet
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to={`/vendor/Viewproject/${vendorId}`}>
+                  View Projects
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to={`/vendor/projectupload/${vendorId}`}>
+                  Upload Project
+                </Dropdown.Item>
+                <Dropdown.Divider />
                 <Dropdown.Item onClick={signout}>Sign Out</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
@@ -103,8 +101,8 @@ function Navbar() {
         <Link to={`/vendor/projectupload/${vendorId}`} className="text-center text-decoration-none text-dark">
           <i className="bi bi-upload fs-5"></i><br />Upload
         </Link>
-        <Link to="/signup" className="text-center text-decoration-none text-dark">
-          <i className="bi bi-person-plus fs-5"></i><br />Signup
+        <Link to={`/vendor/${vendorId}/settings`} className="text-center text-decoration-none text-dark">
+          <i className="bi bi-person-circle fs-5"></i><br />Profile
         </Link>
       </nav>
     </>
