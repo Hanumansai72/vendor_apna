@@ -21,6 +21,7 @@ import ProductList from './Componets/Vendor/viewproduct';
 import ProtectedRoute from './Componets/Vendor/ProtectedRoute';
 import VendorCard from './Componets/projectupload';
 import VendorProjects from './Componets/Vendor/viewprojecs';
+import Wallet from './Componets/Vendor/wallet';
 
 const Protected = ({ element }) => (
   <ProtectedRoute>
@@ -34,6 +35,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
+        <Route path='/wallet/:id' element={<Wallet></Wallet>}/>
         <Route path="/signup" element={<Registration />} />
                 <Route path='/vendor/Viewproject/:id' element={<VendorProjects></VendorProjects>}/>
 
