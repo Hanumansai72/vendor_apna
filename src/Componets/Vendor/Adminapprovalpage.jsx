@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 function AdminApprovalPending() {
   return (
     <Container fluid className="d-flex align-items-center justify-content-center vh-100 bg-light">
-      <div className="shadow p-4 rounded bg-white" style={{ maxWidth: '400px', width: '100%' }}>
+      <div className="shadow p-4 rounded bg-white" style={{ maxWidth: '1200px', width: '100%' }}>
         <div className="text-center mb-3">
           <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-block mb-2">
             <FaClock className="text-primary" size={40} />
