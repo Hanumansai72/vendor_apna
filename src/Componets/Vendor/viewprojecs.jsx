@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
-import Navbar from "./Vendor/navbar";
+import Navbar from "./navbar";
 
 const VendorProjects = () => {
   const [projects, setProjects] = useState([]);
