@@ -58,7 +58,7 @@ function Navbar() {
                 Profile
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item as={Link} to={`/vendor/${vendorId}/settings`}>
+                <Dropdown.Item as={Link} to={`${vendorId}/settings`}>
                   My Profile
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} to={`/wallet/${vendorId}`}>

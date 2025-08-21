@@ -67,7 +67,7 @@ const VendorCard = () => {
     <>
       <Navbar />
       <Container className="py-5 d-flex justify-content-center">
-        <Card className="p-4 shadow-lg w-100" style={{ maxWidth: "600px" }}>
+        <Card className="p-4 shadow-lg w-100" style={{ maxWidth: "1200px" }}>
           <h4 className="mb-4 fw-bold">Upload Your Project</h4>
 
           <Form onSubmit={handleSubmit}>
