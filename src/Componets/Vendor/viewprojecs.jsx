@@ -56,10 +56,10 @@ const VendorProjects = () => {
             {projects.map((project) => (
               <Col key={project._id} md={4} className="mb-4">
                 <Card className="shadow-sm h-100">
-                  {project.imageUrl && (
+                  {project.image && (
                     <Card.Img
                       variant="top"
-                      src={project.imageUrl}
+                      src={project.image}
                       alt={project.title}
                       style={{ height: "200px", objectFit: "cover" }}
                     />
