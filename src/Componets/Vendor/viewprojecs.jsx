@@ -26,7 +26,7 @@ const VendorProjects = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this project?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/projects/${id}`);
+      await axios.delete(`https://backend-d6mx.vercel.app/api/projects/${id}`);
       setProjects(projects.filter((p) => p._id !== id));
       alert("✅ Project deleted successfully!");
     } catch (error) {
