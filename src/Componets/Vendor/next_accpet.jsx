@@ -6,22 +6,31 @@ import Navbar from './navbar';
 import axios from 'axios';
 
 const JobInProgress = () => {
-  const address = "medipally";
-
   const currentStep = 2;
   const isStepActive = (step) => step <= currentStep;
-
   const price = "$120.00";
 
   const [showModal, setShowModal] = useState(false);
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
 
   const { id } = useParams();
   const navigate = useNavigate();
 
   const handleCloseModal = () => setShowModal(false);
-  const handleShowModal = () => setShowModal(true);
+  const handleShowModal = async () => {
+    setShowModal(true);
+    try {
+      // Assuming jobs.customer.email is available
+      await axios.post("https://backend-d6mx.vercel.app/sendotp", {
+        Email: jobs?.customer?.email,
+      });
+      alert("OTP sent to customer email!");
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      alert("Failed to send OTP");
+    }
+  };
 
   const [jobs, setJobs] = useState([]);
   const vendorId = localStorage.getItem("JObid");
@@ -41,38 +50,41 @@ const JobInProgress = () => {
     setOtp(newOtp);
   };
 
-  const handleOtpSubmit = (e) => {
+  const handleOtpSubmit = async (e) => {
     e.preventDefault();
     const otpCode = otp.join('');
-    if (otpCode === '1234') {
-      setIsOtpVerified(true);
-      alert('OTP Verified. Job marked as Reached.');
-      setShowModal(false);
-      navigate(`/vendor/${id}/Job/Progress/reached`);
-    } else {
-      alert('Invalid OTP, please try again.');
+    try {
+      const res = await axios.post("https://backend-d6mx.vercel.app/verifyotp", {
+        Email: jobs?.customer?.email,
+        otp: otpCode,
+      });
+      if (res.status === 200) {
+        setIsOtpVerified(true);
+        alert("OTP Verified. Job marked as Reached.");
+        setShowModal(false);
+        navigate(`/vendor/${id}/Job/Progress/reached`);
+      }
+    } catch (error) {
+      alert("Invalid OTP, please try again.");
     }
   };
 
-
-  // Extract location info safely with optional chaining
+  // Extract location info safely
   const latitude = jobs?.address?.latitude;
   const longitude = jobs?.address?.longitude;
   const location = jobs?.address?.city;
   const fullNames = jobs?.customer?.fullName;
 
-  // Format service date and time
   const serviceDate = jobs?.serviceDate;
   const serviceTime = jobs?.serviceTime;
-  const paymentmode=jobs?.payment?.method;        
-
+  const paymentmode = jobs?.payment?.method;
 
   const formattedDate = serviceDate
     ? new Date(serviceDate).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : '';
 
   return (
@@ -161,8 +173,7 @@ const JobInProgress = () => {
                 </li>
                 <li className="list-group-item"><strong>Job ID:</strong> JOBID-2025-04189</li>
                 <li className="list-group-item"><strong>Price:</strong> {price}</li>
-                                <li className="list-group-item"><strong>Payment Mode:</strong> {paymentmode}</li>
-
+                <li className="list-group-item"><strong>Payment Mode:</strong> {paymentmode}</li>
               </ul>
             </div>
 
