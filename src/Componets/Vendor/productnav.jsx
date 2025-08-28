@@ -18,17 +18,17 @@ function ProductNavbar() {
       {/* Desktop Navbar */}
       <nav className="navbar navbar-expand-lg bg-light shadow-sm d-none d-lg-flex">
         <div className="container-fluid">
-          <Link to={`/product/${productId}`} className="navbar-brand fw-bold">
+          <Link to={`/Product/${productId}`} className="navbar-brand fw-bold">
             Apna Mestri
           </Link>
 
           <ul className="navbar-nav mx-auto mb-2 mb-lg-0 d-flex flex-row gap-3">
-            <li className="nav-item"><Link to={`/product/${productId}`} className="nav-link">Home</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/view`} className="nav-link">View Products</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/add`} className="nav-link">Add Product</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/add/bulk`} className="nav-link">Bulk Upload</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/order`} className="nav-link">Orders</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/order/history`} className="nav-link">Order History</Link></li>
+            <li className="nav-item"><Link to={`/Product/${productId}`} className="nav-link">Home</Link></li>
+            <li className="nav-item"><Link to={`/product/${productId}/ViewProduct`} className="nav-link">View Products</Link></li>
+            <li className="nav-item"><Link to={`/addproduct/${productId}`} className="nav-link">Add Product</Link></li>
+            <li className="nav-item"><Link to={`/addproduct/${productId}/BulkUpload`} className="nav-link">Bulk Upload</Link></li>
+            <li className="nav-item"><Link to={`/Product/${productId}/order`} className="nav-link">Orders</Link></li>
+            <li className="nav-item"><Link to={`/Product/${productId}/order/history`} className="nav-link">Order History</Link></li>
           </ul>
 
           <div className="d-flex align-items-center">
@@ -65,22 +65,22 @@ function ProductNavbar() {
 
       {/* Mobile Navbar */}
       <nav className="navbar navbar-light bg-light border-top d-flex d-lg-none fixed-bottom justify-content-around py-1">
-        <Link to={`/product/${productId}`} className="text-center text-decoration-none text-dark">
+        <Link to={`/Product/${productId}`} className="text-center text-decoration-none text-dark">
           <i className="bi bi-house fs-5"></i><br />Home
         </Link>
-        <Link to={`/product/${productId}/view`} className="text-center text-decoration-none text-dark">
+        <Link to={`/product/${productId}/ViewProduct`} className="text-center text-decoration-none text-dark">
           <i className="bi bi-card-list fs-5"></i><br />View
         </Link>
-        <Link to={`/product/${productId}/add`} className="text-center text-decoration-none text-dark">
+        <Link to={`/addproduct/${productId}`} className="text-center text-decoration-none text-dark">
           <i className="bi bi-plus-circle fs-5"></i><br />Add
         </Link>
-        <Link to={`/product/${productId}/add/bulk`} className="text-center text-decoration-none text-dark">
+        <Link to={`/addproduct/${productId}/BulkUpload`} className="text-center text-decoration-none text-dark">
           <i className="bi bi-upload fs-5"></i><br />Bulk
         </Link>
-        <Link to={`/product/${productId}/order`} className="text-center text-decoration-none text-dark">
+        <Link to={`/Product/${productId}/order`} className="text-center text-decoration-none text-dark">
           <i className="bi bi-briefcase fs-5"></i><br />Orders
         </Link>
-        <Link to={`/product/${productId}/order/history`} className="text-center text-decoration-none text-dark">
+        <Link to={`/Product/${productId}/order/history`} className="text-center text-decoration-none text-dark">
           <i className="bi bi-clock-history fs-5"></i><br />History
         </Link>
         <Link to={`/product/${productId}/settings`} className="text-center text-decoration-none text-dark">
