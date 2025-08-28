@@ -52,12 +52,14 @@ function App() {
         <Route path="/vendor/:id/Job/Progress/reached" element={<Protected element={<JobProgress />} />} />
         <Route path="/vendor/:id/Payment" element={<Protected element={<OrderStatus />} />} />
         <Route path="/vendor/:id/Payment/success" element={<Protected element={<JobPaymentSummary />} />} />
-        <Route path="/product/:id/ViewProduct" element={<Protected element={<ProductList />} />} />
-        <Route path="/addproduct/:id" element={<Protected element={<AddProductForm />} />} />
-        <Route path="/addproduct/:id/BulkUpload" element={<Protected element={<BulkProductUpload />} />} />
-        <Route path="/Product/:id" element={<Protected element={<Product />} />} />
-        <Route path="/Product/:id/order" element={<Protected element={<NewHistory />} />} />
-        <Route path="/Product/:id/order/history" element={<Protected element={<OrderHistory />} />} />
+        <Route path="/product/:id" element={<Protected element={<Product />} />} />
+<Route path="/product/:id/view" element={<Protected element={<ProductList />} />} />
+<Route path="/product/:id/add" element={<Protected element={<AddProductForm />} />} />
+<Route path="/product/:id/add/bulk" element={<Protected element={<BulkProductUpload />} />} />
+<Route path="/product/:id/order" element={<Protected element={<NewHistory />} />} />
+<Route path="/product/:id/order/history" element={<Protected element={<OrderHistory />} />} />
+<Route path="/product/:id/settings" element={<Protected element={<Settings />} />} />
+
       </Routes>
     </Router>
   );
