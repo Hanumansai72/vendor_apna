@@ -49,6 +49,7 @@ const AddProductForm = () => {
     location: "",
     tags: "",
     description: "",
+    discountedprice:"",
     productImages: [],
   });
 
@@ -129,6 +130,7 @@ const AddProductForm = () => {
         ProductSubCategory: formData.subCategory,
         ProductLocation: formData.location,
         ProductUrl: imageUrls, // now array of images
+        discountedprice:formData.discountedprice
       };
 
       await axios.post("https://backend-d6mx.vercel.app/addproduct", productPayload);
@@ -233,7 +235,7 @@ const AddProductForm = () => {
 
           <div className="row mb-3">
             <div className="col-md-4">
-              <label>Price</label>
+              <label>Original Price</label>
               <input
                 type="number"
                 name="price"
@@ -243,6 +245,18 @@ const AddProductForm = () => {
                 required
               />
             </div>
+            <div className="col-md-4">
+              <label>Discounted Price</label>
+              <input
+                type="number"
+                name="discountedprice"
+                className="form-control"
+                value={formData.discountedprice}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
 
             <div className="col-md-4">
               <label>Stock</label>
