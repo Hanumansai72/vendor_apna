@@ -46,19 +46,22 @@ function ProductNavbar() {
 
             {/* Profile Dropdown */}
             <div className="dropdown">
-              <button
-                className="btn btn-outline-secondary dropdown-toggle"
-                type="button"
-                data-bs-toggle="dropdown"
-              >
-                Profile
-              </button>
-              <ul className="dropdown-menu dropdown-menu-end">
-                <li><Link to={`/product/${productId}/settings`} className="dropdown-item">My Profile</Link></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li><span className="dropdown-item" onClick={signout}>Sign Out</span></li>
-              </ul>
-            </div>
+  <button
+    className="btn btn-outline-secondary dropdown-toggle"
+    type="button"
+    id="dropdownMenuButton"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+  >
+    Profile
+  </button>
+  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+    <li><Link to={`/product/${productId}/settings`} className="dropdown-item">My Profile</Link></li>
+    <li><hr className="dropdown-divider" /></li>
+    <li><span className="dropdown-item" onClick={signout}>Sign Out</span></li>
+  </ul>
+</div>
+
           </div>
         </div>
       </nav>
