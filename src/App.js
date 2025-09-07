@@ -23,6 +23,7 @@ import ProtectedRoute from './Componets/Vendor/ProtectedRoute';
 import VendorCard from './Componets/projectupload';
 import VendorProjects from './Componets/Vendor/viewprojecs';
 import Wallet from './Componets/Vendor/wallet';
+import ProdWallet from './Componets/Vendor/productwallet';
 
 const Protected = ({ element }) => (
   <ProtectedRoute>
@@ -41,6 +42,7 @@ function App() {
                 <Route path='/vendor/Viewproject/:id' element={<VendorProjects></VendorProjects>}/>
 
         <Route path='/vendor/projectupload/:id' element={<VendorCard></VendorCard>}/>
+        <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>}/>
         
 
         {/* Protected Routes */}
