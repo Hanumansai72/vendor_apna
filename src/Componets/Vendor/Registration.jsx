@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
+import {jwtDecode} from 'jwt-decode';
 
 export default function Registration() {
   const navigate = useNavigate();
@@ -161,6 +163,17 @@ export default function Registration() {
     }
   };
 
+  const handleGoogleSuccess = (credentialResponse) => {
+    const decoded = jwtDecode(credentialResponse.credential);
+    setFormData(prev => ({
+      ...prev,
+      Owner_name: decoded.name,
+      Email_address: decoded.email,
+    }));
+    toast.success(`Google signup success: ${decoded.email}`);
+    setStep(2); // jump to step 2 automatically
+  };
+
   const nextStep = () => {
     setLoading(true);
     setTimeout(() => {
@@ -187,10 +200,10 @@ export default function Registration() {
           </div>
         ) : (
           <>
-            {/* Step 1 (Mandatory) */}
+            {/* Step 1 */}
             {step === 1 && (
               <div className="row g-3">
-                <h5 className="mb-3">Step 1 – Basic Information (Mandatory)</h5>
+                <h5 className="mb-3">Step 1 – Basic Information</h5>
 
                 <div className="col-md-6">
                   <label>Business Name</label>
@@ -200,7 +213,6 @@ export default function Registration() {
                   <label>Owner Name</label>
                   <input className="form-control" name="Owner_name" value={formData.Owner_name} onChange={handleChange} required />
                 </div>
-
                 <div className="col-md-6">
                   <label>Email</label>
                   <div className="input-group">
@@ -217,7 +229,6 @@ export default function Registration() {
                     <button type="button" className="btn btn-success mt-2" onClick={verifyOtp}>Verify OTP</button>
                   </div>
                 )}
-
                 <div className="col-md-6">
                   <label>Phone</label>
                   <input className="form-control" name="Phone_number" value={formData.Phone_number} onChange={handleChange} required />
@@ -238,144 +249,136 @@ export default function Registration() {
                   <input type="password" className="form-control" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
                 </div>
 
+                <div className="col-12 text-center mt-4">
+                  <button type="button" className="btn btn-dark px-5" onClick={nextStep}>Next</button>
+                </div>
+
+                {/* Google Signup Button */}
+                <div className="col-12 text-center mt-3">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => toast.error('Google Login Failed')}
+                    size="small"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 */}
+            {step === 2 && (
+              <div className="row g-3">
+                <h5 className="mb-3">Step 2 – Category & Service Details</h5>
+
                 {registrationType === 'Service' && (
                   <>
-                    <div className="col-md-4">
-                      <label>Charge</label>
-                      <input className="form-control" name="Charge_Per_Hour_or_Day" value={formData.Charge_Per_Hour_or_Day} onChange={handleChange} required />
+                    <div className="col-md-12">
+                      <label>Service Type</label>
+                      <div>
+                        {['Technical', 'Non-Technical'].map(type => (
+                          <button
+                            key={type}
+                            type="button"
+                            className={`btn me-2 ${selectedServiceType === type ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => handleServiceTypeClick(type)}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="col-md-4">
-                      <label>Charge Type</label>
-                      <select className="form-control" value={chargeType} onChange={e => setChargeType(e.target.value)}>
-                        <option value="Day">Day</option>
-                        <option value="Hour">Hour</option>
-                      </select>
+
+                    <div className="col-md-12">
+                      <label>Select Sub-Categories</label>
+                      <div className="d-flex flex-wrap gap-2">
+                        {subCategories[selectedServiceType].map(sub => (
+                          <button
+                            key={sub}
+                            type="button"
+                            className={`btn btn-sm ${formData.Sub_Category.includes(sub) ? 'btn-success' : 'btn-outline-secondary'}`}
+                            onClick={() =>
+                              setFormData(prev => ({
+                                ...prev,
+                                Sub_Category: prev.Sub_Category.includes(sub)
+                                  ? prev.Sub_Category.filter(s => s !== sub)
+                                  : [...prev.Sub_Category, sub],
+                              }))
+                            }
+                          >
+                            {sub}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </>
                 )}
 
+                {registrationType === 'Product' && (
+                  <div className="col-md-6">
+                    <label>Category</label>
+                    <input className="form-control" name="Category" value={formData.Category} onChange={handleChange} required />
+                  </div>
+                )}
+
+                <div className="col-md-6">
+                  <label>Charge Type</label>
+                  <select className="form-control" name="Charge_Type" value={formData.Charge_Type} onChange={handleChange}>
+                    <option value="Day">Per Day</option>
+                    <option value="Hour">Per Hour</option>
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label>Charge</label>
+                  <input className="form-control" name="Charge_Per_Hour_or_Day" value={formData.Charge_Per_Hour_or_Day} onChange={handleChange} required />
+                </div>
+
                 <div className="col-12 text-center mt-4">
+                  <button type="button" className="btn btn-secondary me-2" onClick={prevStep}>Back</button>
                   <button type="button" className="btn btn-dark px-5" onClick={nextStep}>Next</button>
                 </div>
               </div>
             )}
 
-            {/* Step 2 (Mandatory) */}
-            {step === 2 && (
-              <div className="row g-3">
-                <h5 className="mb-3">Step 2 – Category & Specialization (Mandatory)</h5>
-
-                {registrationType === 'Service' ? (
-                  <>
-                    <div className="col-12 text-center">
-                      <h5>Service Type</h5>
-                      {['Technical', 'Non-Technical'].map(type => (
-                        <button
-                          key={type}
-                          type="button"
-                          className={`btn mx-1 ${selectedServiceType === type ? 'btn-dark' : 'btn-outline-secondary'}`}
-                          onClick={() => handleServiceTypeClick(type)}
-                        >
-                          {type}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="col-12">
-                      <label>Specializations</label>
-                      <div className="row">
-                        {subCategories[selectedServiceType].map(sc => (
-                          <div key={sc} className="col-md-6">
-                            <div className="form-check">
-                              <input
-                                type="checkbox"
-                                className="form-check-input"
-                                checked={formData.Sub_Category.includes(sc)}
-                                onChange={() => {
-                                  const updated = formData.Sub_Category.includes(sc)
-                                    ? formData.Sub_Category.filter(i => i !== sc)
-                                    : [...formData.Sub_Category, sc];
-                                  setFormData(prev => ({ ...prev, Sub_Category: updated }));
-                                }}
-                              />
-                              <label className="form-check-label">{sc}</label>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="col-12 text-center">
-                    <h5>Product Type</h5>
-                    {['CIVIL', 'INTERIOR'].map(type => (
-                      <button
-                        key={type}
-                        type="button"
-                        className={`btn mx-1 ${formData.Category === type ? 'btn-dark' : 'btn-outline-secondary'}`}
-                        onClick={() => setFormData(prev => ({ ...prev, Category: type }))}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                <div className="col-12 text-center mt-4">
-                  <button type="button" className="btn btn-secondary mx-2" onClick={prevStep}>Back</button>
-                  <button type="button" className="btn btn-dark mx-2" onClick={nextStep}>Next</button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3 (Optional) */}
+            {/* Step 3 */}
             {step === 3 && (
               <div className="row g-3">
-                <h5 className="mb-3">Step 3 – Documents & Bank Details (Optional)</h5>
-                <small className="text-muted mb-3">
-                  These details are optional and can be updated later in your profile settings.
-                </small>
+                <h5 className="mb-3">Step 3 – Documents & Final</h5>
 
                 <div className="col-md-6">
                   <label>ID Type</label>
-                  <select className="form-control" value={idType} onChange={e => setIdType(e.target.value)}>
+                  <select className="form-control" name="ID_Type" value={idType} onChange={e => setIdType(e.target.value)}>
                     <option value="PAN">PAN</option>
                     <option value="Aadhar">Aadhar</option>
                   </select>
                 </div>
                 <div className="col-md-6">
-                  <label>PAN/Aadhar Number</label>
-                  <input className="form-control" name="Tax_ID" value={formData.Tax_ID} onChange={handleChange} />
+                  <label>Tax ID</label>
+                  <input className="form-control" name="Tax_ID" value={formData.Tax_ID} onChange={handleChange} required />
                 </div>
-                
-
-                <div className="col-md-12">
-                  <label>Upload Business Images / Certificates</label>
-                  <input type="file" className="form-control" accept="image/*" multiple onChange={e => setImageFiles(Array.from(e.target.files))} />
-                </div>
-                <div className="col-md-12">
-                  <label>Upload Profile Picture</label>
-                  <input type="file" className="form-control" accept="image/*" onChange={e => setProfilePic(e.target.files[0])} />
-                </div>
-
-                <div className={registrationType === 'Product' ? 'col-md-6' : 'col-md-4'}>
+                <div className="col-md-6">
                   <label>Account Number</label>
-                  <input className="form-control" name="Account_Number" value={formData.Account_Number} onChange={handleChange} />
+                  <input className="form-control" name="Account_Number" value={formData.Account_Number} onChange={handleChange} required />
                 </div>
-                <div className={registrationType === 'Product' ? 'col-md-6' : 'col-md-4'}>
+                <div className="col-md-6">
                   <label>IFSC Code</label>
-                  <input className="form-control" name="IFSC_Code" value={formData.IFSC_Code} onChange={handleChange} />
+                  <input className="form-control" name="IFSC_Code" value={formData.IFSC_Code} onChange={handleChange} required />
+                </div>
+                <div className="col-md-12">
+                  <label>Description</label>
+                  <textarea className="form-control" name="descripition" value={formData.descripition} onChange={handleChange}></textarea>
                 </div>
 
-                {registrationType === 'Service' && (
-                  <div className="col-md-6">
-                    <label>Tell Us About Yourself</label>
-                    <input className="form-control" name="descripition" value={formData.descripition} onChange={handleChange} />
-                  </div>
-                )}
+                <div className="col-md-6">
+                  <label>Profile Picture</label>
+                  <input type="file" className="form-control" onChange={e => setProfilePic(e.target.files[0])} />
+                </div>
+                <div className="col-md-6">
+                  <label>Upload Documents</label>
+                  <input type="file" className="form-control" multiple onChange={e => setImageFiles([...e.target.files])} />
+                </div>
 
                 <div className="col-12 text-center mt-4">
-                  <button type="button" className="btn btn-secondary mx-2" onClick={prevStep}>Back</button>
-                  <button className="btn btn-dark mx-2 px-5" type="submit">Register</button>
+                  <button type="button" className="btn btn-secondary me-2" onClick={prevStep}>Back</button>
+                  <button type="submit" className="btn btn-success px-5">Submit</button>
                 </div>
               </div>
             )}
