@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { GoogleLogin } from "@react-oauth/google";
+import jwtDecode from "jwt-decode";
 import AdminApprovalPending from "./Vendor/Adminapprovalpage";
 
 export default function LoginPage() {
@@ -19,6 +21,7 @@ export default function LoginPage() {
   const [isPendingApproval, setIsPendingApproval] = useState(false);
   const [loginMethod, setLoginMethod] = useState(""); // "otp" or "password"
 
+  // Send OTP for email login
   const sendOtp = async () => {
     try {
       await axios.post("https://backend-d6mx.vercel.app/sendotp", { Email: username });
@@ -30,50 +33,49 @@ export default function LoginPage() {
     }
   };
 
+  // Verify OTP and login
   const verifyOtp = async () => {
-  try {
-    const res = await axios.post("https://backend-d6mx.vercel.app/verifyotp", {
-      Email: username,
-      otp: otp,
-    });
-
-    if (res.data.message === "OTP verified") {
-      toast.success("OTP verified successfully");
-      setOtpVerified(true);
-
-      // Directly log in after OTP verification
-      const loginRes = await axios.post("https://backend-d6mx.vercel.app/loginwith-otp", {
-        email: username
+    try {
+      const res = await axios.post("https://backend-d6mx.vercel.app/verifyotp", {
+        Email: username,
+        otp: otp,
       });
 
-      if (loginRes.data.message === "Success" && loginRes.data.vendorId) {
-        localStorage.setItem("vendorId", loginRes.data.vendorId);
-        setVendorId(loginRes.data.vendorId);
-      } else if (loginRes.data.message === "User not found") {
-        const tempRes = await axios.post("https://backend-d6mx.vercel.app/checktempvendor", {
-          Email_address: username,
+      if (res.data.message === "OTP verified") {
+        toast.success("OTP verified successfully");
+        setOtpVerified(true);
+
+        // After OTP verified, login via OTP
+        const loginRes = await axios.post("https://backend-d6mx.vercel.app/loginwith-otp", {
+          email: username,
         });
 
-        if (tempRes.data.found) {
-          setIsPendingApproval(true);
+        if (loginRes.data.message === "Success" && loginRes.data.vendorId) {
+          localStorage.setItem("vendorId", loginRes.data.vendorId);
+          setVendorId(loginRes.data.vendorId);
+        } else if (loginRes.data.message === "User not found") {
+          const tempRes = await axios.post("https://backend-d6mx.vercel.app/checktempvendor", {
+            Email_address: username,
+          });
+
+          if (tempRes.data.found) {
+            setIsPendingApproval(true);
+          } else {
+            toast.error("Account does not exist.");
+            navigate("/signup");
+          }
         } else {
-          toast.error("Account does not exist.");
-          navigate("/signup");
+          toast.error("Login failed after OTP verification.");
         }
       } else {
-        toast.error("Login failed after OTP verification.");
+        toast.error("Invalid OTP");
       }
-    } else {
-      toast.error("Invalid OTP");
+    } catch {
+      toast.error("OTP verification failed");
     }
-  } catch {
-    toast.error("OTP verification failed");
-  }
-};
+  };
 
-
-      
-
+  // Handle password login
   const handlePasswordLogin = async (e) => {
     e.preventDefault();
     setLoginMethod("password");
@@ -107,9 +109,36 @@ export default function LoginPage() {
     }
   };
 
+  // Handle Google Login success
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      const { email, name } = decoded;
+
+      const res = await axios.post("https://backend-d6mx.vercel.app/google-login", {
+        email,
+        name,
+      });
+
+      if (res.data.message === "Success") {
+        toast.success("Google login successful");
+        localStorage.setItem("vendorId", res.data.vendorId);
+        setVendorId(res.data.vendorId);
+      } else if (res.data.message === "User pending approval") {
+        setIsPendingApproval(true);
+      } else {
+        toast.error(res.data.message || "Google login error");
+      }
+    } catch (error) {
+      toast.error("Google login failed");
+    }
+  };
+
+  // Fetch category after login
   useEffect(() => {
     if (!vendorId) return;
-    axios.get(`https://backend-d6mx.vercel.app/api/categories/${vendorId}`)
+    axios
+      .get(`https://backend-d6mx.vercel.app/api/categories/${vendorId}`)
       .then((res) => {
         setTech(res.data.Category);
       })
@@ -118,6 +147,7 @@ export default function LoginPage() {
       });
   }, [vendorId]);
 
+  // Navigate based on category
   useEffect(() => {
     if (!vendorId || !tech) return;
     const category = tech.toLowerCase();
@@ -143,13 +173,17 @@ export default function LoginPage() {
         <div className="d-flex mb-4">
           <button
             onClick={() => setActiveTab("vendor")}
-            className={`btn ${activeTab === "vendor" ? "btn-warning text-white" : "btn-light text-secondary"} me-2`}
+            className={`btn ${
+              activeTab === "vendor" ? "btn-warning text-white" : "btn-light text-secondary"
+            } me-2`}
           >
             Professional
           </button>
           <button
             onClick={() => setActiveTab("product")}
-            className={`btn ${activeTab === "product" ? "btn-warning text-white" : "btn-light text-secondary"}`}
+            className={`btn ${
+              activeTab === "product" ? "btn-warning text-white" : "btn-light text-secondary"
+            }`}
           >
             Product
           </button>
@@ -157,6 +191,12 @@ export default function LoginPage() {
 
         <div className="w-100 px-3" style={{ maxWidth: "500px" }}>
           <h2 className="mb-4">{activeTab === "vendor" ? "Vendor Login" : "Product Login"}</h2>
+
+          {/* Google Login Button */}
+          <div className="mb-3 d-flex justify-content-center">
+            <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => toast.error("Google Login Failed")} />
+          </div>
+
           <form className="mb-3 w-100" onSubmit={handlePasswordLogin}>
             {/* Email + OTP Buttons */}
             <div className="mb-3">
@@ -230,9 +270,13 @@ export default function LoginPage() {
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <div className="form-check">
                     <input type="checkbox" className="form-check-input" id="rememberMe" />
-                    <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
+                    <label className="form-check-label" htmlFor="rememberMe">
+                      Remember me
+                    </label>
                   </div>
-                  <a href="/" className="text-warning small">Forgot Password?</a>
+                  <a href="/" className="text-warning small">
+                    Forgot Password?
+                  </a>
                 </div>
 
                 <button type="submit" className="btn btn-warning w-100 text-white">
