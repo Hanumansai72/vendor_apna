@@ -254,13 +254,29 @@ export default function Registration() {
                 </div>
 
                 {/* Google Signup Button */}
-                <div className="col-12 text-center mt-3">
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={() => toast.error('Google Login Failed')}
-                    size="small"
-                  />
-                </div>
+                <div
+  style={{
+    width: "320px",
+    margin: "auto",
+    marginTop: "10vh",
+    padding: "32px 24px",
+   
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
+  }}
+>
+  
+  <GoogleLogin
+    onSuccess={handleGoogleSuccess}
+    onError={() => toast.error('Google Login Failed')}
+    size="large" // Use large for modern appearance
+    shape="pill" // If supported, rounded/pill shape looks current
+    theme="outline" // Keeps button clean and recognizable
+  />
+  
+</div>
+
               </div>
             )}
 
