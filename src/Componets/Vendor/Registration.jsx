@@ -171,7 +171,7 @@ export default function Registration() {
   data.append('Email_address', decoded.email);
   data.append('isGoogleSignup', true);
 
-  // Send to your register API
+  
   try {
     await axios.post('https://backend-d6mx.vercel.app/register', data, {
       headers: { 'Content-Type': 'multipart/form-data' },
