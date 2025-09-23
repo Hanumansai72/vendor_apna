@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { GoogleLogin } from "@react-oauth/google";
-import jwtDecode from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import AdminApprovalPending from "./Vendor/Adminapprovalpage";
 
 export default function LoginPage() {
