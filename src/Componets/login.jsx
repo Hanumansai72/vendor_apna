@@ -111,28 +111,39 @@ export default function LoginPage() {
 
   // Handle Google Login success
   const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const decoded = jwtDecode(credentialResponse.credential);
-      const { email, name } = decoded;
+  try {
+    const decoded = jwtDecode(credentialResponse.credential);
+    const { email, name } = decoded;
 
-      const res = await axios.post("https://backend-d6mx.vercel.app/google-login", {
-        email,
-        name,
-      });
+    const res = await axios.post("https://backend-d6mx.vercel.app/google-login", {
+      email,
+      name,
+    });
 
-      if (res.data.message === "Success") {
-        toast.success("Google login successful");
-        localStorage.setItem("vendorId", res.data.vendorId);
-        setVendorId(res.data.vendorId);
-      } else if (res.data.message === "User pending approval") {
-        setIsPendingApproval(true);
+    if (res.data.message === "Success") {
+      toast.success("Google login successful");
+      const vendorId = res.data.vendorId;
+      localStorage.setItem("vendorId", vendorId);
+
+      // Fetch category immediately
+      const catRes = await axios.get(`https://backend-d6mx.vercel.app/api/categories/${vendorId}`);
+      const category = catRes.data.Category.toLowerCase();
+
+      // Navigate based on category
+      if (category === "technical" || category === "non-technical") {
+        navigate(`/vendor/${vendorId}`);
       } else {
-        toast.error(res.data.message || "Google login error");
+        navigate(`/product/${vendorId}`);
       }
-    } catch (error) {
-      toast.error("Google login failed");
+    } else if (res.data.message === "User pending approval") {
+      setIsPendingApproval(true);
+    } else {
+      toast.error(res.data.message || "Google login error");
     }
-  };
+  } catch (error) {
+    toast.error("Google login failed");
+  }
+};
 
   // Fetch category after login
   useEffect(() => {

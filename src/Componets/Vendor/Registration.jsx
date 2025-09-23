@@ -4,13 +4,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Registration() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // detect tab
+  // detect registration type
   const getRegistrationType = () =>
     new URLSearchParams(location.search).get('tab') === 'product' ? 'Product' : 'Service';
 
@@ -27,7 +27,7 @@ export default function Registration() {
   const [chargeType, setChargeType] = useState('Day');
 
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false); // loader state
+  const [loading, setLoading] = useState(false);
 
   const subCategories = {
     Technical: [
@@ -61,7 +61,7 @@ export default function Registration() {
     descripition: '',
   });
 
-  // update service type
+  // update service type when user switches category
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
@@ -87,28 +87,6 @@ export default function Registration() {
   const handleServiceTypeClick = type => {
     setSelectedServiceType(type);
     setFormData(prev => ({ ...prev, Category: type, Sub_Category: [] }));
-  };
-
-  const handleLocateMe = () => {
-    if (!navigator.geolocation) return toast.error('Geolocation not supported');
-    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-      const { latitude, longitude } = coords;
-      try {
-        const res = await fetch(
-          `https://us1.locationiq.com/v1/reverse?key=pk.b6ebdeccc1f35c3e45b72aba8fec713c&lat=${latitude}&lon=${longitude}&format=json`
-        );
-        const data = await res.json();
-        const address = (data.display_name || '').split(',').slice(0, 3).join(', ');
-        setFormData(prev => ({
-          ...prev,
-          Business_address: address,
-          Latitude: latitude.toString(),
-          Longitude: longitude.toString(),
-        }));
-      } catch {
-        toast.error('Location fetch failed');
-      }
-    }, () => toast.error('Location access denied'));
   };
 
   const handleSendOtp = async () => {
@@ -140,10 +118,10 @@ export default function Registration() {
   const handleSubmit = async e => {
     e.preventDefault();
 
-    if (formData.Password && formData.Password !== confirmPassword) {
+    if (step === 1 && formData.Password && formData.Password !== confirmPassword) {
       return toast.error('Passwords do not match');
     }
-    if (!otpVerified) return toast.error('Please verify your OTP');
+    if (step === 1 && !otpVerified) return toast.error('Please verify your OTP');
 
     try {
       const data = new FormData();
@@ -163,33 +141,37 @@ export default function Registration() {
     }
   };
 
+  // ✅ Google Signup
   const handleGoogleSignup = async (credentialResponse) => {
-  const decoded = jwtDecode(credentialResponse.credential);
-  // Prepare the minimal data for the backend
-  const data = new FormData();
-  data.append('Owner_name', decoded.name);
-  data.append('Email_address', decoded.email);
-  data.append('isGoogleSignup', true);
+    const decoded = jwtDecode(credentialResponse.credential);
+    const data = new FormData();
+    data.append('Owner_name', decoded.name);
+    data.append('Email_address', decoded.email);
+    data.append('isGoogleSignup', true);
 
-  
-  try {
-    await axios.post('https://backend-d6mx.vercel.app/register', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    toast.success('Google signup successful!');
-    navigate('/');
-  } catch {
-    toast.error('Registration failed');
-  }
-};
+    try {
+      await axios.post('https://backend-d6mx.vercel.app/register', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
+      toast.success('Google signup successful! Please fill extra details.');
+      setStep(2); // 👈 jump directly to Step 2
+      setFormData(prev => ({
+        ...prev,
+        Owner_name: decoded.name,
+        Email_address: decoded.email,
+      }));
+    } catch {
+      toast.error('Google signup failed');
+    }
+  };
 
   const nextStep = () => {
     setLoading(true);
     setTimeout(() => {
       setStep(prev => prev + 1);
       setLoading(false);
-    }, 600); // simulate loading delay
+    }, 600);
   };
 
   const prevStep = () => setStep(prev => prev - 1);
@@ -214,7 +196,7 @@ export default function Registration() {
             {step === 1 && (
               <div className="row g-3">
                 <h5 className="mb-3">Step 1 – Basic Information</h5>
-
+                {/* Business + Owner + Email + OTP */}
                 <div className="col-md-6">
                   <label>Business Name</label>
                   <input className="form-control" name="Business_Name" value={formData.Business_Name} onChange={handleChange} required />
@@ -243,13 +225,6 @@ export default function Registration() {
                   <label>Phone</label>
                   <input className="form-control" name="Phone_number" value={formData.Phone_number} onChange={handleChange} required />
                 </div>
-                <div className="col-md-9">
-                  <label>Business Address</label>
-                  <input className="form-control" name="Business_address" value={formData.Business_address} onChange={handleChange} required />
-                </div>
-                <div className="col-md-3 d-flex align-items-end">
-                  <button type="button" className="btn btn-outline-secondary w-100" onClick={handleLocateMe}>📍 Locate Me</button>
-                </div>
                 <div className="col-md-6">
                   <label>Password</label>
                   <input type="password" className="form-control" name="Password" value={formData.Password} onChange={handleChange} required />
@@ -263,25 +238,17 @@ export default function Registration() {
                   <button type="button" className="btn btn-dark px-5" onClick={nextStep}>Next</button>
                 </div>
 
-                {/* Google Signup Button */}
-                {
-  // Condition to show Google option only
-  <div style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "60vh"
-  }}>
-    <GoogleLogin
-      onSuccess={handleGoogleSignup} // see next step
-      onError={() => toast.error('Google Login Failed')}
-      size="large"
-      shape="pill"
-      theme="outline"
-    />
-  </div>
-}
-
+                {/* Google Signup at bottom */}
+                <div className="col-12 text-center mt-3">
+                  <p className="text-muted">or</p>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSignup}
+                    onError={() => toast.error('Google Login Failed')}
+                    size="large"
+                    shape="pill"
+                    theme="outline"
+                  />
+                </div>
               </div>
             )}
 
@@ -289,7 +256,6 @@ export default function Registration() {
             {step === 2 && (
               <div className="row g-3">
                 <h5 className="mb-3">Step 2 – Category & Service Details</h5>
-
                 {registrationType === 'Service' && (
                   <>
                     <div className="col-md-12">
@@ -307,7 +273,6 @@ export default function Registration() {
                         ))}
                       </div>
                     </div>
-
                     <div className="col-md-12">
                       <label>Select Sub-Categories</label>
                       <div className="d-flex flex-wrap gap-2">
@@ -332,14 +297,12 @@ export default function Registration() {
                     </div>
                   </>
                 )}
-
                 {registrationType === 'Product' && (
                   <div className="col-md-6">
                     <label>Category</label>
                     <input className="form-control" name="Category" value={formData.Category} onChange={handleChange} required />
                   </div>
                 )}
-
                 <div className="col-md-6">
                   <label>Charge Type</label>
                   <select className="form-control" name="Charge_Type" value={formData.Charge_Type} onChange={handleChange}>
@@ -351,9 +314,8 @@ export default function Registration() {
                   <label>Charge</label>
                   <input className="form-control" name="Charge_Per_Hour_or_Day" value={formData.Charge_Per_Hour_or_Day} onChange={handleChange} required />
                 </div>
-
                 <div className="col-12 text-center mt-4">
-                  <button type="button" className="btn btn-secondary me-2" onClick={prevStep}>Back</button>
+                  {step > 1 && <button type="button" className="btn btn-secondary me-2" onClick={prevStep}>Back</button>}
                   <button type="button" className="btn btn-dark px-5" onClick={nextStep}>Next</button>
                 </div>
               </div>
@@ -363,7 +325,6 @@ export default function Registration() {
             {step === 3 && (
               <div className="row g-3">
                 <h5 className="mb-3">Step 3 – Documents & Final</h5>
-
                 <div className="col-md-6">
                   <label>ID Type</label>
                   <select className="form-control" name="ID_Type" value={idType} onChange={e => setIdType(e.target.value)}>
@@ -387,7 +348,6 @@ export default function Registration() {
                   <label>Description</label>
                   <textarea className="form-control" name="descripition" value={formData.descripition} onChange={handleChange}></textarea>
                 </div>
-
                 <div className="col-md-6">
                   <label>Profile Picture</label>
                   <input type="file" className="form-control" onChange={e => setProfilePic(e.target.files[0])} />
@@ -396,7 +356,6 @@ export default function Registration() {
                   <label>Upload Documents</label>
                   <input type="file" className="form-control" multiple onChange={e => setImageFiles([...e.target.files])} />
                 </div>
-
                 <div className="col-12 text-center mt-4">
                   <button type="button" className="btn btn-secondary me-2" onClick={prevStep}>Back</button>
                   <button type="submit" className="btn btn-success px-5">Submit</button>
