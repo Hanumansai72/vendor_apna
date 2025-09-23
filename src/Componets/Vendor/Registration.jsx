@@ -183,6 +183,15 @@ export default function Registration() {
   }
 };
 
+
+  const nextStep = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setStep(prev => prev + 1);
+      setLoading(false);
+    }, 600); // simulate loading delay
+  };
+
   const prevStep = () => setStep(prev => prev - 1);
 
   return (
