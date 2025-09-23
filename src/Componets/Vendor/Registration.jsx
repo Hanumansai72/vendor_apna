@@ -163,24 +163,25 @@ export default function Registration() {
     }
   };
 
-  const handleGoogleSuccess = (credentialResponse) => {
-    const decoded = jwtDecode(credentialResponse.credential);
-    setFormData(prev => ({
-      ...prev,
-      Owner_name: decoded.name,
-      Email_address: decoded.email,
-    }));
-    toast.success(`Google signup success: ${decoded.email}`);
-    setStep(2); // jump to step 2 automatically
-  };
+  const handleGoogleSignup = async (credentialResponse) => {
+  const decoded = jwtDecode(credentialResponse.credential);
+  // Prepare the minimal data for the backend
+  const data = new FormData();
+  data.append('Owner_name', decoded.name);
+  data.append('Email_address', decoded.email);
+  data.append('isGoogleSignup', true);
 
-  const nextStep = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setStep(prev => prev + 1);
-      setLoading(false);
-    }, 600); // simulate loading delay
-  };
+  // Send to your register API
+  try {
+    await axios.post('https://backend-d6mx.vercel.app/register', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    toast.success('Google signup successful!');
+    navigate('/');
+  } catch {
+    toast.error('Registration failed');
+  }
+};
 
   const prevStep = () => setStep(prev => prev - 1);
 
@@ -254,28 +255,23 @@ export default function Registration() {
                 </div>
 
                 {/* Google Signup Button */}
-                <div
-  style={{
-    width: "320px",
-    margin: "auto",
-    marginTop: "10vh",
-    padding: "32px 24px",
-   
+                {
+  // Condition to show Google option only
+  <div style={{
     display: "flex",
-    flexDirection: "column",
-    alignItems: "center"
-  }}
->
-  
-  <GoogleLogin
-    onSuccess={handleGoogleSuccess}
-    onError={() => toast.error('Google Login Failed')}
-    size="large" // Use large for modern appearance
-    shape="pill" // If supported, rounded/pill shape looks current
-    theme="outline" // Keeps button clean and recognizable
-  />
-  
-</div>
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "60vh"
+  }}>
+    <GoogleLogin
+      onSuccess={handleGoogleSignup} // see next step
+      onError={() => toast.error('Google Login Failed')}
+      size="large"
+      shape="pill"
+      theme="outline"
+    />
+  </div>
+}
 
               </div>
             )}
