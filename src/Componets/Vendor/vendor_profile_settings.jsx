@@ -165,14 +165,6 @@ function VendorProfileSettings() {
           <input type="password" className="form-control" name="Password" value={formData.Password} onChange={handleChange} />
         </div>
         <div className="mb-4">
-          <label>Latitude</label>
-          <input type="text" className="form-control" name="Latitude" value={formData.Latitude} onChange={handleChange} />
-        </div>
-        <div className="mb-4">
-          <label>Longitude</label>
-          <input type="text" className="form-control" name="Longitude" value={formData.Longitude} onChange={handleChange} />
-        </div>
-        <div className="mb-4">
           <label>ID Type</label>
           <select className="form-control" name="ID_Type" value={formData.ID_Type} onChange={handleChange}>
             <option value="PAN">PAN</option>
