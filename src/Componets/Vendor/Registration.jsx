@@ -116,7 +116,7 @@ toast.error('Invalid OTP');
 const handleSubmit = async e => {
 e.preventDefault();
 
-```
+
 // Check passwords only for normal (non-Google) users
 if (!isGoogleUser && step === 1 && formData.Password !== confirmPassword) {
   return toast.error('Passwords do not match');
@@ -154,7 +154,7 @@ try {
 } finally {
   setLoading(false);
 }
-```
+
 
 };
 
@@ -181,27 +181,59 @@ setLoading(false);
 const prevStep = () => setStep(prev => prev - 1);
 
 // Google signup handler - skips Steps 1 and 3, goes to Step 2 directly
+// Google signup handler
 const handleGoogleSignup = async (credentialResponse) => {
-try {
-const decoded = jwtDecode(credentialResponse.credential);
-setFormData(prev => ({
-...prev,
-Owner_name: decoded.name,
-Email_address: decoded.email,
-}));
-setIsGoogleUser(true);
-if (registrationType !== 'Product') {
-setStep(2);
-}
-toast.success('Google signup successful! Please fill extra details.');
-} catch {
-toast.error('Google signup failed');
-}
+  try {
+    const decoded = jwtDecode(credentialResponse.credential);
+
+    // If user is registering as a Product → direct signup
+    if (registrationType === "Product") {
+      const data = new FormData();
+      data.append("Owner_name", decoded.name || "");
+      data.append("Email_address", decoded.email || "");
+      data.append("isGoogleSignup", true);
+
+      // If Google profile pic exists, attach it
+      if (decoded.picture) {
+        const res = await fetch(decoded.picture);
+        const blob = await res.blob();
+        const file = new File([blob], "profile.jpg", { type: blob.type });
+        data.append("profileImage", file);
+      }
+
+      setLoading(true);
+      await axios.post("https://backend-d6mx.vercel.app/register", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast.success("Google signup successful! Please login.");
+      navigate("/login"); // redirect to login page
+      return; // ✅ stop here
+    }
+
+    // Else (Service registration) → fill form manually (Step 2)
+    setFormData(prev => ({
+      ...prev,
+      Owner_name: decoded.name,
+      Email_address: decoded.email,
+    }));
+    setIsGoogleUser(true);
+    if (registrationType !== "Product") {
+      setStep(2);
+    }
+    toast.success("Google signup successful! Please fill extra details.");
+  } catch (err) {
+    console.error(err);
+    toast.error("Google signup failed");
+  } finally {
+    setLoading(false);
+  }
 };
+
 
 return ( <div className="container my-5"> <ToastContainer /> <form className="card p-4 shadow" onSubmit={handleSubmit}> <h2 className="text-center mb-4">Register as a {registrationType}</h2> <h6 className="text-center text-muted mb-4">Step {step} of {isGoogleUser ? 2 : 3}</h6>
 
-```
+
     {loading ? (
       <div className="text-center my-5">
         <div className="spinner-border text-dark" role="status">
