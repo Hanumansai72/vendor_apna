@@ -298,7 +298,8 @@ return ( <div className="container my-5"> <ToastContainer /> <form className="ca
         )}
 
         {/* Step 2 - Both normal and Google */}
-        {step === 2 && (
+        {step === 2 && !(isGoogleUser && registrationType === "Product") && (
+
           <>
             {registrationType === 'Service' && (
               <>
