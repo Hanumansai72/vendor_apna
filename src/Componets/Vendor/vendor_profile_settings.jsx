@@ -12,7 +12,12 @@ function VendorProfileSettings() {
     Category: '',
     Sub_Category: '',
     Tax_ID: '',
-    Password: ''
+    Password: '',
+    Charge_Per_Hour_or_Day:'',
+    IFSC_Code:'',
+    Account_Number:'',
+    Charge_Type:''
+
   });
   
   const handleSaveChanges = async () => {
@@ -155,6 +160,43 @@ function VendorProfileSettings() {
             className="form-control"
             name="Password"
             value={formdata.Password}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="mb-4">
+          <label>IFSC_Code</label>
+          <input
+            type="text"
+            className="form-control"
+            name="IFSC_Code"
+            value={formdata.IFSC_Code}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="mb-4">
+                  <label>Charge Type</label>
+                  <select name="Charge_Type" className="form-control" value={formdata.Charge_Type} onChange={handleChange}>
+                    <option value="Day">Per Day</option>
+                    <option value="Hour">Per Hour</option>
+                  </select>
+                </div>
+        <div className="mb-4">
+          <label>Charge_Per_Hour_or_Day</label>
+          <input
+            type="number"
+            className="form-control"
+            name="Charge_Per_Hour_or_Day"
+            value={formdata.Charge_Per_Hour_or_Day}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="mb-4">
+          <label>Account_Number</label>
+          <input
+            type="number"
+            className="form-control"
+            name="Account_Number"
+            value={formdata.Account_Number}
             onChange={handleChange}
           />
         </div>
