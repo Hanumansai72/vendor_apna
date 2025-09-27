@@ -26,36 +26,71 @@ function VendorProfileSettings() {
   const [imageFiles, setImageFiles] = useState([]);
   const id = localStorage.getItem("vendorId");
 
+  // Automatically use user's location on page load
   useEffect(() => {
-    axios
-      .get(`https://backend-d6mx.vercel.app/${id}/settings`)
-      .then((res) => {
-        const data = res.data?.datasettings || {};
-        setFormData({
-          Business_Name: data.Business_Name || '',
-          Owner_name: data.Owner_name || '',
-          Email_address: data.Email_address || '',
-          Phone_number: data.Phone_number || '',
-          Business_address: data.Business_address || '',
-          Category: data.Category || '',
-          Sub_Category: Array.isArray(data.Sub_Category)
-            ? data.Sub_Category
-            : (typeof data.Sub_Category === "string" ? data.Sub_Category.split(",") : []),
-          Tax_ID: data.Tax_ID || '',
-          Password: data.Password || '',
-          Latitude: data.Latitude || '',
-          Longitude: data.Longitude || '',
-          ID_Type: data.ID_Type || 'PAN',
-          Account_Number: data.Account_Number || '',
-          IFSC_Code: data.IFSC_Code || '',
-          Charge_Type: data.Charge_Type || 'Day',
-          Charge_Per_Hour_or_Day: data.Charge_Per_Hour_or_Day || '',
-          description: data.description || ''
+    if (!formData.Latitude || !formData.Longitude || !formData.Business_address) {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          let address = "";
+
+          try {
+            const osmRes = await axios.get(
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+            );
+            if (osmRes.data && osmRes.data.display_name) {
+              address = osmRes.data.display_name;
+            }
+          } catch (err) {
+            address = '';
+          }
+
+          setFormData(prev => ({
+            ...prev,
+            Latitude: lat,
+            Longitude: lng,
+            Business_address: address
+          }));
         });
-      })
-      .catch((err) => {
-        console.error('Failed to fetch vendor data', err);
-      });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch vendor's saved data
+  useEffect(() => {
+    if (id) {
+      axios
+        .get(`https://backend-d6mx.vercel.app/${id}/settings`)
+        .then((res) => {
+          const data = res.data?.datasettings || {};
+          setFormData({
+            Business_Name: data.Business_Name || '',
+            Owner_name: data.Owner_name || '',
+            Email_address: data.Email_address || '',
+            Phone_number: data.Phone_number || '',
+            Business_address: data.Business_address || '',
+            Category: data.Category || '',
+            Sub_Category: Array.isArray(data.Sub_Category)
+              ? data.Sub_Category
+              : (typeof data.Sub_Category === "string" ? data.Sub_Category.split(",") : []),
+            Tax_ID: data?.Tax_ID || '',
+            Password: data?.Password || '',
+            Latitude: data?.Latitude || '',
+            Longitude: data?.Longitude || '',
+            ID_Type: data?.ID_Type || 'PAN',
+            Account_Number: data?.Account_Number || '',
+            IFSC_Code: data?.IFSC_Code || '',
+            Charge_Type: data?.Charge_Type || 'Day',
+            Charge_Per_Hour_or_Day: data?.Charge_Per_Hour_or_Day || '',
+            description: data?.description || ''
+          });
+        })
+        .catch((err) => {
+          console.error('Failed to fetch vendor data', err);
+        });
+    }
   }, [id]);
 
   const handleChange = (e) => {
