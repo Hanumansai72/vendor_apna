@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -7,424 +8,621 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
 export default function Registration() {
-const navigate = useNavigate();
-const location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-// Detect tab
-const getRegistrationType = () =>
-new URLSearchParams(location.search).get('tab') === 'product' ? 'Product' : 'Service';
+  // detect tab (Product or Service)
+  const getRegistrationType = () =>
+    new URLSearchParams(location.search).get('tab') === 'product'
+      ? 'Product'
+      : 'Service';
 
-const [registrationType] = useState(getRegistrationType());
-const [selectedServiceType, setSelectedServiceType] = useState('Technical');
-const [confirmPassword, setConfirmPassword] = useState('');
-const [idType, setIdType] = useState('PAN');
-const [imageFiles, setImageFiles] = useState([]);
-const [profilePic, setProfilePic] = useState(null);
-const [showOtp, setShowOtp] = useState(false);
-const [otp, setOtp] = useState('');
-const [otpVerified, setOtpVerified] = useState(false);
-const [otpTimer, setOtpTimer] = useState(0);
-const [step, setStep] = useState(1);
-const [loading, setLoading] = useState(false); // loader state
-const [isGoogleUser, setIsGoogleUser] = useState(false);
+  const [registrationType] = useState(getRegistrationType());
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
+  const [selectedServiceType, setSelectedServiceType] = useState('Technical');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [idType, setIdType] = useState('PAN');
+  const [imageFiles, setImageFiles] = useState([]);
+  const [profilePic, setProfilePic] = useState(null);
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [chargeType, setChargeType] = useState('Day');
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-const subCategories = {
-Technical: [
-'Architects', 'Civil Engineer', 'Site Supervisor', 'Survey Engineer', 'MEP Consultant',
-'Structural Engineer', 'Project Manager', 'HVAC Engineer', 'Safety Engineer', 'Contractor',
-'Interior Designer', 'WaterProofing Consultant', 'Acoustic Consultants'
-],
-'Non-Technical': [
-'EarthWork Labour', 'Civil Mason', 'Shuttering/Centring Labour', 'Plumber',
-'Electrician', 'Painter', 'Carpenter', 'Flooring Labour', 'False Ceiling Worker'
-],
-};
+  const subCategories = {
+    Technical: [
+      'Architects',
+      'Civil Engineer',
+      'Site Supervisor',
+      'Survey Engineer',
+      'MEP Consultant',
+      'Structural Engineer',
+      'Project Manager',
+      'HVAC Engineer',
+      'Safety Engineer',
+      'Contractor',
+      'Interior Designer',
+      'WaterProofing Consultant',
+      'Acoustic Consultants',
+    ],
+    'Non-Technical': [
+      'EarthWork Labour',
+      'Civil Mason',
+      'Shuttering/Centring Labour',
+      'Plumber',
+      'Electrician',
+      'Painter',
+      'Carpenter',
+      'Flooring Labour',
+      'False Ceiling Worker',
+    ],
+  };
 
-const [formData, setFormData] = useState({
-Business_Name: '',
-Owner_name: '',
-Email_address: '',
-Phone_number: '',
-Business_address: '',
-Category: registrationType === 'Product' ? '' : 'Technical',
-Sub_Category: [],
-Tax_ID: '',
-Password: '',
-Latitude: '',
-Longitude: '',
-ID_Type: 'PAN',
-Account_Number: '',
-IFSC_Code: '',
-descripition: '',
-});
-
-// update service type
-useEffect(() => {
-if (registrationType !== 'Product') {
-setFormData(prev => ({
-...prev,
-Category: selectedServiceType,
-Sub_Category: [],
-}));
-}
-}, [registrationType, selectedServiceType]);
-
-// otp timer countdown
-useEffect(() => {
-let timer;
-if (otpTimer > 0) {
-timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
-}
-return () => clearTimeout(timer);
-}, [otpTimer]);
-
-const handleChange = e => {
-const { name, value } = e.target;
-setFormData(prev => ({ ...prev, [name]: value }));
-};
-
-const handleServiceTypeClick = type => {
-setSelectedServiceType(type);
-};
-
-const handleSendOtp = async () => {
-if (!formData.Email_address) return toast.warning('Enter your email');
-try {
-await axios.post('[https://backend-d6mx.vercel.app/sendotp](https://backend-d6mx.vercel.app/sendotp)', { Email: formData.Email_address });
-toast.success('OTP sent to your email!');
-setShowOtp(true);
-setOtpTimer(300);
-} catch {
-toast.error('Failed to send OTP');
-}
-};
-
-const verifyOtp = async () => {
-if (!otp) return toast.warning('Please enter the OTP');
-try {
-await axios.post('[https://backend-d6mx.vercel.app/verifyotp](https://backend-d6mx.vercel.app/verifyotp)', {
-Email: formData.Email_address,
-otp,
-});
-toast.success('OTP verified!');
-setOtpVerified(true);
-} catch {
-toast.error('Invalid OTP');
-}
-};
-
-const handleSubmit = async e => {
-e.preventDefault();
-
-
-// Check passwords only for normal (non-Google) users
-if (!isGoogleUser && step === 1 && formData.Password !== confirmPassword) {
-  return toast.error('Passwords do not match');
-}
-if (!isGoogleUser && step === 1 && !otpVerified) {
-  return toast.error('Please verify your OTP');
-}
-
-// For normal users, allow submit only on Step 3; for Google users, only Step 2
-if ((!isGoogleUser && step !== 3) || (isGoogleUser && step !== 2)) {
-  return toast.error('Please complete all required steps before submitting.');
-}
-
-setLoading(true);
-try {
-  const data = new FormData();
-  Object.keys(formData).forEach(key => {
-    // For Google signup, skip password field
-    if (isGoogleUser && key === 'Password') return;
-    data.append(key, formData[key]);
+  const [formData, setFormData] = useState({
+    Business_Name: '',
+    Owner_name: '',
+    Email_address: '',
+    Phone_number: '',
+    Business_address: '',
+    Category: registrationType === 'Product' ? '' : 'Technical',
+    Sub_Category: [],
+    Tax_ID: '',
+    Password: '',
+    Latitude: '',
+    Longitude: '',
+    ID_Type: 'PAN',
+    Account_Number: '',
+    IFSC_Code: '',
+    Charge_Type: 'Day',
+    Charge_Per_Hour_or_Day: '',
+    descripition: '',
   });
-  data.append('isGoogleSignup', isGoogleUser);
 
-  if (imageFiles.length > 0) imageFiles.forEach(file => data.append('productImages', file));
-  if (profilePic) data.append('profileImage', profilePic);
-
-  await axios.post('https://backend-d6mx.vercel.app/register', data, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  toast.success('Registration successful!');
-  navigate('/');
-} catch (err) {
-  console.error(err);
-  toast.error('Registration failed');
-} finally {
-  setLoading(false);
-}
-
-
-};
-
-const nextStep = () => {
-// Validate Step 1 only for normal signup
-if (!isGoogleUser && step === 1) {
-if (!formData.Business_Name || !formData.Owner_name || !formData.Email_address || !formData.Password) {
-return toast.error('Please fill all required fields in Step 1');
-}
-if (formData.Password !== confirmPassword) {
-return toast.error('Passwords do not match');
-}
-if (!otpVerified) {
-return toast.error('Please verify OTP before proceeding');
-}
-}
-setLoading(true);
-setTimeout(() => {
-setStep(prev => prev + 1);
-setLoading(false);
-}, 600);
-};
-
-const prevStep = () => setStep(prev => prev - 1);
-
-// Google signup handler - skips Steps 1 and 3, goes to Step 2 directly
-// Google signup handler
-const handleGoogleSignup = async (credentialResponse) => {
-  try {
-    const decoded = jwtDecode(credentialResponse.credential);
-
-    // If user is registering as a Product → direct signup
-    if (registrationType === "Product") {
-      const data = new FormData();
-      data.append("Owner_name", decoded.name || "");
-      data.append("Email_address", decoded.email || "");
-      data.append("isGoogleSignup", true);
-
-      // If Google profile pic exists, attach it
-      if (decoded.picture) {
-        const res = await fetch(decoded.picture);
-        const blob = await res.blob();
-        const file = new File([blob], "profile.jpg", { type: blob.type });
-        data.append("profileImage", file);
-      }
-
-      setLoading(true);
-      await axios.post("https://backend-d6mx.vercel.app/register", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      toast.success("Google signup successful! Please login.");
-      navigate("/login"); // redirect to login page
-      return; // ✅ stop here
-    }
-
-    // Else (Service registration) → fill form manually (Step 2)
+  // update service type
+  useEffect(() => {
     setFormData(prev => ({
       ...prev,
-      Owner_name: decoded.name,
-      Email_address: decoded.email,
+      Category: registrationType === 'Product' ? prev.Category : selectedServiceType,
+      Sub_Category: [],
     }));
-    setIsGoogleUser(true);
-    if (registrationType !== "Product") {
-      setStep(2);
+  }, [registrationType, selectedServiceType]);
+
+  // otp timer countdown
+  useEffect(() => {
+    let timer;
+    if (otpTimer > 0) {
+      timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
     }
-    toast.success("Google signup successful! Please fill extra details.");
-  } catch (err) {
-    console.error(err);
-    toast.error("Google signup failed");
-  } finally {
-    setLoading(false);
-  }
-};
+    return () => clearTimeout(timer);
+  }, [otpTimer]);
 
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-return ( <div className="container my-5"> <ToastContainer /> <form className="card p-4 shadow" onSubmit={handleSubmit}> <h2 className="text-center mb-4">Register as a {registrationType}</h2> <h6 className="text-center text-muted mb-4">Step {step} of {isGoogleUser ? 2 : 3}</h6>
+  const handleServiceTypeClick = type => {
+    setSelectedServiceType(type);
+    setFormData(prev => ({ ...prev, Category: type, Sub_Category: [] }));
+  };
 
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) return toast.error('Geolocation not supported');
 
-    {loading ? (
-      <div className="text-center my-5">
-        <div className="spinner-border text-dark" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-2">Loading...</p>
-      </div>
-    ) : (
-      <>
-        {/* Step 1 - only normal users */}
-        {step === 1 && !isGoogleUser && (
-          <>
-            <div className="mb-3">
-              <label>Business Name</label>
-              <input name="Business_Name" className="form-control" value={formData.Business_Name} onChange={handleChange} required />
-            </div>
-            <div className="mb-3">
-              <label>Owner Name</label>
-              <input name="Owner_name" className="form-control" value={formData.Owner_name} onChange={handleChange} required />
-            </div>
-            <div className="mb-3">
-              <label>Email Address</label>
-              <input name="Email_address" type="email" className="form-control" value={formData.Email_address} onChange={handleChange} required />
-            </div>
-            <div className="mb-3">
-              <label>Password</label>
-              <input name="Password" type="password" className="form-control" value={formData.Password} onChange={handleChange} required />
-            </div>
-            <div className="mb-3">
-              <label>Confirm Password</label>
-              <input type="password" className="form-control" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-            </div>
-            <div className="mb-3">
-              <label>Email OTP</label>
-              <button className="btn btn-outline-primary" type="button" onClick={handleSendOtp} disabled={otpTimer > 0}>
-                {otpTimer > 0 ? `Resend in ${Math.floor(otpTimer / 60)}:${(otpTimer % 60).toString().padStart(2, '0')}` : 'Send OTP'}
-              </button>
-              {showOtp && (
-                <input
-                  className="form-control mt-2"
-                  value={otp}
-                  onChange={e => setOtp(e.target.value)}
-                  maxLength={6}
-                  placeholder="Enter OTP"
-                  required
-                />
-              )}
-              {showOtp && (
-                <button className="btn btn-success mt-2" type="button" onClick={verifyOtp}>
-                  Verify OTP
-                </button>
-              )}
-            </div>
-            <div className="text-center mt-4">
-              <button type="button" className="btn btn-dark px-5" onClick={nextStep}>Next</button>
-            </div>
-            <div className="text-center mt-3">
-              <p>Or sign up with:</p>
-              <GoogleLogin onSuccess={handleGoogleSignup} onError={() => toast.error('Google Login Failed')} size="large" shape="pill" theme="outline" />
-            </div>
-          </>
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        const { latitude, longitude } = coords;
+        try {
+          const res = await fetch(
+            `https://us1.locationiq.com/v1/reverse?key=pk.b6ebdeccc1f35c3e45b72aba8fec713c&lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await res.json();
+          const address = (data.display_name || '').split(',').slice(0, 3).join(', ');
+
+          setFormData(prev => ({
+            ...prev,
+            Business_address: address,
+            Latitude: latitude.toString(),
+            Longitude: longitude.toString(),
+          }));
+        } catch {
+          toast.error('Location fetch failed');
+        }
+      },
+      () => toast.error('Location access denied')
+    );
+  };
+
+  const handleSendOtp = async () => {
+    if (!formData.Email_address) return toast.warning('Enter your email');
+    try {
+      await axios.post('https://backend-d6mx.vercel.app/sendotp', {
+        Email: formData.Email_address,
+      });
+      toast.success('OTP sent to your email!');
+      setShowOtp(true);
+      setOtpTimer(300);
+    } catch {
+      toast.error('Failed to send OTP');
+    }
+  };
+
+  const verifyOtp = async () => {
+    if (!otp) return toast.warning('Please enter the OTP');
+    try {
+      await axios.post('https://backend-d6mx.vercel.app/verifyotp', {
+        Email: formData.Email_address,
+        otp,
+      });
+      toast.success('OTP verified!');
+      setOtpVerified(true);
+    } catch {
+      toast.error('Invalid OTP');
+    }
+  };
+
+  // Handle Google Signup
+  const handleGoogleSignup = async credentialResponse => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      setIsGoogleUser(true);
+      setFormData(prev => ({
+        ...prev,
+        Owner_name: decoded.name || '',
+        Email_address: decoded.email || '',
+      }));
+
+      if (registrationType === 'Product') {
+        // Direct signup for Product + Google
+        const data = new FormData();
+        Object.keys(formData).forEach(key => data.append(key, formData[key]));
+        await axios.post('https://backend-d6mx.vercel.app/register', data, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        toast.success('Registered with Google!');
+        navigate('/');
+      } else {
+        // For Service + Google → go to Step 2
+        setStep(2);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Google Signup failed');
+    }
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+
+    if (!isGoogleUser && formData.Password && formData.Password !== confirmPassword) {
+      return toast.error('Passwords do not match');
+    }
+    if (!isGoogleUser && !otpVerified) return toast.error('Please verify your OTP');
+
+    try {
+      const data = new FormData();
+      Object.keys(formData).forEach(key => data.append(key, formData[key]));
+      imageFiles.forEach(file => data.append('productImages', file));
+      if (profilePic) data.append('profileImage', profilePic);
+
+      await axios.post('https://backend-d6mx.vercel.app/register', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      toast.success('Registration successful!');
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      toast.error('Registration failed');
+    }
+  };
+
+  const nextStep = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setStep(prev => prev + 1);
+      setLoading(false);
+    }, 600);
+  };
+
+  const prevStep = () => setStep(prev => prev - 1);
+
+  // Calculate total steps dynamically
+  const getTotalSteps = () => {
+    if (registrationType === 'Product' && isGoogleUser) return 0; // direct signup
+    if (registrationType === 'Service' && isGoogleUser) return 1; // only step 2
+    return 3; // normal signup flow
+  };
+
+  return (
+    <div className="container my-5">
+      <ToastContainer />
+      <form className="card p-4 shadow" onSubmit={handleSubmit}>
+        <h2 className="text-center mb-4">Register as a {registrationType}</h2>
+
+        {getTotalSteps() > 0 && !loading && (
+          <h6 className="text-center text-muted mb-4">
+            Step {step} of {getTotalSteps()}
+          </h6>
         )}
 
-        {/* Step 2 - Both normal and Google */}
-        {step === 2 && !(isGoogleUser && registrationType === "Product") && (
+        {/* Google Login button */}
+        <div className="text-center mb-3">
+          <GoogleLogin
+            onSuccess={handleGoogleSignup}
+            onError={() => toast.error('Google Login Failed')}
+          />
+        </div>
 
+        {loading ? (
+          <div className="text-center my-5">
+            <div className="spinner-border text-dark" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2">Loading next step...</p>
+          </div>
+        ) : (
           <>
-            {registrationType === 'Service' && (
-              <>
-                <div className="mb-3">
-                  <label>Service Type</label>
-                  <div>
-                    {['Technical', 'Non-Technical'].map(type => (
+            {/* Step 1 */}
+            {step === 1 && !isGoogleUser && (
+              <div className="row g-3">
+                <h5 className="mb-3">Step 1 – Basic Information (Mandatory)</h5>
+                <div className="col-md-6">
+                  <label>Business Name</label>
+                  <input
+                    className="form-control"
+                    name="Business_Name"
+                    value={formData.Business_Name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label>Owner Name</label>
+                  <input
+                    className="form-control"
+                    name="Owner_name"
+                    value={formData.Owner_name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label>Email</label>
+                  <div className="input-group">
+                    <input
+                      type="email"
+                      className="form-control"
+                      name="Email_address"
+                      value={formData.Email_address}
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      className="btn btn-outline-primary"
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={otpTimer > 0}
+                    >
+                      {otpTimer > 0
+                        ? `Resend in ${Math.floor(otpTimer / 60)}:${(
+                            otpTimer % 60
+                          )
+                            .toString()
+                            .padStart(2, '0')}`
+                        : 'Send OTP'}
+                    </button>
+                  </div>
+                </div>
+                {showOtp && (
+                  <div className="col-md-6">
+                    <label>Enter OTP</label>
+                    <input
+                      className="form-control"
+                      value={otp}
+                      onChange={e => setOtp(e.target.value)}
+                      maxLength={6}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-success mt-2"
+                      onClick={verifyOtp}
+                    >
+                      Verify OTP
+                    </button>
+                  </div>
+                )}
+                <div className="col-md-6">
+                  <label>Phone</label>
+                  <input
+                    className="form-control"
+                    name="Phone_number"
+                    value={formData.Phone_number}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-md-9">
+                  <label>Business Address</label>
+                  <input
+                    className="form-control"
+                    name="Business_address"
+                    value={formData.Business_address}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-md-3 d-flex align-items-end">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary w-100"
+                    onClick={handleLocateMe}
+                  >
+                    📍 Locate Me
+                  </button>
+                </div>
+                <div className="col-md-6">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    name="Password"
+                    value={formData.Password}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label>Confirm Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                {registrationType === 'Service' && (
+                  <>
+                    <div className="col-md-4">
+                      <label>Charge</label>
+                      <input
+                        className="form-control"
+                        name="Charge_Per_Hour_or_Day"
+                        value={formData.Charge_Per_Hour_or_Day}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label>Charge Type</label>
+                      <select
+                        className="form-control"
+                        value={chargeType}
+                        onChange={e => setChargeType(e.target.value)}
+                      >
+                        <option value="Day">Day</option>
+                        <option value="Hour">Hour</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+                <div className="col-12 text-center mt-4">
+                  <button
+                    type="button"
+                    className="btn btn-dark px-5"
+                    onClick={nextStep}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 */}
+            {step === 2 && (
+              <div className="row g-3">
+                <h5 className="mb-3">Step 2 – Category & Specialization (Mandatory)</h5>
+                {registrationType === 'Service' ? (
+                  <>
+                    <div className="col-12 text-center">
+                      <h5>Service Type</h5>
+                      {['Technical', 'Non-Technical'].map(type => (
+                        <button
+                          key={type}
+                          type="button"
+                          className={`btn mx-1 ${
+                            selectedServiceType === type
+                              ? 'btn-dark'
+                              : 'btn-outline-secondary'
+                          }`}
+                          onClick={() => handleServiceTypeClick(type)}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="col-12">
+                      <label>Specializations</label>
+                      <div className="row">
+                        {subCategories[selectedServiceType].map(sc => (
+                          <div key={sc} className="col-md-6">
+                            <div className="form-check">
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={formData.Sub_Category.includes(sc)}
+                                onChange={() => {
+                                  const updated = formData.Sub_Category.includes(sc)
+                                    ? formData.Sub_Category.filter(i => i !== sc)
+                                    : [...formData.Sub_Category, sc];
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    Sub_Category: updated,
+                                  }));
+                                }}
+                              />
+                              <label className="form-check-label">{sc}</label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="col-12 text-center">
+                    <h5>Product Type</h5>
+                    {['CIVIL', 'INTERIOR'].map(type => (
                       <button
                         key={type}
                         type="button"
-                        className={`btn me-2 ${selectedServiceType === type ? 'btn-primary' : 'btn-outline-primary'}`}
-                        onClick={() => setSelectedServiceType(type)}
+                        className={`btn mx-1 ${
+                          formData.Category === type
+                            ? 'btn-dark'
+                            : 'btn-outline-secondary'
+                        }`}
+                        onClick={() =>
+                          setFormData(prev => ({ ...prev, Category: type }))
+                        }
                       >
                         {type}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                <div className="mb-3">
-                  <label>Select Sub-Categories</label>
-                  <div className="d-flex flex-wrap gap-2">
-                    {subCategories[selectedServiceType].map(sub => (
+                )}
+                <div className="col-12 text-center mt-4">
+                  {isGoogleUser && registrationType === 'Service' ? (
+                    <button className="btn btn-dark px-5" type="submit">
+                      Register
+                    </button>
+                  ) : (
+                    <>
                       <button
-                        key={sub}
                         type="button"
-                        className={`btn btn-sm ${formData.Sub_Category.includes(sub) ? 'btn-success' : 'btn-outline-secondary'}`}
-                        onClick={() => {
-                          const updated = formData.Sub_Category.includes(sub)
-                            ? formData.Sub_Category.filter(s => s !== sub)
-                            : [...formData.Sub_Category, sub];
-                          setFormData(prev => ({ ...prev, Sub_Category: updated }));
-                        }}
+                        className="btn btn-secondary mx-2"
+                        onClick={prevStep}
                       >
-                        {sub}
+                        Back
                       </button>
-                    ))}
-                  </div>
+                      <button
+                        type="button"
+                        className="btn btn-dark mx-2"
+                        onClick={nextStep}
+                      >
+                        Next
+                      </button>
+                    </>
+                  )}
                 </div>
-
-                <div className="mb-3">
-                  <label>Charge Type</label>
-                  <select name="Charge_Type" className="form-control" value={formData.Charge_Type || ''} onChange={handleChange}>
-                    <option value="Day">Per Day</option>
-                    <option value="Hour">Per Hour</option>
-                  </select>
-                </div>
-
-                <div className="mb-3">
-                  <label>Charge</label>
-                  <input name="Charge_Per_Hour_or_Day" className="form-control" value={formData.Charge_Per_Hour_or_Day || ''} onChange={handleChange} />
-                </div>
-              </>
-            )}
-
-            {registrationType === 'Product' && (
-              <div className="mb-3">
-                <label>Category</label>
-                <input name="Category" className="form-control" value={formData.Category} onChange={handleChange} required />
               </div>
             )}
 
-            <div className="d-flex justify-content-between">
-              {!isGoogleUser && (
-                <button type="button" className="btn btn-secondary" onClick={prevStep}>Back</button>
-              )}
-              <button type={isGoogleUser ? "submit" : "button"} className="btn btn-primary" onClick={isGoogleUser ? null : nextStep}>
-                {isGoogleUser ? "Register" : "Next"}
-              </button>
-            </div>
+            {/* Step 3 */}
+            {step === 3 && !isGoogleUser && (
+              <div className="row g-3">
+                <h5 className="mb-3">Step 3 – Documents & Bank Details (Optional)</h5>
+                <small className="text-muted mb-3">
+                  These details are optional and can be updated later in your
+                  profile settings.
+                </small>
+                <div className="col-md-6">
+                  <label>ID Type</label>
+                  <select
+                    className="form-control"
+                    value={idType}
+                    onChange={e => setIdType(e.target.value)}
+                  >
+                    <option value="PAN">PAN</option>
+                    <option value="Aadhar">Aadhar</option>
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label>PAN/Aadhar Number</label>
+                  <input
+                    className="form-control"
+                    name="Tax_ID"
+                    value={formData.Tax_ID}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-12">
+                  <label>Upload Business Images / Certificates</label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    multiple
+                    onChange={e => setImageFiles(Array.from(e.target.files))}
+                  />
+                </div>
+                <div className="col-md-12">
+                  <label>Upload Profile Picture</label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    onChange={e => setProfilePic(e.target.files[0])}
+                  />
+                </div>
+                <div
+                  className={registrationType === 'Product' ? 'col-md-6' : 'col-md-4'}
+                >
+                  <label>Account Number</label>
+                  <input
+                    className="form-control"
+                    name="Account_Number"
+                    value={formData.Account_Number}
+                                        onChange={handleChange}
+                  />
+                </div>
+
+                <div
+                  className={registrationType === 'Product' ? 'col-md-6' : 'col-md-4'}
+                >
+                  <label>IFSC Code</label>
+                  <input
+                    className="form-control"
+                    name="IFSC_Code"
+                    value={formData.IFSC_Code}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {registrationType === 'Service' && (
+                  <div className="col-md-6">
+                    <label>Tell Us About Yourself</label>
+                    <textarea
+                      className="form-control"
+                      name="descripition"
+                      rows="3"
+                      value={formData.descripition}
+                      onChange={handleChange}
+                    ></textarea>
+                  </div>
+                )}
+
+                <div className="col-12 text-center mt-4">
+                  <button
+                    type="button"
+                    className="btn btn-secondary mx-2"
+                    onClick={prevStep}
+                  >
+                    Back
+                  </button>
+                  <button className="btn btn-dark px-5" type="submit">
+                    Register
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
-
-        {/* Step 3 - Only normal signup */}
-        {step === 3 && !isGoogleUser && (
-          <>
-            <div className="mb-3">
-              <label>ID Type</label>
-              <select name="ID_Type" className="form-control" value={idType} onChange={e => setIdType(e.target.value)}>
-                <option value="PAN">PAN</option>
-                <option value="Aadhar">Aadhar</option>
-              </select>
-            </div>
-
-            <div className="mb-3">
-              <label>Tax ID</label>
-              <input name="Tax_ID" className="form-control" value={formData.Tax_ID} onChange={handleChange} />
-            </div>
-
-            <div className="mb-3">
-              <label>Account Number</label>
-              <input name="Account_Number" className="form-control" value={formData.Account_Number} onChange={handleChange} />
-            </div>
-
-            <div className="mb-3">
-              <label>IFSC Code</label>
-              <input name="IFSC_Code" className="form-control" value={formData.IFSC_Code} onChange={handleChange} />
-            </div>
-
-            <div className="mb-3">
-              <label>Description</label>
-              <textarea name="descripition" className="form-control" value={formData.descripition} onChange={handleChange}></textarea>
-            </div>
-
-            <div className="mb-3">
-              <label>Profile Picture</label>
-              <input type="file" className="form-control" onChange={e => setProfilePic(e.target.files[0])} />
-            </div>
-
-            <div className="mb-3">
-              <label>Upload Documents</label>
-              <input type="file" className="form-control" multiple onChange={e => setImageFiles([...e.target.files])} />
-            </div>
-
-            <div className="d-flex justify-content-between">
-              <button type="button" className="btn btn-secondary" onClick={prevStep}>Back</button>
-              <button type="submit" className="btn btn-success">Register</button>
-            </div>
-          </>
-        )}
-      </>
-    )}
-  </form>
-</div>
-
-
-);
+      </form>
+    </div>
+  );
 }
+
+
