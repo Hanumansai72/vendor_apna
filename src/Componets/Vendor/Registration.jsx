@@ -165,59 +165,80 @@ export default function Registration() {
   };
 
   // Handle Google Signup
-  const handleGoogleSignup = async credentialResponse => {
-    try {
-      const decoded = jwtDecode(credentialResponse.credential);
-      setIsGoogleUser(true);
-      setFormData(prev => ({
-        ...prev,
-        Owner_name: decoded.name || '',
-        Email_address: decoded.email || '',
-      }));
+// Handle Google Signup
+const handleGoogleSignup = async (credentialResponse) => {
+  try {
+    const decoded = jwtDecode(credentialResponse.credential);
 
-      if (registrationType === 'Product') {
-        // Direct signup for Product + Google
-        const data = new FormData();
-        Object.keys(formData).forEach(key => data.append(key, formData[key]));
-        await axios.post('https://backend-d6mx.vercel.app/register', data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        toast.success('Registered with Google!');
-        navigate('/');
-      } else {
-        // For Service + Google → go to Step 2
-        setStep(2);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Google Signup failed');
-    }
-  };
+    setIsGoogleUser(true);
 
-  const handleSubmit = async e => {
-    e.preventDefault();
+    // Update formData state
+    setFormData((prev) => ({
+      ...prev,
+      Owner_name: decoded.name || '',
+      Email_address: decoded.email || '',
+    }));
 
-    if (!isGoogleUser && formData.Password && formData.Password !== confirmPassword) {
-      return toast.error('Passwords do not match');
-    }
-    if (!isGoogleUser && !otpVerified) return toast.error('Please verify your OTP');
-
-    try {
+    if (registrationType === 'Product') {
+      // ✅ Build FormData manually with Google email instead of waiting for state
       const data = new FormData();
-      Object.keys(formData).forEach(key => data.append(key, formData[key]));
-      imageFiles.forEach(file => data.append('productImages', file));
-      if (profilePic) data.append('profileImage', profilePic);
-
-      await axios.post('https://backend-d6mx.vercel.app/register', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      Object.keys(formData).forEach((key) => {
+        if (key === "Email_address") {
+          data.append("Email_address", decoded.email); // direct use
+        } else if (key === "Owner_name") {
+          data.append("Owner_name", decoded.name || "");
+        } else {
+          data.append(key, formData[key]);
+        }
       });
-      toast.success('Registration successful!');
-      navigate('/');
-    } catch (err) {
-      console.error(err);
-      toast.error('Registration failed');
+
+      await axios.post("https://backend-d6mx.vercel.app/register", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast.success("Registered with Google!");
+      navigate("/");
+    } else {
+      // For Service + Google → continue with Step 2
+      setStep(2);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error("Google Signup failed");
+  }
+};
+
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // ✅ Prevent duplicate Google product signup
+  if (isGoogleUser && registrationType === "Product") {
+    return; 
+  }
+
+  if (!isGoogleUser && formData.Password && formData.Password !== confirmPassword) {
+    return toast.error("Passwords do not match");
+  }
+  if (!isGoogleUser && !otpVerified) return toast.error("Please verify your OTP");
+
+  try {
+    const data = new FormData();
+    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+    imageFiles.forEach((file) => data.append("productImages", file));
+    if (profilePic) data.append("profileImage", profilePic);
+
+    await axios.post("https://backend-d6mx.vercel.app/register", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    toast.success("Registration successful!");
+    navigate("/");
+  } catch (err) {
+    console.error(err);
+    toast.error("Registration failed");
+  }
+};
+
 
   const nextStep = () => {
     setLoading(true);
