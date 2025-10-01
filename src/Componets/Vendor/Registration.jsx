@@ -249,12 +249,16 @@ export default function Registration() {
         )}
 
         {/* Google Login button */}
-        <div className="text-center mb-3">
-          <GoogleLogin
-            onSuccess={handleGoogleSignup}
-            onError={() => toast.error('Google Login Failed')}
-          />
-        </div>
+        {/* Google Login button */}
+<div className="text-center mb-3">
+  <GoogleLogin
+    onSuccess={handleGoogleSignup}
+    onError={() => toast.error('Google Login Failed')}
+    ux_mode="popup" // ✅ avoids mobile redirect white screen
+    redirectUri={window.location.origin} // ✅ must match Google Cloud Console
+  />
+</div>
+
 
         {loading ? (
           <div className="text-center my-5">
