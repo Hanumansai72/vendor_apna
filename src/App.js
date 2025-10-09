@@ -24,6 +24,7 @@ import VendorCard from './Componets/projectupload';
 import VendorProjects from './Componets/Vendor/viewprojecs';
 import Wallet from './Componets/Vendor/wallet';
 import ProdWallet from './Componets/Vendor/productwallet';
+import VendorChat from './Componets/Vendor/Vendorchat';
 
 const Protected = ({ element }) => (
   <ProtectedRoute>
@@ -60,6 +61,8 @@ function App() {
         <Route path="/Product/:id" element={<Protected element={<Product />} />} />
         <Route path="/Product/:id/order" element={<Protected element={<NewHistory />} />} />
         <Route path="/Product/:id/order/history" element={<Protected element={<OrderHistory />} />} />
+        <Route path="/vendor/:id/chat" element={<Protected element={<VendorChat />} />} />
+
       </Routes>
     </Router>
   );
