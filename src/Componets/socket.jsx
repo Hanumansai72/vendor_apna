@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://backend-d6mx.vercel.app" // your backend URL
+    ? "https://chatsystem-6r32.onrender.com" // your backend URL
     : "http://localhost:5000";
 
 export const socket = io(API_BASE, {
