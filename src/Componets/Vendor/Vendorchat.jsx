@@ -48,12 +48,10 @@ export default function VendorChat() {
   // ------------------- Load Conversations -------------------
   useEffect(() => {
     if (!vendorId) return;
-
     const loadConversations = async () => {
       try {
         const res = await axios.get(`${API_BASE}/api/messages/vendor/${vendorId}`);
         const convMap = {};
-
         res.data.forEach((msg) => {
           const otherId =
             msg.senderModel === "Vendor" ? msg.receiverId._id : msg.senderId._id;
@@ -81,18 +79,16 @@ export default function VendorChat() {
         console.error("Error loading vendor conversations:", err);
       }
     };
-
     loadConversations();
   }, [vendorId]);
 
   // ------------------- Fetch Active Customer Details -------------------
   useEffect(() => {
     if (!activeId) return;
-
     const fetchCustomer = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/customer/${activeId}`);
-        setCustomerDetails(res.data);
+        const res = await axios.get(`${API_BASE}/api/messages/customer/${activeId}`);
+        setCustomerDetails(res.data[0]?.receiverId || res.data[0]?.senderId);
       } catch (err) {
         setCustomerDetails(null);
       }
@@ -103,7 +99,6 @@ export default function VendorChat() {
   // ------------------- Fetch Active Thread -------------------
   useEffect(() => {
     if (!activeId || messages[activeId]?.length > 0) return;
-
     const fetchThread = async () => {
       try {
         const res = await axios.get(
@@ -114,7 +109,6 @@ export default function VendorChat() {
         console.error("Error fetching conversation:", err);
       }
     };
-
     fetchThread();
   }, [activeId, vendorId, messages]);
 
@@ -132,16 +126,13 @@ export default function VendorChat() {
 
     setMessages((prev) => ({
       ...prev,
-      [activeId]: [
-        ...(prev[activeId] || []),
-        { ...msgData, time: new Date().toISOString() },
-      ],
+      [activeId]: [...(prev[activeId] || []), { ...msgData, time: new Date().toISOString() }],
     }));
     setInput("");
     socket.emit("sendMessage", msgData);
 
     try {
-      await axios.post(`${API_BASE}/api/messages/send`, msgData);
+      await axios.post(`${API_BASE}/api/messages/vendor/send`, msgData);
     } catch (err) {
       console.error("Message send failed", err);
     }
@@ -262,22 +253,13 @@ export default function VendorChat() {
               {customerDetails ? (
                 <>
                   <img
-                    src={
-                      customerDetails.Profile_Image ||
-                      "https://i.pravatar.cc/100?img=5"
-                    }
+                    src={customerDetails.Profile_Image || "https://i.pravatar.cc/100?img=5"}
                     alt=""
                     className="rounded-circle mb-2"
                     width="100"
                     height="100"
                   />
                   <h6>{customerDetails.Full_Name}</h6>
-                  <p className="text-muted mb-1">
-                    {customerDetails.Email || "No email available"}
-                  </p>
-                  <p className="text-muted mb-0">
-                    {customerDetails.Phone || ""}
-                  </p>
                 </>
               ) : (
                 <p className="text-muted">Select a customer</p>
