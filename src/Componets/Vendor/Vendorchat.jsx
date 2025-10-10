@@ -21,13 +21,14 @@ export default function VendorChat() {
   const [customerDetails, setCustomerDetails] = useState(null);
   const scrollRef = useRef(null);
 
-  // Join vendor socket room
+  // ------------------- Socket.IO -------------------
   useEffect(() => {
     if (!vendorId) return;
     socket.emit("joinRoom", vendorId);
 
     const handler = (msg) => {
-      const otherId = msg.senderId === vendorId ? msg.receiverId : msg.senderId;
+      const otherId =
+        msg.senderId === vendorId ? msg.receiverId : msg.senderId;
       setMessages((prev) => ({
         ...prev,
         [otherId]: [...(prev[otherId] || []), msg],
@@ -38,39 +39,38 @@ export default function VendorChat() {
     return () => socket.off("receiveMessage", handler);
   }, [vendorId]);
 
-  // Auto-scroll chat
+  // ------------------- Auto Scroll -------------------
   useEffect(() => {
     if (scrollRef.current)
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [activeId, messages]);
 
-  // Load all conversations for vendor
+  // ------------------- Load Conversations -------------------
   useEffect(() => {
     if (!vendorId) return;
+
     const loadConversations = async () => {
       try {
         const res = await axios.get(`${API_BASE}/api/messages/vendor/${vendorId}`);
         const convMap = {};
+
         res.data.forEach((msg) => {
-          const otherId = msg.senderId === vendorId ? msg.receiverId : msg.senderId;
+          const otherId =
+            msg.senderModel === "Vendor" ? msg.receiverId._id : msg.senderId._id;
           if (!convMap[otherId]) convMap[otherId] = [];
           convMap[otherId].push(msg);
         });
 
         const convs = Object.entries(convMap).map(([otherId, msgs]) => {
           const last = msgs[msgs.length - 1];
+          const customer =
+            last.senderModel === "Customer" ? last.senderId : last.receiverId;
           return {
             id: otherId,
-            name:
-              last.senderId === vendorId
-                ? last.receiverId.Full_Name
-                : last.senderId.Full_Name,
-            avatar:
-              last.senderId === vendorId
-                ? last.receiverId.Profile_Image || "https://i.pravatar.cc/80?img=3"
-                : last.senderId.Profile_Image || "https://i.pravatar.cc/80?img=3",
+            name: customer?.Full_Name || "Customer",
+            avatar: customer?.Profile_Image || "https://i.pravatar.cc/80?img=3",
             lastMessage: last.text,
-            lastTime: new Date(last.time).toLocaleTimeString(),
+            lastTime: new Date(last.time || Date.now()).toLocaleTimeString(),
           };
         });
 
@@ -85,9 +85,10 @@ export default function VendorChat() {
     loadConversations();
   }, [vendorId]);
 
-  // Fetch active customer's details
+  // ------------------- Fetch Active Customer Details -------------------
   useEffect(() => {
     if (!activeId) return;
+
     const fetchCustomer = async () => {
       try {
         const res = await axios.get(`${API_BASE}/api/customer/${activeId}`);
@@ -99,24 +100,28 @@ export default function VendorChat() {
     fetchCustomer();
   }, [activeId]);
 
-  // Load active conversation
+  // ------------------- Fetch Active Thread -------------------
   useEffect(() => {
     if (!activeId || messages[activeId]?.length > 0) return;
+
     const fetchThread = async () => {
       try {
         const res = await axios.get(
-          `${API_BASE}/api/messages/conversation/${vendorId}/${activeId}`
+          `${API_BASE}/api/messages/conversation/${activeId}/${vendorId}`
         );
         setMessages((prev) => ({ ...prev, [activeId]: res.data || [] }));
       } catch (err) {
-        console.error("Error fetching vendor conversation:", err);
+        console.error("Error fetching conversation:", err);
       }
     };
+
     fetchThread();
   }, [activeId, vendorId, messages]);
 
+  // ------------------- Send Message -------------------
   const handleSend = async () => {
     if (!input.trim() || !activeId) return;
+
     const msgData = {
       senderId: vendorId,
       senderModel: "Vendor",
@@ -124,14 +129,19 @@ export default function VendorChat() {
       receiverModel: "Customer",
       text: input.trim(),
     };
+
     setMessages((prev) => ({
       ...prev,
-      [activeId]: [...(prev[activeId] || []), { ...msgData, time: new Date().toISOString() }],
+      [activeId]: [
+        ...(prev[activeId] || []),
+        { ...msgData, time: new Date().toISOString() },
+      ],
     }));
     setInput("");
     socket.emit("sendMessage", msgData);
+
     try {
-      await axios.post(`${API_BASE}/api/messages/vendor/send`, msgData);
+      await axios.post(`${API_BASE}/api/messages/send`, msgData);
     } catch (err) {
       console.error("Message send failed", err);
     }
