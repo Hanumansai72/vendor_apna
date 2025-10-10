@@ -12,7 +12,7 @@ const API_BASE =
 
 export default function VendorChat() {
   const { customerId } = useParams();
-  const vendorId = localStorage.getItem("vendorid") || "";
+  const vendorId = localStorage.getItem("vendorId") || "";
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(customerId || null);
   const [messages, setMessages] = useState({});
