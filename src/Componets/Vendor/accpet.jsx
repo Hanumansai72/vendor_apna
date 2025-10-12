@@ -3,18 +3,18 @@ import { Button, Form, Pagination, Row, Col, Badge, Card } from 'react-bootstrap
 import { useNavigate } from 'react-router-dom';
 import Navbar from './navbar';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const statusVariant = {
   Pending: 'secondary',
-  Accepted: 'success',
-  'In Progress': 'warning',
-  Completed: 'primary',
+  Accepted: 'warning',
+  'In Progress': 'info',
+  Completed: 'success',
 };
 
 const actionButton = {
   Pending: { label: 'Accept Job', variant: 'warning' },
-  Accepted: { label: 'Start Job', variant: 'primary' },
-  // Removed 'In Progress' and 'Completed' buttons
+  Accepted: { label: 'Start Job', variant: 'warning' },
 };
 
 const JobListings = () => {
@@ -33,26 +33,25 @@ const JobListings = () => {
       .catch(err => console.error('Error fetching jobs:', err));
   }, [vendorId]);
 
- const handleActionClick = async (jobId, newStatus) => {
-  try {
-    const res = await axios.put(`https://backend-d6mx.vercel.app/api/bookings/${jobId}/status`, {
-      status: newStatus,
-    });
+  const handleActionClick = async (jobId, newStatus) => {
+    try {
+      const res = await axios.put(`https://backend-d6mx.vercel.app/api/bookings/${jobId}/status`, {
+        status: newStatus,
+      });
 
-    const updatedJobs = jobs.map(job =>
-      job._id === jobId ? { ...job, status: res.data.status } : job
-    );
-    localStorage.setItem("JObid",jobId)
+      const updatedJobs = jobs.map(job =>
+        job._id === jobId ? { ...job, status: res.data.status } : job
+      );
+      localStorage.setItem("JObid", jobId);
+      setJobs(updatedJobs);
 
-    setJobs(updatedJobs);
-
-    if (newStatus === 'In Progress') {
-      navigate(`/vendor/${vendorId}/Job/Progress`);
+      if (newStatus === 'In Progress') {
+        navigate(`/vendor/${vendorId}/Job/Progress`);
+      }
+    } catch (err) {
+      console.error('Status update failed:', err);
     }
-  } catch (err) {
-    console.error('Status update failed:', err);
-  }
-};
+  };
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch =
@@ -71,22 +70,18 @@ const JobListings = () => {
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
-  
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div>
+    <div style={{ backgroundColor: 'white', minHeight: '100vh' }}>
       <Navbar />
 
       <div className="container my-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4>Job Listings</h4>
+          <h4 className="fw-bold text-warning">Job Listings</h4>
           <div>
-            <Button variant="outline-secondary" className="me-2">Export</Button>
-            <Button variant="warning">+ New Job</Button>
+            <Button variant="outline-warning" className="me-2">Export</Button>
+            <Button variant="warning" className="text-white">+ New Job</Button>
           </div>
         </div>
 
@@ -95,15 +90,16 @@ const JobListings = () => {
             placeholder="Search jobs by customer, location, or service type..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ borderColor: '#ffc107' }}
           />
-          <Form.Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <Form.Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ borderColor: '#ffc107' }}>
             <option value="">All Statuses</option>
             <option value="Pending">Pending</option>
             <option value="Accepted">Accepted</option>
             <option value="In Progress">In Progress</option>
             <option value="Completed">Completed</option>
           </Form.Select>
-          <Form.Select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
+          <Form.Select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} style={{ borderColor: '#ffc107' }}>
             <option value="">All Locations</option>
             <option value="Hyderabad">Hyderabad</option>
             <option value="Phoenix">Phoenix</option>
@@ -114,11 +110,11 @@ const JobListings = () => {
         </div>
 
         {currentJobs.length > 0 ? currentJobs.map(job => (
-          <Card key={job._id} className="mb-3 shadow-sm">
+          <Card key={job._id} className="mb-3 shadow-sm border-warning" style={{ backgroundColor: 'white' }}>
             <Card.Body>
               <Row>
                 <Col md={8}>
-                  <h5>{job.service}</h5>
+                  <h5 className="text-dark fw-bold">{job.service}</h5>
                   <p className="text-muted mb-1">{job.customer?.fullName} • {job.address?.city}</p>
                   <Row>
                     <Col md={4}>
@@ -137,35 +133,34 @@ const JobListings = () => {
                 </Col>
 
                 <Col md={4} className="text-md-end mt-3 mt-md-0">
-                  <Badge bg={statusVariant[job.status]} className="mb-3">{job.status}</Badge>
+                  <Badge bg={statusVariant[job.status]} className="mb-3 p-2">{job.status}</Badge>
                   <div className="d-flex flex-wrap gap-2 justify-content-md-end">
                     {['Pending', 'Accepted'].includes(job.status) && (
-  <Button
-    variant={actionButton[job.status].variant}
-    onClick={() =>
-      handleActionClick(
-        job._id,
-        job.status === 'Pending' ? 'Accepted' : 'In Progress'
-      )
-    }
-  >
-    {actionButton[job.status].label}
-  </Button>
-)}
+                      <Button
+                        variant={actionButton[job.status].variant}
+                        onClick={() =>
+                          handleActionClick(
+                            job._id,
+                            job.status === 'Pending' ? 'Accepted' : 'In Progress'
+                          )
+                        }
+                      >
+                        {actionButton[job.status].label}
+                      </Button>
+                    )}
 
-
-                    <Button variant="outline-secondary">Call</Button>
-                    <Button variant="outline-secondary">Email</Button>
+                    <Button variant="outline-warning">Call</Button>
+                    <Button variant="outline-warning">Email</Button>
                   </div>
                 </Col>
               </Row>
             </Card.Body>
           </Card>
-        )) : <p>No jobs found.</p>}
+        )) : <p className="text-muted">No jobs found.</p>}
 
         {totalPages > 1 && (
           <div className="d-flex justify-content-between align-items-center mt-3">
-            <small>
+            <small className="text-secondary">
               Showing {indexOfFirstJob + 1}-{Math.min(indexOfLastJob, filteredJobs.length)} of {filteredJobs.length} jobs
             </small>
             <Pagination>
@@ -176,6 +171,8 @@ const JobListings = () => {
                   key={index + 1}
                   active={index + 1 === currentPage}
                   onClick={() => handlePageChange(index + 1)}
+                  activeLabel=""
+                  variant="warning"
                 >
                   {index + 1}
                 </Pagination.Item>

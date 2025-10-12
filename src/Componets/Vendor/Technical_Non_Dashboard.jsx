@@ -71,6 +71,76 @@ function TechnicalNonDashboard() {
         }
     }, [id]);
 
+    // ✅ NEW: Popup check for incomplete vendor details
+    useEffect(() => {
+        async function checkVendorDetails() {
+            try {
+                const res = await axios.get(`https://backend-d6mx.vercel.app/api/getdetails/vendor/${id}`);
+                const { emptyFields } = res.data;
+
+                if (emptyFields && emptyFields.length > 0) {
+                    const missing = emptyFields.join(", ");
+
+                    // ✅ Create popup
+                    const popup = document.createElement("div");
+                    popup.innerHTML = `
+                        <div style="
+                            position: fixed;
+                            bottom: 20px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: #ffdd57;
+                            color: #000;
+                            padding: 14px 22px;
+                            border-radius: 10px;
+                            box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+                            font-weight: 600;
+                            z-index: 9999;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 15px;
+                            max-width: 80%;
+                            font-family: 'Inter', sans-serif;
+                            transition: opacity 0.3s ease;
+                        ">
+                            ⚠️ Please complete your profile: ${missing}
+                            <button id="closePopupBtn" style="
+                                background: none;
+                                border: none;
+                                font-size: 18px;
+                                font-weight: bold;
+                                cursor: pointer;
+                                color: #000;
+                            ">&times;</button>
+                        </div>
+                    `;
+
+                    document.body.appendChild(popup);
+
+                    // ✅ Close on click
+                    const closeBtn = popup.querySelector("#closePopupBtn");
+                    closeBtn.addEventListener("click", () => {
+                        popup.style.opacity = "0";
+                        setTimeout(() => popup.remove(), 300);
+                    });
+
+                    // ✅ Auto remove after 10 seconds
+                    setTimeout(() => {
+                        if (popup.parentNode) {
+                            popup.style.opacity = "0";
+                            setTimeout(() => popup.remove(), 300);
+                        }
+                    }, 10000);
+                }
+            } catch (error) {
+                console.error("Error checking vendor details:", error);
+            }
+        }
+
+        checkVendorDetails();
+    }, [id]);
+
     return (
         <div>
             <Navbar locationName={locationName} />
@@ -78,7 +148,7 @@ function TechnicalNonDashboard() {
 
             <div className="container mt-4">
                 <div className="row g-3">
-                    {[ 
+                    {[
                         { title: "New Jobs", count: count?.count1, icon: "bi-briefcase-fill" },
                         { title: "Pending Jobs", count: count?.count1, icon: "bi-clock-fill" },
                         { title: "Completed Jobs", count: count?.count2, icon: "bi-check-circle-fill" },
@@ -97,7 +167,7 @@ function TechnicalNonDashboard() {
 
                 <h2 className="mt-5 mb-3">Upcoming Jobs</h2>
 
-                {upcomingJobs.map((job, index) => (
+                {upcomingJobs.map((job) => (
                     <div className="card mb-3 shadow-sm" key={job._id}>
                         <div className="card-body">
                             <div className="d-flex justify-content-between mb-2">
@@ -123,7 +193,7 @@ function TechnicalNonDashboard() {
                 <div className="mt-5">
                     <h4>Performance Tracker</h4>
                     <div className="row g-3">
-                        {[ 
+                        {[
                             { label: "Total Rewards Earned", value: "₹3,000" },
                             { label: "Bonus Earned", value: "₹300" },
                             { label: "Rating", value: <><i className="bi bi-star-fill text-warning"></i> 3.0/5.0</> }
