@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Form, Pagination, Row, Col, Badge, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './navbar';
+import Navbar from '../Navbar/navbar';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 

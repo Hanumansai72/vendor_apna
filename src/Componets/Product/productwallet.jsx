@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, Button, Container, Row, Col } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
-import Navbar from "./navbar";
+import Navbar from "../Navbar/navbar";
 import axios from "axios";
 
 const ProdWallet = () => {

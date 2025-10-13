@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Container, Form, Button, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Navbar from "./Vendor/navbar";
+import Navbar from "../Navbar/navbar";
 import axios from "axios";
 
 const VendorCard = () => {

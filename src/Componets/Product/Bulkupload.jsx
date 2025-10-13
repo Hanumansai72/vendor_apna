@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import ProductNavbar from "./productnav";
+import ProductNavbar from "../Product/productnav";
 const id=localStorage.getItem("vendorId")
 
 const BulkProductUpload = () => {

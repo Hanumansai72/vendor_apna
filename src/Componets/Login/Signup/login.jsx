@@ -5,7 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { GoogleLogin } from "@react-oauth/google";
 import {jwtDecode} from "jwt-decode";
-import AdminApprovalPending from "./Vendor/Adminapprovalpage";
+import AdminApprovalPending from "../../Vendor/Adminapprovalpage";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("vendor");

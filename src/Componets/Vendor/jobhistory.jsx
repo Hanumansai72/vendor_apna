@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Badge, Button, Form, Row, Col, Pagination, Modal } from 'react-bootstrap';
-import Navbar from './navbar';
+import Navbar from '../Navbar/navbar';
 import './jobhistory.css';
 import axios from 'axios';
 

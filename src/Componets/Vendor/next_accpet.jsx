@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from './navbar';
+import Navbar from '../Navbar/navbar';
 import axios from 'axios';
 
 const JobInProgress = () => {

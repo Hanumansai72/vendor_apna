@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Navbar from './navbar';
-import axios from 'axios';
+import Navbar from '../Navbar/navbar';
+import axios         from 'axios';
 
 function TechnicalNonDashboard() {
     const { id } = useParams(); 
@@ -71,7 +71,6 @@ function TechnicalNonDashboard() {
         }
     }, [id]);
 
-    // ✅ NEW: Popup check for incomplete vendor details
     useEffect(() => {
         async function checkVendorDetails() {
             try {
