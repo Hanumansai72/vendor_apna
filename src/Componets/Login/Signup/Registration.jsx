@@ -58,6 +58,7 @@ export default function Registration() {
       'Carpenter',
       'Flooring Labour',
       'False Ceiling Worker',
+      'Fabrication'
     ],
   };
 
