@@ -8,7 +8,7 @@ import JobHistory from './Componets/Vendor/jobhistory';
 import NewHistory from './Componets/Product/neworder';
 import JobInProgress from './Componets/Vendor/next_accpet';
 import OrderHistory from './Componets/Product/orderhistory';
-import OrderStatus from './Componets/Vendor/orderstatusproduct';
+import OrderStatus from './Componets/Product/orderstatusproduct';
 import JobPaymentSummary from './Componets/Vendor/payment_order_tech';
 import JobProgress from './Componets/Product/payment_tech_non';
 import Product from './Componets/Product/product._vendor';
@@ -17,14 +17,13 @@ import TechnicalNonDashboard from './Componets/Vendor/Technical_Non_Dashboard';
 import VendorProfileSettings from './Componets/Vendor/vendor_profile_settings';
 import LoginPage from './Componets/Login/Signup/login';
 import AddProductForm from './Componets/Product/addnewproduct';
-import BulkProductUpload from './Componets/Vendor/Bulkupload';
+import BulkProductUpload from './Componets/Product/Bulkupload';
 import ProductList from './Componets/Product/viewproduct';
 import ProtectedRoute from './Componets/Login/Signup/ProtectedRoute';
 import VendorCard from './Componets/Vendor/projectupload';
 import VendorProjects from './Componets/Vendor/viewprojecs';
 import Wallet from './Componets/Vendor/wallet';
 import ProdWallet from './Componets/Product/productwallet';
-import VendorChat from './Componets/Vendor/Vendorchat';
 
 const Protected = ({ element }) => (
   <ProtectedRoute>
@@ -61,7 +60,6 @@ function App() {
         <Route path="/Product/:id" element={<Protected element={<Product />} />} />
         <Route path="/Product/:id/order" element={<Protected element={<NewHistory />} />} />
         <Route path="/Product/:id/order/history" element={<Protected element={<OrderHistory />} />} />
-        <Route path="/vendor/:id/chat" element={<Protected element={<VendorChat />} />} />
 
       </Routes>
     </Router>
