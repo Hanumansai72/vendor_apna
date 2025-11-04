@@ -1,13 +1,246 @@
-.settings_vendor {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 12px;
-  }
-  
+/* ===============================
+   Global Layout & Typography
+=============================== */
 
-  .section-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
+body {
+  font-family: "Inter", "Poppins", sans-serif;
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+.container.settings_vendor {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+  padding: 2rem 2.5rem;
+  margin-top: 2rem;
+  margin-bottom: 3rem;
+}
+
+/* Section Headings */
+.Settings_Heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #facc15;
+  display: inline-block;
+  padding-bottom: 0.3rem;
+}
+
+/* ===============================
+   Form Controls
+=============================== */
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.form-control,
+.form-select {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  background-color: #fff;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #f4b400 !important;
+  box-shadow: 0 0 0 3px rgba(244, 180, 0, 0.25) !important;
+  outline: none;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Placeholder color */
+::placeholder {
+  color: #9ca3af;
+}
+
+/* ===============================
+   Section Cards
+=============================== */
+
+.card {
+  border-radius: 14px;
+  border: 1px solid #f3f4f6;
+}
+
+.card-header {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 1rem 1.5rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card h5 {
+  color: #111827;
+}
+
+.card small {
+  color: #6b7280;
+}
+
+/* ===============================
+   Status Badges
+=============================== */
+
+.badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.bg-success-subtle {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.bg-warning-subtle {
+  background-color: #fef9c3 !important;
+  color: #854d0e !important;
+}
+
+.bg-danger-subtle {
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+/* ===============================
+   Buttons
+=============================== */
+
+.btn-primary {
+  background-color: #f4b400 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 20px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  color: #fff !important;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #e2a700 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(244, 180, 0, 0.3);
+}
+
+/* ===============================
+   Alerts & Info Boxes
+=============================== */
+
+.alert {
+  border-radius: 12px;
+  border: none;
+  font-size: 0.9rem;
+}
+
+.alert-primary {
+  background-color: #f0f9ff;
+  color: #1e40af;
+}
+
+.alert i {
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+/* ===============================
+   Subcategory Tags
+=============================== */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fef9c3;
+  color: #854d0e;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  cursor: default;
+}
+
+.tag i {
+  margin-left: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* ===============================
+   File Inputs
+=============================== */
+
+input[type="file"].form-control {
+  border: 2px dashed #e5e7eb;
+  background: #f9fafb;
+  transition: all 0.25s ease;
+}
+
+input[type="file"].form-control:hover {
+  border-color: #f4b400;
+  background: #fffbe6;
+}
+
+/* ===============================
+   Notification Switch
+=============================== */
+
+.form-check-input {
+  width: 45px !important;
+  height: 24px !important;
+  background-color: #e5e7eb;
+  border: none;
+  cursor: pointer;
+}
+
+.form-check-input:checked {
+  background-color: #22c55e !important;
+}
+
+.form-check-label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+/* ===============================
+   Save Button Container
+=============================== */
+
+.text-end button i {
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+/* ===============================
+   Responsive Adjustments
+=============================== */
+
+@media (max-width: 768px) {
+  .container.settings_vendor {
+    padding: 1.5rem;
   }
-  
+
+  .Settings_Heading {
+    font-size: 1.4rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+}
