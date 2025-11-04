@@ -1,0 +1,84 @@
+/* === Vendor Registration Stepper === */
+.registration-container {
+  background: linear-gradient(180deg, #fffbeb 0%, #fffef6 100%);
+  padding: 60px 0;
+  text-align: center;
+}
+
+.registration-container h3 {
+  font-weight: 700;
+  color: #1b1b1b;
+}
+
+.registration-container p {
+  color: #6c757d;
+  margin-bottom: 40px;
+}
+
+.stepper-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.stepper-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  right: 5%;
+  height: 4px;
+  background-color: #e9ecef;
+  z-index: 1;
+}
+
+.step-item {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  flex: 1;
+}
+
+.step-item .step-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9ecef;
+  color: #6c757d;
+  margin: 0 auto 8px;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-icon {
+  background-color: #ffd000;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 208, 0, 0.5);
+}
+
+.step-item.completed .step-icon {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.step-item small {
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+@media (max-width: 768px) {
+  .stepper-wrapper {
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+  .step-item {
+    flex: unset;
+  }
+}

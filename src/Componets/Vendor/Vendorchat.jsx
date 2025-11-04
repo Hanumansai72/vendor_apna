@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { socket } from "../socket";
+import { socket } from "../Login/Signup/socket";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const API_BASE =
