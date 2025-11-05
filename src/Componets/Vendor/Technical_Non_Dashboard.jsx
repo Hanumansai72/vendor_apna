@@ -15,6 +15,14 @@ const TechnicalNonDashboard = () => {
   const [showJobPopup, setShowJobPopup] = useState(false);
   const [works, setWorks] = useState([]); // ✅ holds upcoming work dates + times
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [analytics, setAnalytics] = useState({
+  acceptanceRate: 0,
+  completionRate: 0,
+  avgResponseTime: 0,
+  avgRating: 0,
+  earningsGrowth: 0,
+});
+
 
   // Helper: Month name & year for header
   const monthName = currentMonth.toLocaleString("default", {
