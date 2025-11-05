@@ -8,18 +8,16 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { motion } from "framer-motion";
 
-// Reusable icon helper
+// Small icon helper
 const Icon = ({ name, className = "me-2" }) => <i className={`bi ${name} ${className}`} />;
 
 export default function Registration() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine registration type
+  // Detect registration type from ?tab=product | service
   const getRegistrationType = () =>
-    new URLSearchParams(location.search).get("tab") === "product"
-      ? "Product"
-      : "Service";
+    new URLSearchParams(location.search).get("tab") === "product" ? "Product" : "Service";
 
   const [registrationType] = useState(getRegistrationType());
   const [step, setStep] = useState(1);
@@ -32,7 +30,6 @@ export default function Registration() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
 
-  // Form data
   const [selectedServiceType, setSelectedServiceType] = useState("Technical");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [idType, setIdType] = useState("PAN");
@@ -87,21 +84,22 @@ export default function Registration() {
     ],
   };
 
-  // handle change
+  // Input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  // service type
+  // Service type toggle
   const handleServiceTypeClick = (type) => {
     setSelectedServiceType(type);
     setFormData((p) => ({ ...p, Category: type, Sub_Category: [] }));
   };
 
-  // geolocation
+  // Locate via geolocation
   const handleLocateMe = () => {
     if (!navigator.geolocation) return toast.error("Geolocation not supported");
+
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
         const { latitude, longitude } = coords;
@@ -125,7 +123,7 @@ export default function Registration() {
     );
   };
 
-  // OTP logic
+  // OTP functions
   const handleSendOtp = async () => {
     if (!formData.Email_address) return toast.warning("Enter your email first");
     try {
@@ -141,7 +139,7 @@ export default function Registration() {
   };
 
   const verifyOtp = async () => {
-    if (!otp) return toast.warning("Please enter the OTP");
+    if (!otp) return toast.warning("Enter OTP");
     try {
       await axios.post("https://backend-d6mx.vercel.app/verifyotp", {
         Email: formData.Email_address,
@@ -160,10 +158,11 @@ export default function Registration() {
     return () => clearTimeout(t);
   }, [otpTimer]);
 
-  // Google signup logic (with your conditions)
+  // Google signup
   const handleGoogleSignup = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
+
       setIsGoogleUser(true);
       setFormData((prev) => ({
         ...prev,
@@ -172,17 +171,17 @@ export default function Registration() {
       }));
 
       if (registrationType === "Product") {
-        // Direct signup for non-professional (product vendors)
+        // Auto register for product vendors
         const data = new FormData();
-        Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+        Object.keys(formData).forEach((k) => data.append(k, formData[k]));
         await axios.post("https://backend-d6mx.vercel.app/register", data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Registered successfully with Google!");
         navigate("/");
       } else {
-        // For professionals → go directly to pricing step (Step 5)
-        toast.info("Google connected! Please complete your base rate info.");
+        // Go to pricing for service vendors
+        toast.info("Google linked! Continue setup.");
         setStep(5);
       }
     } catch {
@@ -190,17 +189,17 @@ export default function Registration() {
     }
   };
 
-  // file uploads
   const handleCertificates = (e) => {
-    setImageFiles(Array.from(e.target.files || []));
-  };
-  const handleProfile = (e) => {
-    const file = e.target.files?.[0];
-    setProfilePic(file);
-    if (file) setProfilePreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files || []);
+    setImageFiles(files);
   };
 
-  // next/prev
+  const handleProfile = (e) => {
+    const f = e.target.files?.[0];
+    setProfilePic(f || null);
+    setProfilePreview(f ? URL.createObjectURL(f) : null);
+  };
+
   const nextStep = () => {
     setLoadingStep(true);
     setTimeout(() => {
@@ -214,13 +213,17 @@ export default function Registration() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isGoogleUser) {
       if (formData.Password !== confirmPassword)
         return toast.error("Passwords do not match");
-      if (!otpVerified) return toast.error("Please verify OTP first");
+      if (!otpVerified) return toast.error("Please verify OTP");
+    }
+
+    if (isGoogleUser && registrationType === "Service") {
+      if (!formData.Charge_Per_Hour_or_Day) return toast.warning("Enter base rate");
+      if (!formData.Category) return toast.warning("Choose Technical / Non-Technical");
     }
 
     try {
@@ -232,14 +235,14 @@ export default function Registration() {
       await axios.post("https://backend-d6mx.vercel.app/register", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
       toast.success("Registration successful!");
-      setTimeout(() => navigate("/"), 1200);
+      setTimeout(() => navigate("/"), 1000);
     } catch {
       toast.error("Registration failed");
     }
   };
 
-  // Steps
   const steps = [
     { title: "Welcome", icon: "bi-handshake-fill" },
     { title: "Business", icon: "bi-buildings-fill" },
@@ -254,6 +257,7 @@ export default function Registration() {
   return (
     <div className="bg-soft py-4">
       <ToastContainer />
+
       {/* Stepper Header */}
       <div className="container">
         <div className="stepper-wrapper rounded-4 mb-4 p-4 shadow-sm">
@@ -287,19 +291,17 @@ export default function Registration() {
         className="container card border-0 shadow-lg rounded-4 p-4 p-md-5 mb-5"
         style={{ maxWidth: 980 }}
       >
-        {/* STEP 1 - Welcome */}
+        {/* Step 1 */}
         {step === 1 && (
           <div className="text-center">
-            <div className="mb-4">
-              <GoogleLogin
-                onSuccess={handleGoogleSignup}
-                onError={() => toast.error("Google Login Failed")}
-              />
-              <div className="text-muted small mt-2">or continue with email</div>
-            </div>
+            <GoogleLogin
+              onSuccess={handleGoogleSignup}
+              onError={() => toast.error("Google Login Failed")}
+            />
+            <div className="text-muted small mt-2">or continue with email</div>
             <button
               type="button"
-              className="btn btn-warning text-dark px-5 py-2 rounded-pill"
+              className="btn btn-warning text-dark px-5 py-2 rounded-pill mt-3"
               onClick={nextStep}
             >
               Get Started →
@@ -307,76 +309,232 @@ export default function Registration() {
           </div>
         )}
 
-        {/* STEP 2–4 same as before (Business, Category, Banking)... */}
-
-        {/* STEP 5 - Pricing & Google-specific minimal registration */}
-        {step === 5 && (
+        {/* Step 2 - Business */}
+        {step === 2 && (
           <>
-            <h4 className="fw-bold text-center mb-4">Pricing & Services</h4>
-            <p className="text-center text-muted mb-4">
-              Set your base rate to continue registration
-            </p>
-            {isGoogleUser && registrationType === "Service" && (
-              <div className="text-center mb-3">
-                <h6>Select your service type:</h6>
-                {["Technical", "Non-Technical"].map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    className={`btn mx-1 ${
-                      selectedServiceType === type
-                        ? "btn-warning text-dark"
-                        : "btn-outline-secondary"
-                    }`}
-                    onClick={() => handleServiceTypeClick(type)}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            )}
+            <h4 className="fw-bold text-center mb-4">Business Information</h4>
             <div className="row g-3">
               <div className="col-md-6">
-                <div className="input-group">
-                  <span className="input-group-text">₹</span>
-                  <input
-                    className="form-control"
-                    name="Charge_Per_Hour_or_Day"
-                    value={formData.Charge_Per_Hour_or_Day}
-                    onChange={handleChange}
-                    placeholder="Base rate"
-                  />
-                </div>
+                <input
+                  placeholder="Business Name"
+                  className="form-control"
+                  name="Business_Name"
+                  value={formData.Business_Name}
+                  onChange={handleChange}
+                />
               </div>
               <div className="col-md-6">
-                <select
-                  className="form-select"
-                  name="Charge_Type"
-                  value={formData.Charge_Type}
+                <input
+                  placeholder="Owner Name"
+                  className="form-control"
+                  name="Owner_name"
+                  value={formData.Owner_name}
                   onChange={handleChange}
-                >
-                  <option value="Day">Day</option>
-                  <option value="Hour">Hour</option>
-                </select>
+                />
               </div>
+              <div className="col-md-7">
+                <div className="input-group">
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="Email Address"
+                    name="Email_address"
+                    value={formData.Email_address}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-warning"
+                    onClick={handleSendOtp}
+                    disabled={otpTimer > 0}
+                  >
+                    {otpTimer > 0
+                      ? `Resend in ${Math.floor(otpTimer / 60)}:${String(
+                          otpTimer % 60
+                        ).padStart(2, "0")}`
+                      : "Send OTP"}
+                  </button>
+                </div>
+              </div>
+              {showOtp && (
+                <div className="col-md-5">
+                  <input
+                    placeholder="Enter OTP"
+                    className="form-control"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-success mt-2"
+                    onClick={verifyOtp}
+                  >
+                    Verify OTP
+                  </button>
+                </div>
+              )}
+              <div className="col-md-6">
+                <input
+                  placeholder="Phone Number"
+                  className="form-control"
+                  name="Phone_number"
+                  value={formData.Phone_number}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="col-md-6">
+                <input
+                  placeholder="Business Address"
+                  className="form-control"
+                  name="Business_address"
+                  value={formData.Business_address}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary mt-2"
+                  onClick={handleLocateMe}
+                >
+                  Locate Me
+                </button>
+              </div>
+              {!isGoogleUser && (
+                <>
+                  <div className="col-md-6">
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      className="form-control"
+                      name="Password"
+                      value={formData.Password}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <input
+                      type="password"
+                      placeholder="Confirm Password"
+                      className="form-control"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
             </div>
-            <div className="text-center mt-4">
-              <button type="submit" className="btn btn-success px-5">
-                Complete Registration
+            <div className="text-end mt-4">
+              <button
+                type="button"
+                className="btn btn-warning text-dark px-5"
+                onClick={nextStep}
+              >
+                Next →
               </button>
             </div>
           </>
         )}
 
-        {/* STEP 6 */}
-        {step === 6 && (
-          <div className="text-center py-4">
-            <h4>All Set!</h4>
-            <p className="text-muted">Click below to complete registration</p>
-            <button type="submit" className="btn btn-success px-5">
-              Complete Registration
-            </button>
-          </div>
+        {/* Step 5 with checkboxes for Google Service */}
+        {step === 5 && (
+          <>
+            <h4 className="fw-bold mb-1 text-center">Pricing & Services</h4>
+            <p className="text-center text-muted mb-4">
+              Set your rates and describe your offerings
+            </p>
+
+            {isGoogleUser && registrationType === "Service" ? (
+              <>
+                <div className="text-center mb-3">
+                  <h6>Select your service type</h6>
+                  {["Technical", "Non-Technical"].map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      className={`btn mx-1 ${
+                        selectedServiceType === type
+                          ? "btn-warning text-dark"
+                          : "btn-outline-secondary"
+                      }`}
+                      onClick={() => handleServiceTypeClick(type)}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Checkbox subcategories */}
+                <div className="row g-2 mb-3">
+                  {subCategories[selectedServiceType].map((sc) => (
+                    <div key={sc} className="col-sm-6 col-lg-4">
+                      <div className="form-check card-check">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={formData.Sub_Category.includes(sc)}
+                          onChange={() => {
+                            const updated = formData.Sub_Category.includes(sc)
+                              ? formData.Sub_Category.filter((i) => i !== sc)
+                              : [...formData.Sub_Category, sc];
+                            setFormData((p) => ({
+                              ...p,
+                              Sub_Category: updated,
+                            }));
+                          }}
+                        />
+                        <label className="form-check-label">{sc}</label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Base Rate *</label>
+                    <div className="input-group">
+                      <span className="input-group-text">₹</span>
+                      <input
+                        className="form-control"
+                        name="Charge_Per_Hour_or_Day"
+                        value={formData.Charge_Per_Hour_or_Day}
+                        onChange={handleChange}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Charge Type</label>
+                    <select
+                      className="form-select"
+                      name="Charge_Type"
+                      value={formData.Charge_Type}
+                      onChange={handleChange}
+                    >
+                      <option value="Day">Day</option>
+                      <option value="Hour">Hour</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="text-center mt-4">
+                  <button type="submit" className="btn btn-success px-5">
+                    Complete Registration
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-end mt-4">
+                  <button
+                    type="button"
+                    className="btn btn-warning text-dark px-5"
+                    onClick={nextStep}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </>
+            )}
+          </>
         )}
       </motion.form>
     </div>
