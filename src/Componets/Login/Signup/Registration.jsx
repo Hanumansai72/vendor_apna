@@ -8,14 +8,12 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { motion } from "framer-motion";
 
-// Small icon helper
 const Icon = ({ name, className = "me-2" }) => <i className={`bi ${name} ${className}`} />;
 
 export default function Registration() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Detect registration type from ?tab=product | service
   const getRegistrationType = () =>
     new URLSearchParams(location.search).get("tab") === "product" ? "Product" : "Service";
 
@@ -24,7 +22,6 @@ export default function Registration() {
   const [loadingStep, setLoadingStep] = useState(false);
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
-  // OTP
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
@@ -58,48 +55,29 @@ export default function Registration() {
 
   const subCategories = {
     Technical: [
-      "Architects",
-      "Civil Engineer",
-      "Site Supervisor",
-      "Survey Engineer",
-      "MEP Consultant",
-      "Structural Engineer",
-      "Project Manager",
-      "HVAC Engineer",
-      "Safety Engineer",
-      "Contractor",
-      "Interior Designer",
-      "WaterProofing Consultant",
+      "Architects", "Civil Engineer", "Site Supervisor", "Survey Engineer",
+      "MEP Consultant", "Structural Engineer", "Project Manager", "HVAC Engineer",
+      "Safety Engineer", "Contractor", "Interior Designer", "WaterProofing Consultant",
       "Acoustic Consultants",
     ],
     "Non-Technical": [
-      "EarthWork Labour",
-      "Civil Mason",
-      "Plumber",
-      "Electrician",
-      "Painter",
-      "Carpenter",
-      "False Ceiling Worker",
-      "Fabrication",
+      "EarthWork Labour", "Civil Mason", "Plumber", "Electrician", "Painter",
+      "Carpenter", "False Ceiling Worker", "Fabrication",
     ],
   };
 
-  // Input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  // Service type toggle
   const handleServiceTypeClick = (type) => {
     setSelectedServiceType(type);
     setFormData((p) => ({ ...p, Category: type, Sub_Category: [] }));
   };
 
-  // Locate via geolocation
   const handleLocateMe = () => {
     if (!navigator.geolocation) return toast.error("Geolocation not supported");
-
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
         const { latitude, longitude } = coords;
@@ -123,7 +101,6 @@ export default function Registration() {
     );
   };
 
-  // OTP functions
   const handleSendOtp = async () => {
     if (!formData.Email_address) return toast.warning("Enter your email first");
     try {
@@ -158,11 +135,9 @@ export default function Registration() {
     return () => clearTimeout(t);
   }, [otpTimer]);
 
-  // Google signup
   const handleGoogleSignup = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
-
       setIsGoogleUser(true);
       setFormData((prev) => ({
         ...prev,
@@ -171,7 +146,6 @@ export default function Registration() {
       }));
 
       if (registrationType === "Product") {
-        // Auto register for product vendors
         const data = new FormData();
         Object.keys(formData).forEach((k) => data.append(k, formData[k]));
         await axios.post("https://backend-d6mx.vercel.app/register", data, {
@@ -180,7 +154,6 @@ export default function Registration() {
         toast.success("Registered successfully with Google!");
         navigate("/");
       } else {
-        // Go to pricing for service vendors
         toast.info("Google linked! Continue setup.");
         setStep(5);
       }
@@ -189,11 +162,7 @@ export default function Registration() {
     }
   };
 
-  const handleCertificates = (e) => {
-    const files = Array.from(e.target.files || []);
-    setImageFiles(files);
-  };
-
+  const handleCertificates = (e) => setImageFiles(Array.from(e.target.files || []));
   const handleProfile = (e) => {
     const f = e.target.files?.[0];
     setProfilePic(f || null);
@@ -220,12 +189,10 @@ export default function Registration() {
         return toast.error("Passwords do not match");
       if (!otpVerified) return toast.error("Please verify OTP");
     }
-
     if (isGoogleUser && registrationType === "Service") {
       if (!formData.Charge_Per_Hour_or_Day) return toast.warning("Enter base rate");
       if (!formData.Category) return toast.warning("Choose Technical / Non-Technical");
     }
-
     try {
       const data = new FormData();
       Object.keys(formData).forEach((k) => data.append(k, formData[k]));
@@ -235,7 +202,6 @@ export default function Registration() {
       await axios.post("https://backend-d6mx.vercel.app/register", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       toast.success("Registration successful!");
       setTimeout(() => navigate("/"), 1000);
     } catch {
@@ -257,7 +223,6 @@ export default function Registration() {
   return (
     <div className="bg-soft py-4">
       <ToastContainer />
-
       {/* Stepper Header */}
       <div className="container">
         <div className="stepper-wrapper rounded-4 mb-4 p-4 shadow-sm">
@@ -291,7 +256,7 @@ export default function Registration() {
         className="container card border-0 shadow-lg rounded-4 p-4 p-md-5 mb-5"
         style={{ maxWidth: 980 }}
       >
-        {/* Step 1 */}
+        {/* STEP 1: Welcome */}
         {step === 1 && (
           <div className="text-center">
             <GoogleLogin
@@ -309,7 +274,7 @@ export default function Registration() {
           </div>
         )}
 
-        {/* Step 2 - Business */}
+        {/* STEP 2: Business Info */}
         {step === 2 && (
           <>
             <h4 className="fw-bold text-center mb-4">Business Information</h4>
@@ -434,7 +399,159 @@ export default function Registration() {
           </>
         )}
 
-        {/* Step 5 with checkboxes for Google Service */}
+        {/* STEP 3: Category */}
+        {step === 3 && (
+          <>
+            <h4 className="fw-bold text-center mb-4">Select Category</h4>
+            {registrationType === "Service" ? (
+              <>
+                <div className="text-center mb-3">
+                  {["Technical", "Non-Technical"].map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      className={`btn mx-1 ${
+                        selectedServiceType === type
+                          ? "btn-warning text-dark"
+                          : "btn-outline-secondary"
+                      }`}
+                      onClick={() => handleServiceTypeClick(type)}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+                <div className="row g-2">
+                  {subCategories[selectedServiceType].map((sc) => (
+                    <div key={sc} className="col-sm-6 col-lg-4">
+                      <div className="form-check">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={formData.Sub_Category.includes(sc)}
+                          onChange={() => {
+                            const updated = formData.Sub_Category.includes(sc)
+                              ? formData.Sub_Category.filter((i) => i !== sc)
+                              : [...formData.Sub_Category, sc];
+                            setFormData((p) => ({ ...p, Sub_Category: updated }));
+                          }}
+                        />
+                        <label className="form-check-label">{sc}</label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-center">
+                {["CIVIL", "INTERIOR"].map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    className={`btn mx-1 ${
+                      formData.Category === type
+                        ? "btn-warning text-dark"
+                        : "btn-outline-secondary"
+                    }`}
+                    onClick={() => setFormData((p) => ({ ...p, Category: type }))}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="text-end mt-4">
+              <button
+                type="button"
+                className="btn btn-warning text-dark px-5"
+                onClick={nextStep}
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* STEP 4: Banking */}
+        {step === 4 && (
+          <>
+            <h4 className="fw-bold text-center mb-4">Financial Information</h4>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <select
+                  className="form-select"
+                  value={idType}
+                  onChange={(e) => setIdType(e.target.value)}
+                >
+                  <option value="PAN">PAN</option>
+                  <option value="Aadhar">Aadhar</option>
+                </select>
+              </div>
+              <div className="col-md-6">
+                <input
+                  placeholder={`${idType} Number`}
+                  className="form-control"
+                  name="Tax_ID"
+                  value={formData.Tax_ID}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="col-md-6">
+                <input
+                  placeholder="Account Number"
+                  className="form-control"
+                  name="Account_Number"
+                  value={formData.Account_Number}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="col-md-6">
+                <input
+                  placeholder="IFSC Code"
+                  className="form-control"
+                  name="IFSC_Code"
+                  value={formData.IFSC_Code}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="col-12">
+                <input
+                  type="file"
+                  multiple
+                  className="form-control"
+                  onChange={handleCertificates}
+                />
+              </div>
+              <div className="col-12">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="form-control"
+                  onChange={handleProfile}
+                />
+                {profilePreview && (
+                  <img
+                    src={profilePreview}
+                    alt="preview"
+                    className="rounded-circle mt-2"
+                    style={{ width: 70, height: 70, objectFit: "cover" }}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="text-end mt-4">
+              <button
+                type="button"
+                className="btn btn-warning text-dark px-5"
+                onClick={nextStep}
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* STEP 5: Pricing */}
         {step === 5 && (
           <>
             <h4 className="fw-bold mb-1 text-center">Pricing & Services</h4>
@@ -462,7 +579,6 @@ export default function Registration() {
                   ))}
                 </div>
 
-                {/* Checkbox subcategories */}
                 <div className="row g-2 mb-3">
                   {subCategories[selectedServiceType].map((sc) => (
                     <div key={sc} className="col-sm-6 col-lg-4">
@@ -486,55 +602,72 @@ export default function Registration() {
                     </div>
                   ))}
                 </div>
-
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label">Base Rate *</label>
-                    <div className="input-group">
-                      <span className="input-group-text">₹</span>
-                      <input
-                        className="form-control"
-                        name="Charge_Per_Hour_or_Day"
-                        value={formData.Charge_Per_Hour_or_Day}
-                        onChange={handleChange}
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Charge Type</label>
-                    <select
-                      className="form-select"
-                      name="Charge_Type"
-                      value={formData.Charge_Type}
-                      onChange={handleChange}
-                    >
-                      <option value="Day">Day</option>
-                      <option value="Hour">Hour</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="text-center mt-4">
-                  <button type="submit" className="btn btn-success px-5">
-                    Complete Registration
-                  </button>
-                </div>
               </>
-            ) : (
-              <>
-                <div className="text-end mt-4">
-                  <button
-                    type="button"
-                    className="btn btn-warning text-dark px-5"
-                    onClick={nextStep}
-                  >
-                    Next →
-                  </button>
+            ) : null}
+
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="input-group">
+                  <span className="input-group-text">₹</span>
+                  <input
+                    className="form-control"
+                    name="Charge_Per_Hour_or_Day"
+                    value={formData.Charge_Per_Hour_or_Day}
+                    onChange={handleChange}
+                    placeholder="Base rate"
+                  />
                 </div>
-              </>
-            )}
+              </div>
+              <div className="col-md-6">
+                <select
+                  className="form-select"
+                  name="Charge_Type"
+                  value={formData.Charge_Type}
+                  onChange={handleChange}
+                >
+                  <option value="Day">Day</option>
+                  <option value="Hour">Hour</option>
+                </select>
+              </div>
+              <div className="col-12">
+                <textarea
+                  rows="3"
+                  className="form-control"
+                  placeholder="Describe your business"
+                  name="descripition"
+                  value={formData.descripition}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="text-end mt-4">
+              <button
+                type="button"
+                className="btn btn-warning text-dark px-5"
+                onClick={nextStep}
+              >
+                Next →
+              </button>
+            </div>
           </>
+        )}
+
+        {/* STEP 6: Complete */}
+        {step === 6 && (
+          <div className="text-center py-4">
+            <h4>All Set!</h4>
+            <p className="text-muted">Click below to complete registration</p>
+            <button type="submit" className="btn btn-success px-5">
+              Complete Registration
+            </button>
+          </div>
+        )}
+
+        {loadingStep && (
+          <div className="text-center mt-3">
+            <div className="spinner-border text-warning" />
+            <div className="small text-muted mt-2">Loading next step…</div>
+          </div>
         )}
       </motion.form>
     </div>
