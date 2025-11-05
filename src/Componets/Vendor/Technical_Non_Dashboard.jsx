@@ -4,7 +4,7 @@ import Navbar from "../Navbar/navbar";
 import axios from "axios";
 import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./Techincal.css"; // Ensure filename matches exactly
+import "./Techincal.css";
 
 const TechnicalNonDashboard = () => {
   const { id } = useParams();
@@ -12,22 +12,16 @@ const TechnicalNonDashboard = () => {
   const [upcomingJobs, setUpcomingJobs] = useState([]);
   const [newJobAlert, setNewJobAlert] = useState(null);
   const [showJobPopup, setShowJobPopup] = useState(false);
-  const [month, setMonth] = useState("March 2024");
+  const [works, setWorks] = useState([]); // ✅ holds upcoming work dates + times
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  const events = {
-    5: { name: "Plumbing", color: "bg-warning-subtle text-dark" },
-    7: { name: "Electrical", color: "bg-primary-subtle text-primary" },
-    11: { name: "Today", color: "bg-warning text-dark fw-bold" },
-    12: { name: "Painting", color: "bg-success-subtle text-success" },
-  };
+  // Helper: Month name & year for header
+  const monthName = currentMonth.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
 
-  const days = [
-    ["", "", "", 1, 2, 3, ""],
-    [4, 5, 6, 7, 8, 9, 10],
-    [11, 12, 13, 14, "", "", ""],
-  ];
-
-  // Fetch counts & jobs
+  // 🟡 Fetch count, upcoming jobs & upcoming works
   useEffect(() => {
     axios
       .get(`https://backend-d6mx.vercel.app/count/service/${id}`)
@@ -35,25 +29,84 @@ const TechnicalNonDashboard = () => {
       .catch(console.error);
 
     axios
+      .get(`https://backend-d6mx.vercel.app/upcomingworks/${id}`)
+      .then((res) => setWorks(res.data.show_works || [])) // ✅ includes time
+      .catch(console.error);
+
+    axios
       .get(`https://backend-d6mx.vercel.app/upcomingjobs/${id}`)
       .then((res) => {
         setUpcomingJobs(res.data || []);
         if (res.data && res.data.length > 0) {
-          const latestJob = res.data[0];
-          setNewJobAlert(latestJob);
+          setNewJobAlert(res.data[0]);
           setShowJobPopup(true);
         }
       })
       .catch(console.error);
   }, [id]);
 
-  // Auto hide popup after 15 seconds
+  // Auto-hide job popup
   useEffect(() => {
     if (showJobPopup) {
       const timer = setTimeout(() => setShowJobPopup(false), 15000);
       return () => clearTimeout(timer);
     }
   }, [showJobPopup]);
+
+  // 🧮 Generate days for calendar
+  const generateCalendarDays = (monthDate) => {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    let startDay = firstDay.getDay();
+
+    const calendar = [];
+    let week = new Array(7).fill("");
+    for (let i = 0; i < startDay; i++) week[i] = "";
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      week[startDay] = day;
+      if (startDay === 6 || day === lastDay.getDate()) {
+        calendar.push(week);
+        week = new Array(7).fill("");
+      }
+      startDay = (startDay + 1) % 7;
+    }
+
+    return calendar;
+  };
+
+  const calendarDays = generateCalendarDays(currentMonth);
+
+  // Month navigation
+  const handlePrevMonth = () => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(currentMonth.getMonth() - 1);
+    setCurrentMonth(newMonth);
+  };
+
+  const handleNextMonth = () => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(currentMonth.getMonth() + 1);
+    setCurrentMonth(newMonth);
+  };
+
+  // 🟣 Check if day has work
+  const findWorkForDate = (day) => {
+    if (!day) return [];
+    const date = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      day
+    ).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+    return works.filter((w) => w.date === date); // ✅ support multiple works per day
+  };
 
   return (
     <>
@@ -74,34 +127,29 @@ const TechnicalNonDashboard = () => {
               </p>
             </div>
             <h5 className="fw-bold text-dark">
-              {count?.count1 || 23} Active Alerts Today
+              {count?.count1 || 0} Active Alerts Today
             </h5>
           </div>
 
           <div className="d-flex flex-wrap justify-content-between mt-4 gap-3">
             {[
-              { label: "New Today", value: 12, icon: "bi-bell-fill" },
-              { label: "Viewed", value: 8, icon: "bi-eye-fill" },
-              { label: "Applied", value: 5, icon: "bi-handshake-fill" },
-              {
-                label: "Potential Earnings",
-                value: "$2.4K",
-                icon: "bi-currency-dollar",
-              },
+              { label: "New Today", value: count.count1, icon: "bi-bell-fill" },
+              { label: "Completed", value: count.count2, icon: "bi-check2-all" },
+              { label: "Earnings", value: count.count3, icon: "bi-currency-rupee" },
             ].map((stat, i) => (
               <div
                 key={i}
                 className="stat-card flex-fill text-center p-4 rounded-3 bg-light shadow-sm"
               >
                 <i className={`bi ${stat.icon} fs-3 text-dark`}></i>
-                <h4 className="fw-bold mt-2">{stat.value}</h4>
+                <h4 className="fw-bold mt-2">{stat.value || 0}</h4>
                 <p className="text-dark mb-0 fw-semibold">{stat.label}</p>
               </div>
             ))}
           </div>
         </motion.div>
 
-        {/* ===== Upcoming Schedule ===== */}
+        {/* ===== Upcoming Schedule Calendar ===== */}
         <motion.div
           className="p-4 rounded-4 shadow-sm bg-white mb-5"
           initial={{ opacity: 0, y: 20 }}
@@ -110,132 +158,146 @@ const TechnicalNonDashboard = () => {
           <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h4 className="fw-bold mb-0">Upcoming Schedule</h4>
             <div className="d-flex align-items-center gap-3">
-              <button className="btn btn-light rounded-circle shadow-sm">
+              <button
+                className="btn btn-light rounded-circle shadow-sm"
+                onClick={handlePrevMonth}
+              >
                 <i className="bi bi-chevron-left"></i>
               </button>
-              <h6 className="fw-semibold mb-0">{month}</h6>
-              <button className="btn btn-light rounded-circle shadow-sm">
+              <h6 className="fw-semibold mb-0">{monthName}</h6>
+              <button
+                className="btn btn-light rounded-circle shadow-sm"
+                onClick={handleNextMonth}
+              >
                 <i className="bi bi-chevron-right"></i>
               </button>
             </div>
           </div>
 
-          <div className="calendar">
-            <div className="calendar-header row text-center fw-semibold text-secondary">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                (day, i) => (
-                  <div className="col calendar-cell py-2" key={i}>
-                    {day}
-                  </div>
-                )
-              )}
-            </div>
+          {/* Calendar Header */}
+          <div className="calendar-header row text-center fw-semibold text-secondary">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, i) => (
+              <div className="col calendar-cell py-2" key={i}>
+                {day}
+              </div>
+            ))}
+          </div>
 
-            <div className="calendar-body">
-              {days.map((week, i) => (
-                <div className="row text-center" key={i}>
-                  {week.map((day, j) => (
+          {/* Calendar Body */}
+          <div className="calendar-body">
+            {calendarDays.map((week, i) => (
+              <div className="row text-center" key={i}>
+                {week.map((day, j) => {
+                  const matchingWorks = findWorkForDate(day);
+                  return (
                     <div
                       className={`col calendar-cell p-3 ${
-                        events[day] ? "calendar-event" : ""
+                        matchingWorks.length
+                          ? "bg-warning-subtle text-dark rounded-3 fw-bold shadow-sm"
+                          : ""
                       }`}
                       key={j}
                     >
-                      {day && (
-                        <>
-                          <div
-                            className={`day-number ${
-                              events[day]?.name === "Today" ? "today-box" : ""
-                            }`}
-                          >
-                            {day}
-                          </div>
-                          {events[day] && (
-                            <div
-                              className={`badge mt-2 px-3 py-2 rounded-pill ${events[day].color}`}
-                            >
-                              {events[day].name}
-                            </div>
-                          )}
-                        </>
-                      )}
+                      <div>{day}</div>
+                      {matchingWorks.map((work, idx) => (
+                        <div
+                          key={idx}
+                          className="small text-muted mt-1 fw-normal"
+                        >
+                          <i className="bi bi-clock me-1"></i>
+                          {work.time}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </motion.div>
 
         {/* ===== Recent Job Alerts ===== */}
         <div className="p-4 rounded-4 shadow-sm bg-white mb-5">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h4 className="fw-bold mb-0">Recent Job Alerts</h4>
+          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+            <h4 className="fw-bold mb-0 text-dark">Recent Job Alerts</h4>
             <div className="d-flex gap-2">
-              <button className="btn btn-outline-secondary">
+              <button className="btn btn-outline-secondary d-flex align-items-center">
                 <i className="bi bi-funnel me-2"></i>Filter
               </button>
-              <button className="btn btn-outline-secondary">
+              <button className="btn btn-outline-secondary d-flex align-items-center">
                 <i className="bi bi-download me-2"></i>Export
               </button>
             </div>
           </div>
 
           {upcomingJobs.length > 0 ? (
-            upcomingJobs.slice(0, 3).map((job, i) => (
+            upcomingJobs.map((job, i) => (
               <div
                 key={i}
-                className="p-3 mb-3 rounded-3 shadow-sm d-flex justify-content-between align-items-start alert-card"
+                className="p-4 mb-3 rounded-4 shadow-sm border border-light bg-light-subtle d-flex justify-content-between align-items-start flex-wrap"
               >
-                <div>
-                  <div className="d-flex align-items-center mb-2">
-                    <div
-                      className="rounded-circle bg-light d-flex align-items-center justify-content-center me-3"
-                      style={{ width: 45, height: 45 }}
-                    >
-                      <i className="bi bi-tools text-primary fs-5"></i>
-                    </div>
-                    <div>
-                      <h5 className="fw-bold mb-0">
-                        {job.Vendorid?.Category || "Kitchen Sink Repair"}
-                      </h5>
-                      <div className="d-flex gap-2 mt-1">
-                        <span className="badge bg-success-subtle text-success">
-                          Applied
-                        </span>
-                        <span className="badge bg-danger-subtle text-danger">
-                          Urgent
-                        </span>
-                      </div>
+                <div className="d-flex align-items-start flex-wrap">
+                  <div
+                    className="rounded-circle bg-white d-flex align-items-center justify-content-center me-3 shadow-sm"
+                    style={{ width: 50, height: 50 }}
+                  >
+                    <i className="bi bi-tools text-warning fs-4"></i>
+                  </div>
+                  <div>
+                    <h5 className="fw-bold text-dark mb-1">
+                      {job.Vendorid?.Category || "General Service"}
+                    </h5>
+                    <p className="text-muted mb-1 small">
+                      <i className="bi bi-person-fill me-1 text-secondary"></i>
+                      {job.customerid?.fullName || "Customer"} •{" "}
+                      <i className="bi bi-geo-alt-fill me-1 text-secondary"></i>
+                      {job.address?.city || "Location not available"}
+                    </p>
+                    <p className="text-dark mb-1 small fw-semibold">
+                      <i className="bi bi-calendar-event me-2 text-warning"></i>
+                      {new Date(job.serviceDate).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}{" "}
+                      • {job.serviceTime || "N/A"}
+                    </p>
+                    <p className="text-muted small mb-2">
+                      {job.description ||
+                        "Scheduled maintenance or urgent task — details not provided."}
+                    </p>
+                    <div className="d-flex gap-2 mt-2">
+                      <span className="badge bg-success-subtle text-success">
+                        Upcoming
+                      </span>
+                      <span className="badge bg-warning-subtle text-dark">
+                        ₹{job.totalAmount || 0}
+                      </span>
                     </div>
                   </div>
-                  <p className="text-muted mb-1">
-                    {job.address?.city || "Downtown"} ·{" "}
-                    {job.serviceTime || "3:30 PM"} · ₹{job.totalAmount || 0}
-                  </p>
-                  <small className="text-muted">
-                    {job.description ||
-                      "Emergency pipe repair needed in downtown area."}
-                  </small>
                 </div>
-                <div>
-                  <button className="btn btn-warning text-dark fw-bold">
-                    View Details
+
+                <div className="mt-3 mt-md-0">
+                  <button
+                    className="btn btn-warning text-dark fw-semibold px-4 rounded-pill shadow-sm"
+                    onClick={() => alert(`Viewing details for job ID: ${job._id}`)}
+                  >
+                    View Details <i className="bi bi-arrow-right-short ms-1"></i>
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-muted text-center py-4">
+            <div className="text-center py-4 text-muted">
+              <i className="bi bi-info-circle me-2"></i>
               No recent job alerts available.
-            </p>
+            </div>
           )}
         </div>
 
         {/* ===== Analytics Section ===== */}
         <div className="analytics-section p-4 rounded-4 shadow-sm bg-white mb-5">
           <h4 className="fw-bold mb-4">Alert Performance Analytics</h4>
-          {/* include previous analytics JSX here */}
         </div>
 
         {/* ===== Support & Help ===== */}
@@ -247,7 +309,7 @@ const TechnicalNonDashboard = () => {
           <h4 className="fw-bold mb-4">Support & Help</h4>
 
           <div className="row g-4">
-            {/* FAQ Card */}
+            {/* FAQ */}
             <div className="col-md-4">
               <div className="support-card h-100 p-4 rounded-4 border">
                 <div className="d-flex align-items-center mb-3">
@@ -260,10 +322,7 @@ const TechnicalNonDashboard = () => {
                   Find answers to commonly asked questions about job alerts and
                   notifications.
                 </p>
-                <a
-                  href="#"
-                  className="fw-semibold text-primary text-decoration-none"
-                >
+                <a href="#" className="fw-semibold text-primary text-decoration-none">
                   Browse FAQ <i className="bi bi-arrow-right"></i>
                 </a>
               </div>
@@ -281,10 +340,7 @@ const TechnicalNonDashboard = () => {
                 <p className="text-muted small">
                   Get instant help from our support team via live chat or phone.
                 </p>
-                <a
-                  href="#"
-                  className="fw-semibold text-success text-decoration-none"
-                >
+                <a href="#" className="fw-semibold text-success text-decoration-none">
                   Contact Support <i className="bi bi-arrow-right"></i>
                 </a>
               </div>
@@ -303,10 +359,7 @@ const TechnicalNonDashboard = () => {
                   Learn how to maximize your earnings with our comprehensive
                   user guide.
                 </p>
-                <a
-                  href="#"
-                  className="fw-semibold text-purple text-decoration-none"
-                >
+                <a href="#" className="fw-semibold text-purple text-decoration-none">
                   Read Guide <i className="bi bi-arrow-right"></i>
                 </a>
               </div>
