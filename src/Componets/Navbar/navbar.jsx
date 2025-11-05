@@ -70,14 +70,7 @@ function Navbar() {
                 Job History
               </Link>
             </li>
-            <li className="nav-item">
-              <Link
-                to={`/vendor/${vendorId}/earnings`}
-                className="nav-link text-dark fw-semibold"
-              >
-                Earnings
-              </Link>
-            </li>
+            
           </ul>
 
           {/* Right Side */}

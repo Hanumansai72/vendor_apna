@@ -14,6 +14,7 @@ import Navbar from "../Navbar/navbar";
 import "./jobhistory.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
+
 // ✅ Status configuration
 const STATUS = {
   Pending: { text: "Pending", pill: "pill-warning" },
