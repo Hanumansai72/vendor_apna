@@ -13,6 +13,7 @@ import axios from "axios";
 import Navbar from "../Navbar/navbar";
 import "./jobhistory.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import Footer from "../Navbar/footer";
 
 
 // ✅ Status configuration
@@ -323,6 +324,7 @@ const JobHistory = () => {
           )}
         </Offcanvas.Body>
       </Offcanvas>
+      <Footer></Footer>
     </div>
   );
 };

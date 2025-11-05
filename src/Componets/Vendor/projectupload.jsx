@@ -3,6 +3,7 @@ import { Container, Form, Button, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "../Navbar/navbar";
 import axios from "axios";
+import Footer from "../Navbar/footer";
 
 const VendorCard = () => {
   const [formData, setFormData] = useState({
@@ -151,6 +152,7 @@ const VendorCard = () => {
           </Form>
         </Card>
       </Container>
+      <Footer></Footer>
     </>
   );
 };

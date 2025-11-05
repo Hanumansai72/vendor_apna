@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./vendor_settings.css";
 import axios from "axios";
+import Footer from "../Navbar/footer";
 
 function VendorProfileSettings() {
   const [formData, setFormData] = useState({
@@ -132,6 +133,7 @@ function VendorProfileSettings() {
   };
 
   return (
+    <>
     <div className="container py-5" style={{ maxWidth: "900px" }}>
       <h3 className="fw-bold mb-4 text-dark">Account Settings</h3>
 
@@ -328,6 +330,8 @@ function VendorProfileSettings() {
         </button>
       </div>
     </div>
+    <Footer></Footer>
+    </>
   );
 }
 

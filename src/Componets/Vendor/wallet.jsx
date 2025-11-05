@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import Navbar from "../Navbar/navbar";
 import axios from "axios";
+import Footer from "../Navbar/footer";
 
 const Wallet = () => {
   const [wallet, setWallet] = useState(null);
@@ -105,6 +106,7 @@ const Wallet = () => {
           </Col>
         </Row>
       </Container>
+      <Footer></Footer>
     </>
   );
 };

@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import Navbar from "../Navbar/navbar";
+import Footer from "../Navbar/footer";
 
 const VendorProjects = () => {
   const [projects, setProjects] = useState([]);
@@ -81,6 +82,7 @@ const VendorProjects = () => {
           </Row>
         )}
       </Container>
+      <Footer></Footer>
     </>
   );
 };

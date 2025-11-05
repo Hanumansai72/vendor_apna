@@ -5,6 +5,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Techincal.css";
+import Footer from "../Navbar/footer";
 
 const TechnicalNonDashboard = () => {
   const { id } = useParams();
@@ -44,6 +45,12 @@ const TechnicalNonDashboard = () => {
       })
       .catch(console.error);
   }, [id]);
+  useEffect(() => {
+  axios.get(`https://backend-d6mx.vercel.app/vendor/${id}/analytics`)
+    .then(res => setAnalytics(res.data))
+    .catch(console.error);
+}, [id]);
+
 
   // Auto-hide job popup
   useEffect(() => {
@@ -296,9 +303,41 @@ const TechnicalNonDashboard = () => {
         </div>
 
         {/* ===== Analytics Section ===== */}
-        <div className="analytics-section p-4 rounded-4 shadow-sm bg-white mb-5">
-          <h4 className="fw-bold mb-4">Alert Performance Analytics</h4>
-        </div>
+        <div className="p-4 rounded-4 shadow-sm bg-white mb-5">
+  <h4 className="fw-bold mb-4">Alert Performance Analytics</h4>
+  <div className="row g-3 text-center">
+    <div className="col-md-2">
+      <div className="stat-box bg-light rounded-4 p-3">
+        <h5 className="fw-bold text-success">{analytics.acceptanceRate?.toFixed(1)}%</h5>
+        <p className="text-muted small">Acceptance Rate</p>
+      </div>
+    </div>
+    <div className="col-md-2">
+      <div className="stat-box bg-light rounded-4 p-3">
+        <h5 className="fw-bold text-warning">{analytics.completionRate?.toFixed(1)}%</h5>
+        <p className="text-muted small">Completion Rate</p>
+      </div>
+    </div>
+    <div className="col-md-2">
+      <div className="stat-box bg-light rounded-4 p-3">
+        <h5 className="fw-bold text-primary">{analytics.avgResponseTime} min</h5>
+        <p className="text-muted small">Avg Response</p>
+      </div>
+    </div>
+    <div className="col-md-2">
+      <div className="stat-box bg-light rounded-4 p-3">
+        <h5 className="fw-bold text-info">{analytics.avgRating}★</h5>
+        <p className="text-muted small">Customer Rating</p>
+      </div>
+    </div>
+    <div className="col-md-2">
+      <div className="stat-box bg-light rounded-4 p-3">
+        <h5 className="fw-bold text-success">{analytics.earningsGrowth?.toFixed(1)}%</h5>
+        <p className="text-muted small">Earnings Growth</p>
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* ===== Support & Help ===== */}
         <motion.div
@@ -449,6 +488,7 @@ const TechnicalNonDashboard = () => {
           </motion.div>
         )}
       </div>
+      <Footer></Footer>
     </>
   );
 };

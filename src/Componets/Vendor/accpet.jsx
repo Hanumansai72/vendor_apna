@@ -4,6 +4,7 @@ import axios from "axios";
 import Navbar from "../Navbar/navbar";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Footer from "../Navbar/footer";
 
 // ---- Helper formatting
 const formatINR = (n) =>
@@ -335,6 +336,7 @@ const JobListings = () => {
           </div>
         </div>
       </div>
+      <Footer></Footer>
     </>
   );
 };
