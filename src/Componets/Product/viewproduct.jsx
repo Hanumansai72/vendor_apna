@@ -1,11 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import {
-  Button,
-  Form,
-  Badge,
-  Modal,
-} from "react-bootstrap";
+import { Button, Form, Badge, Modal } from "react-bootstrap";
 import { BiFilter, BiDownload } from "react-icons/bi";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
@@ -46,6 +41,8 @@ const MyProducts = () => {
               : Number(p.ProductStock) < 10
               ? "Low Stock"
               : "Available",
+          unitsSold: Math.floor(Math.random() * 1500) + 50,
+          revenue: (Number(p.ProductPrice) || 0) * (Math.floor(Math.random() * 150) + 10),
         }));
         setProducts(mapped);
       })
@@ -53,18 +50,18 @@ const MyProducts = () => {
       .finally(() => setLoading(false));
   }, [vendorId]);
 
-  // filtered + sorted view
+  // filter/sort
   const filteredProducts = useMemo(() => {
     const list = products
       .filter((p) => {
         const t = searchTerm.toLowerCase();
-        const nameMatch =
+        const match =
           p.name.toLowerCase().includes(t) ||
           p.category.toLowerCase().includes(t) ||
           p.subcategory.toLowerCase().includes(t);
-        const catMatch = categoryFilter === "All" || p.category === categoryFilter;
-        const statusMatch = statusFilter === "All" || p.status === statusFilter;
-        return nameMatch && catMatch && statusMatch;
+        const cat = categoryFilter === "All" || p.category === categoryFilter;
+        const stat = statusFilter === "All" || p.status === statusFilter;
+        return match && cat && stat;
       })
       .sort((a, b) => {
         if (sortBy === "Price: Low to High") return a.price - b.price;
@@ -81,7 +78,7 @@ const MyProducts = () => {
     setSortBy("Sort by: Latest");
   };
 
-  // delete handler
+  // Delete product
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       axios
@@ -94,7 +91,7 @@ const MyProducts = () => {
     }
   };
 
-  // edit handlers
+  // Edit modal
   const handleEditOpen = (product) => {
     setEditProduct({ ...product });
     setShowEdit(true);
@@ -102,35 +99,58 @@ const MyProducts = () => {
 
   const handleEditSave = () => {
     axios
-      .put(
-        `https://backend-d6mx.vercel.app/updatedetails/${editProduct.id}`,
-        {
-          ProductName: editProduct.name,
-          ProductPrice: editProduct.price,
-          ProductStock: editProduct.stock,
-          ProductDescription: "",
-          ProductCategory: editProduct.category,
-          ProductSubCategory: editProduct.subcategory,
-        }
-      )
+      .put(`https://backend-d6mx.vercel.app/updatedetails/${editProduct.id}`, {
+        ProductName: editProduct.name,
+        ProductPrice: editProduct.price,
+        ProductStock: editProduct.stock,
+        ProductDescription: "",
+        ProductCategory: editProduct.category,
+        ProductSubCategory: editProduct.subcategory,
+      })
       .then(() => {
         toast.success("Product updated successfully!");
         setProducts((prev) =>
-          prev.map((p) =>
-            p.id === editProduct.id ? { ...p, ...editProduct } : p
-          )
+          prev.map((p) => (p.id === editProduct.id ? { ...p, ...editProduct } : p))
         );
         setShowEdit(false);
       })
       .catch(() => toast.error("Failed to update product."));
   };
 
+  // Analytics + Top Selling + Category Perf
+  const topSelling = [...products]
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 3)
+    .map((p) => ({
+      name: p.name,
+      thumb: p.image,
+      info: `${p.unitsSold} units sold`,
+      money: `₹${(p.revenue / 100000).toFixed(2)}L`,
+      growth: `+${(Math.random() * 25 + 5).toFixed(0)}%`,
+    }));
+
+  const categoryPerf = useMemo(() => {
+    const totals = products.reduce((acc, p) => {
+      acc[p.category] = (acc[p.category] || 0) + p.revenue;
+      return acc;
+    }, {});
+    const total = Object.values(totals).reduce((a, b) => a + b, 0);
+    return Object.entries(totals)
+      .map(([label, val]) => ({
+        label,
+        pct: Math.round((val / total) * 100),
+        money: `₹${(val / 100000).toFixed(2)}L`,
+      }))
+      .sort((a, b) => b.pct - a.pct)
+      .slice(0, 5);
+  }, [products]);
+
   return (
     <div className="myproducts-page">
       <ProductNavbar />
       <ToastContainer position="top-right" autoClose={2500} />
 
-      {/* FILTERS */}
+      {/* Filters */}
       <div className="container mt-4 mb-3">
         <div className="filter-bar p-3 rounded-3 shadow-sm bg-white d-flex flex-wrap align-items-center gap-2">
           <Form.Control
@@ -197,7 +217,39 @@ const MyProducts = () => {
         )}
       </div>
 
-      {/* PRODUCT CARDS */}
+      {/* Analytics */}
+      <div className="container mb-4">
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h4 className="fw-bold mb-0">Product Analytics</h4>
+          <Form.Select value={range} onChange={(e) => setRange(e.target.value)} style={{ width: 160 }}>
+            <option>Last 7 days</option>
+            <option>Last 30 days</option>
+            <option>Last 90 days</option>
+          </Form.Select>
+        </div>
+        <div className="row g-3">
+          {[
+            { title: "Total Views", value: "45,892", sub: "Across all products", color: "#e8f0ff", growth: "+18.2%" },
+            { title: "Orders Placed", value: "3,247", sub: "This month", color: "#eaffea", growth: "+24.5%" },
+            { title: "Revenue Generated", value: "₹12.8L", sub: "From products", color: "#fff5d1", growth: "+31.8%" },
+          ].map((c, i) => (
+            <div className="col-md-4" key={i}>
+              <div className="p-4 rounded-4 shadow-sm h-100" style={{ background: c.color }}>
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 className="fw-semibold">{c.title}</h6>
+                    <h2 className="fw-bold mt-2">{c.value}</h2>
+                    <p className="text-muted small mb-0">{c.sub}</p>
+                  </div>
+                  <Badge bg="light" className="text-dark fw-semibold">{c.growth}</Badge>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Product Cards */}
       <div className="container mb-5">
         {loading ? (
           <div className="row g-4">
@@ -215,11 +267,7 @@ const MyProducts = () => {
               <div className="col-md-3" key={p.id}>
                 <div className="product-card rounded-4 shadow-sm bg-white">
                   <div className="position-relative">
-                    <img
-                      src={p.image || "https://via.placeholder.com/600x400"}
-                      alt={p.name}
-                      className="product-img rounded-top-4"
-                    />
+                    <img src={p.image || "https://via.placeholder.com/600x400"} alt={p.name} className="product-img rounded-top-4" />
                     <span
                       className={`badge position-absolute top-2 end-2 ${
                         p.status === "Available"
@@ -236,27 +284,16 @@ const MyProducts = () => {
                   <div className="p-3">
                     <p className="text-muted mb-0 small">{p.category}</p>
                     <h6 className="fw-bold">{p.name}</h6>
-                    <p className="text-muted small mb-2">
-                      Subcategory: {p.subcategory}
-                    </p>
+                    <p className="text-muted small mb-2">Subcategory: {p.subcategory}</p>
                     <h5 className="fw-bold mb-1">₹{p.price}</h5>
                     <div className="text-success small mb-3">
-                      {p.status === "Available" ? "In Stock" : p.status} •{" "}
-                      {p.stock} units
+                      {p.status === "Available" ? "In Stock" : p.status} • {p.stock} units
                     </div>
                     <div className="d-flex justify-content-between">
-                      <Button
-                        variant="warning"
-                        className="w-50 me-2"
-                        onClick={() => handleEditOpen(p)}
-                      >
+                      <Button variant="warning" className="w-50 me-2" onClick={() => handleEditOpen(p)}>
                         <FaEdit className="me-1" /> Edit
                       </Button>
-                      <Button
-                        variant="outline-danger"
-                        className="w-50"
-                        onClick={() => handleDelete(p.id)}
-                      >
+                      <Button variant="outline-danger" className="w-50" onClick={() => handleDelete(p.id)}>
                         <FaTrash className="me-1" /> Delete
                       </Button>
                     </div>
@@ -268,7 +305,61 @@ const MyProducts = () => {
         )}
       </div>
 
-      {/* EDIT MODAL */}
+      {/* Insights Section */}
+      <div className="container pb-5">
+        <div className="row g-4">
+          <div className="col-lg-6">
+            <div className="p-4 rounded-4 bg-white shadow-sm h-100">
+              <h5 className="fw-bold mb-3">Top Selling Products</h5>
+              <div className="d-flex flex-column gap-3">
+                {topSelling.map((item, idx) => (
+                  <div className="d-flex align-items-center gap-3" key={idx}>
+                    <img src={item.thumb} alt={item.name} style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover" }} />
+                    <div className="flex-grow-1">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <h6 className="fw-semibold mb-0">{item.name}</h6>
+                        <span className="fw-bold">{item.money}</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <small className="text-muted">{item.info}</small>
+                        <small className="text-success fw-semibold">{item.growth}</small>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="col-lg-6">
+            <div className="p-4 rounded-4 bg-white shadow-sm h-100">
+              <h5 className="fw-bold mb-3">Category Performance</h5>
+              <div className="d-flex flex-column gap-3">
+                {categoryPerf.map((row, i) => (
+                  <div key={i}>
+                    <div className="d-flex justify-content-between">
+                      <div className="fw-semibold">{row.label}</div>
+                      <div className="text-muted small">{row.pct}%</div>
+                    </div>
+                    <div className="progress" style={{ height: 10, background: "#eef2f7" }}>
+                      <div
+                        className="progress-bar"
+                        style={{
+                          width: `${row.pct}%`,
+                          background: i % 4 === 0 ? "#3575ff" : i % 4 === 1 ? "#22c55e" : i % 4 === 2 ? "#fbbf24" : "#a78bfa",
+                        }}
+                      ></div>
+                    </div>
+                    <small className="text-muted">{row.money} revenue</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Modal */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Edit Product</Modal.Title>
@@ -301,11 +392,8 @@ const MyProducts = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* styles */}
       <style>{`
         .product-img { width: 100%; height: 190px; object-fit: cover; }
-        .top-2 { top: 10px; } .end-2 { right: 10px; }
-
         .skeleton {
           background: linear-gradient(90deg,#f2f2f2 25%,#e8e8e8 37%,#f2f2f2 63%);
           background-size: 400% 100%;
