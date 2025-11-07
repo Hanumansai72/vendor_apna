@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "bootstrap/dist/js/bootstrap.bundle.min.js"; // ✅ Needed for dropdown
+import { Dropdown, Offcanvas, Button } from "react-bootstrap";
 
 function ProductNavbar() {
   const navigate = useNavigate();
-  const productId = localStorage.getItem("vendorId");
+  const vendorId = localStorage.getItem("vendorId");
   const [isOnline, setIsOnline] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   function signout() {
     localStorage.removeItem("vendorId");
@@ -15,81 +16,295 @@ function ProductNavbar() {
 
   return (
     <>
-      {/* Desktop Navbar */}
-      <nav className="navbar navbar-expand-lg bg-light shadow-sm d-none d-lg-flex">
-        <div className="container-fluid">
-          <Link to={`/Product/${productId}`} className="navbar-brand fw-bold">
-            Apna Mestri
-          </Link>
+      {/* --- Desktop Navbar --- */}
+      <nav
+        className="navbar navbar-expand-lg bg-white shadow-sm py-2 d-none d-lg-flex"
+        style={{
+          borderBottom: "4px solid #FFD600",
+        }}
+      >
+        <div className="container-fluid d-flex align-items-center justify-content-between px-4">
+          {/* Left: Logo + Name */}
+          <div className="d-flex align-items-center gap-2">
+            <div
+              className="rounded-3 d-flex align-items-center justify-content-center"
+              style={{
+                backgroundColor: "#FFD600",
+                width: "42px",
+                height: "42px",
+              }}
+            >
+              <i className="bi bi-box-seam-fill text-white fs-5"></i>
+            </div>
+            <div className="d-flex flex-column lh-1">
+              <span className="fw-bold fs-5 text-dark">Apna Mestri</span>
+              <small className="text-muted" style={{ fontSize: "0.8rem" }}>
+                Product Management Panel
+              </small>
+            </div>
+          </div>
 
-          <ul className="navbar-nav mx-auto mb-2 mb-lg-0 d-flex flex-row gap-3">
-            <li className="nav-item"><Link to={`/Product/${productId}`} className="nav-link">Home</Link></li>
-            <li className="nav-item"><Link to={`/product/${productId}/ViewProduct`} className="nav-link">View Products</Link></li>
-            <li className="nav-item"><Link to={`/addproduct/${productId}`} className="nav-link">Add Product</Link></li>
-            <li className="nav-item"><Link to={`/addproduct/${productId}/BulkUpload`} className="nav-link">Bulk Upload</Link></li>
-            <li className="nav-item"><Link to={`/Product/${productId}/order`} className="nav-link">Orders</Link></li>
-            <li className="nav-item"><Link to={`/Product/${productId}/order/history`} className="nav-link">Order History</Link></li>
+          {/* Center Links */}
+          <ul className="navbar-nav mx-auto d-flex flex-row gap-4 fw-semibold">
+            <li className="nav-item">
+              <Link
+                to={`/Product/${vendorId}`}
+                className="nav-link text-dark fw-semibold"
+              >
+                Dashboard
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to={`/product/${vendorId}/ViewProduct`}
+                className="nav-link text-dark fw-semibold"
+              >
+                View Products
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to={`/addproduct/${vendorId}`}
+                className="nav-link text-dark fw-semibold"
+              >
+                Add Product
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to={`/addproduct/${vendorId}/BulkUpload`}
+                className="nav-link text-dark fw-semibold"
+              >
+                Bulk Upload
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to={`/Product/${vendorId}/order`}
+                className="nav-link text-dark fw-semibold"
+              >
+                Orders
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to={`/Product/${vendorId}/order/history`}
+                className="nav-link text-dark fw-semibold"
+              >
+                Order History
+              </Link>
+            </li>
           </ul>
 
-          <div className="d-flex align-items-center">
-            <div className="form-check form-switch me-3">
+          {/* Right Side */}
+          <div className="d-flex align-items-center gap-3">
+            {/* Notification Bell */}
+            <div className="position-relative">
+              <i className="bi bi-bell-fill fs-5 text-secondary"></i>
+              <span
+                className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style={{ fontSize: "0.65rem" }}
+              >
+                2
+              </span>
+            </div>
+
+            {/* Message Icon */}
+            <div className="position-relative">
+              <i className="bi bi-chat-dots-fill fs-5 text-secondary"></i>
+              <span
+                className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark"
+                style={{ fontSize: "0.65rem" }}
+              >
+                4
+              </span>
+            </div>
+
+            {/* Online Toggle */}
+            <div className="form-check form-switch me-2">
               <input
-                type="checkbox"
                 className="form-check-input"
+                type="checkbox"
+                id="onlineSwitch"
                 checked={isOnline}
                 onChange={() => setIsOnline(!isOnline)}
               />
-              <label className="form-check-label">
+              <label
+                className="form-check-label small text-muted"
+                htmlFor="onlineSwitch"
+              >
                 {isOnline ? "Online" : "Offline"}
               </label>
             </div>
 
             {/* Profile Dropdown */}
-            <div className="dropdown">
-  <button
-    className="btn btn-outline-secondary dropdown-toggle"
-    type="button"
-    id="dropdownMenuButton"
-    data-bs-toggle="dropdown"
-    aria-expanded="false"
-  >
-    Profile
-  </button>
-  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-    <li><Link to={`/product/${productId}/settings`} className="dropdown-item">My Profile</Link></li>
-    <li><hr className="dropdown-divider" /></li>
-    <li><span className="dropdown-item" onClick={signout}>Sign Out</span></li>
-  </ul>
-</div>
+            <Dropdown align="end">
+              <Dropdown.Toggle
+                as="div"
+                id="dropdown-user"
+                className="d-flex align-items-center gap-2 border-0 bg-transparent"
+                style={{ cursor: "pointer" }}
+              >
+                <img
+                  src="https://i.pravatar.cc/100?img=5"
+                  alt="Profile"
+                  width="40"
+                  height="40"
+                  className="rounded-circle border border-warning border-2"
+                />
+                <div className="d-flex flex-column lh-1">
+                  <span className="fw-semibold text-dark">Vendor Admin</span>
+                  <small
+                    className="text-muted"
+                    style={{ fontSize: "0.8rem" }}
+                  >
+                    Product Vendor
+                  </small>
+                </div>
+                <i className="bi bi-caret-down-fill text-secondary ms-1"></i>
+              </Dropdown.Toggle>
 
+              <Dropdown.Menu className="shadow-sm mt-2">
+                <Dropdown.Item as={Link} to={`/product/${vendorId}/settings`}>
+                  My Profile
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to={`/wallet/${vendorId}`}>
+                  Wallet
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to={`/product/${vendorId}/analytics`}>
+                  Analytics
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to={`/product/${vendorId}/help`}>
+                  Help & Support
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={signout} className="text-danger">
+                  Sign Out
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Navbar */}
-      <nav className="navbar navbar-light bg-light border-top d-flex d-lg-none fixed-bottom justify-content-around py-1">
-        <Link to={`/Product/${productId}`} className="text-center text-decoration-none text-dark">
-          <i className="bi bi-house fs-5"></i><br />Home
-        </Link>
-        <Link to={`/product/${productId}/ViewProduct`} className="text-center text-decoration-none text-dark">
-          <i className="bi bi-card-list fs-5"></i><br />View
-        </Link>
-        <Link to={`/addproduct/${productId}`} className="text-center text-decoration-none text-dark">
-          <i className="bi bi-plus-circle fs-5"></i><br />Add
-        </Link>
-        <Link to={`/addproduct/${productId}/BulkUpload`} className="text-center text-decoration-none text-dark">
-          <i className="bi bi-upload fs-5"></i><br />Bulk
-        </Link>
-        <Link to={`/Product/${productId}/order`} className="text-center text-decoration-none text-dark">
-          <i className="bi bi-briefcase fs-5"></i><br />Orders
-        </Link>
-        <Link to={`/Product/${productId}/order/history`} className="text-center text-decoration-none text-dark">
-          <i className="bi bi-clock-history fs-5"></i><br />History
-        </Link>
-        <Link to={`/product/${productId}/settings`} className="text-center text-decoration-none text-dark">
-          <i className="bi bi-person-circle fs-5"></i><br />Profile
-        </Link>
-      </nav>
+      {/* --- Mobile Navbar --- */}
+      <div
+        className="d-lg-none position-fixed top-0 start-0 w-100 bg-white shadow-sm py-2 px-3 d-flex align-items-center justify-content-between"
+        style={{ borderBottom: "4px solid #FFD600", zIndex: 1200 }}
+      >
+        <div className="d-flex align-items-center gap-2">
+          <div
+            className="rounded-3 d-flex align-items-center justify-content-center"
+            style={{
+              backgroundColor: "#FFD600",
+              width: "38px",
+              height: "38px",
+            }}
+          >
+            <i className="bi bi-box-seam-fill text-white fs-5"></i>
+          </div>
+          <span className="fw-bold text-dark fs-5">Apna Mestri</span>
+        </div>
+
+        <Button
+          variant="outline-secondary"
+          className="border-0"
+          onClick={() => setShowMenu(true)}
+        >
+          <i className="bi bi-list fs-4 text-dark"></i>
+        </Button>
+      </div>
+
+      {/* Mobile Menu Drawer */}
+      <Offcanvas
+        show={showMenu}
+        onHide={() => setShowMenu(false)}
+        placement="end"
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Menu</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <div className="text-center mb-3">
+            <img
+              src="https://i.pravatar.cc/100?img=5"
+              alt="Profile"
+              className="rounded-circle border border-warning border-3"
+              width="80"
+              height="80"
+            />
+            <h6 className="mt-2 mb-0 fw-semibold">Vendor Admin</h6>
+            <small className="text-muted">Product Vendor</small>
+          </div>
+          <hr />
+          <div>
+            <Link
+              to={`/Product/${vendorId}`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to={`/product/${vendorId}/ViewProduct`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              View Products
+            </Link>
+            <Link
+              to={`/addproduct/${vendorId}`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              Add Product
+            </Link>
+            <Link
+              to={`/addproduct/${vendorId}/BulkUpload`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              Bulk Upload
+            </Link>
+            <Link
+              to={`/Product/${vendorId}/order`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              Orders
+            </Link>
+            <Link
+              to={`/Product/${vendorId}/order/history`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              Order History
+            </Link>
+            <Link
+              to={`/product/${vendorId}/settings`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              Profile Settings
+            </Link>
+            <Link
+              to={`/wallet/${vendorId}`}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowMenu(false)}
+            >
+              Wallet
+            </Link>
+            <hr />
+            <span
+              className="d-block py-2 text-danger"
+              style={{ cursor: "pointer" }}
+              onClick={signout}
+            >
+              Sign Out
+            </span>
+          </div>
+        </Offcanvas.Body>
+      </Offcanvas>
     </>
   );
 }

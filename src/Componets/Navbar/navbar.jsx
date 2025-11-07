@@ -122,13 +122,7 @@ function Navbar() {
                 className="d-flex align-items-center gap-2 border-0 bg-transparent"
                 style={{ cursor: "pointer" }}
               >
-                <img
-                  src="https://i.pravatar.cc/40?img=12"
-                  alt="Profile"
-                  className="rounded-circle border border-warning border-2"
-                  width="42"
-                  height="42"
-                />
+                
                 <div className="d-flex flex-column lh-1">
                   <span className="fw-semibold text-dark">John Anderson</span>
                   <small className="text-muted" style={{ fontSize: "0.8rem" }}>
