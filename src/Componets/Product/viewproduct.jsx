@@ -242,7 +242,7 @@ const MyProducts = () => {
         </div>
         <div className="row g-3">
           {[
-            { title: "Total Views", value: "45,892", sub: "Across all products", color: "#e8f0ff", growth: "+18.2%" },
+            { title: "Total Views", value: count, sub: "Across all products", color: "#e8f0ff", growth: "+18.2%" },
             { title: "Orders Placed", value: "3,247", sub: "This month", color: "#eaffea", growth: "+24.5%" },
             { title: "Revenue Generated", value: "₹12.8L", sub: "From products", color: "#fff5d1", growth: "+31.8%" },
           ].map((c, i) => (
