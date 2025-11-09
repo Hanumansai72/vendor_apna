@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import axios from "axios";
 import ProductNavbar from "./productnav";
+import Footer from "../Navbar/footer";
 
 export default function ProductDashboard() {
   const [orders, setOrders] = useState([]);
@@ -279,6 +280,7 @@ export default function ProductDashboard() {
         .skeleton-img { height: 180px; width: 100%; border-radius: 12px; }
         @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
       `}</style>
+      <Footer></Footer>
     </div>
   );
 }

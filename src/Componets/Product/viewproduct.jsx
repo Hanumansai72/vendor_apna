@@ -22,6 +22,19 @@ const MyProducts = () => {
   // edit modal
   const [showEdit, setShowEdit] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
+  const [count,setcount]=useState("");
+
+  useEffect(() => {
+  axios
+    .get(`https://backend-d6mx.vercel.app/api/vendor/${vendorId}/totalviews`)
+    .then((res) => {
+      setcount(res.data.totalViews);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}, [vendorId]);
+
 
   useEffect(() => {
     axios
