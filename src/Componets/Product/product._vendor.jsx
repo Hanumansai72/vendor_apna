@@ -15,7 +15,7 @@ export default function ProductDashboard() {
     const fetchcount=async()=>{
       try{
        const res = await axios.get(`https://backend-d6mx.vercel.app/api/getproductcount/${id}`);
-       setcount(res.data.count)
+       setcount(res.data)
 
       }
       catch(err){
@@ -42,7 +42,7 @@ export default function ProductDashboard() {
         const mappedProducts = productsRes.data.map((product) => ({
           id: product._id,
           name: product.ProductName,
-          price: parseFloat(product.totalPrice),
+          price: parseFloat(product.ProductPrice),
           stock: parseInt(product.quantity),
           category: product.ProductCategory,
           subcategory: product.ProductSubCategory,
