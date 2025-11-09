@@ -9,13 +9,30 @@ export default function ProductDashboard() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const id = localStorage.getItem("vendorId");
+  const[count,setcount]=useState("")
+
+  useEffect(()=>{
+    const fetchcount=async()=>{
+      try{
+       const res = await axios.get(`https://backend-d6mx.vercel.app/api/getproductcount/${id}`);
+       setcount(res.data.count)
+
+      }
+      catch(err){
+        console.log(err)
+
+      }
+    };
+    fetchcount();
+    
+  },[id])
 
   // 🟡 Fetch Orders + Products
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [ordersRes, productsRes] = await Promise.all([
-          axios.get("https://backend-d6mx.vercel.app/wow"),
+          axios.get(`https://backend-d6mx.vercel.app/wow/${id}`),
           axios.get(`https://backend-d6mx.vercel.app/viewproduct/${id}`)
         ]);
 
@@ -25,8 +42,8 @@ export default function ProductDashboard() {
         const mappedProducts = productsRes.data.map((product) => ({
           id: product._id,
           name: product.ProductName,
-          price: parseFloat(product.ProductPrice),
-          stock: parseInt(product.ProductStock),
+          price: parseFloat(product.totalPrice),
+          stock: parseInt(product.quantity),
           category: product.ProductCategory,
           subcategory: product.ProductSubCategory,
           description: product.ProductDescripition,
@@ -51,10 +68,9 @@ export default function ProductDashboard() {
 
   // 🟡 Static KPI Data
   const kpis = [
-    { icon: "bi-bag-fill", title: "Total Products", value: products.length, sub: "+12 this month", subClass: "text-success" },
-    { icon: "bi-coin", title: "Earnings This Month", value: "₹45,230", sub: "+18.2% from last month", subClass: "text-success" },
-    { icon: "bi-basket2-fill", title: "Total Orders", value: orders.length, sub: "+24 today", subClass: "text-success" },
-    { icon: "bi-exclamation-triangle-fill", title: "Low Stock Items", value: products.filter(p => p.status === "Low Stock").length, sub: "Needs attention", subClass: "text-danger", danger: true },
+    { icon: "bi-bag-fill", title: "Total Products", value:count.count, sub: "+12 this month", subClass: "text-success" },
+    { icon: "bi-coin", title: "Earnings This Month", value: count.balance, sub: "+18.2% from last month", subClass: "text-success" },
+    { icon: "bi-basket2-fill", title: "Total Orders", value: count.total_order, sub: "+24 today", subClass: "text-success" },
   ];
 
   const categories = [
@@ -71,7 +87,7 @@ export default function ProductDashboard() {
       {/* Welcome */}
       <div className="container mt-4">
         <h2 className="fw-bold mb-1">
-          Welcome back, Rajesh Kumar <span className="wave">👋</span>
+          Welcome back, Vendor <span className="wave">👋</span>
         </h2>
         <p className="text-muted fs-6">Here's your product overview and recent performance.</p>
       </div>
