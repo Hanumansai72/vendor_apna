@@ -28,7 +28,7 @@ const MyProducts = () => {
   axios
     .get(`https://backend-d6mx.vercel.app/api/vendor/${vendorId}/totalviews`)
     .then((res) => {
-      setcount(res.data.totalViews);
+      setcount(res.data);
     })
     .catch((err) => {
       console.log(err);
@@ -242,9 +242,9 @@ const MyProducts = () => {
         </div>
         <div className="row g-3">
           {[
-            { title: "Total Views", value: count, sub: "Across all products", color: "#e8f0ff", growth: "+18.2%" },
-            { title: "Orders Placed", value: "3,247", sub: "This month", color: "#eaffea", growth: "+24.5%" },
-            { title: "Revenue Generated", value: "₹12.8L", sub: "From products", color: "#fff5d1", growth: "+31.8%" },
+            { title: "Total Views", value: count.totalViews||0, sub: "Across all products", color: "#e8f0ff" },
+            { title: "Orders Placed", value: count.totalOrders||0, sub: "This month", color: "#eaffea", growth: "+24.5%" },
+            { title: "Revenue Generated", value: count.totalRevenue||0, sub: "From products", color: "#fff5d1", growth: "+31.8%" },
           ].map((c, i) => (
             <div className="col-md-4" key={i}>
               <div className="p-4 rounded-4 shadow-sm h-100" style={{ background: c.color }}>
