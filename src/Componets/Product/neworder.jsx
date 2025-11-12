@@ -88,14 +88,7 @@ const NewOrders = () => {
     }
   };
 
-  const orderCategories = [
-    { name: "Construction", count: 12, color: "#fde68a" },
-    { name: "Tools", count: 5, color: "#fef9c3" },
-    { name: "Hardware", count: 3, color: "#fee2e2" },
-    { name: "Electrical", count: 2, color: "#bfdbfe" },
-    { name: "Plumbing", count: 1, color: "#dcfce7" },
-    { name: "Painting", count: 1, color: "#ede9fe" },
-  ];
+ 
 
   return (
     <>
@@ -205,25 +198,6 @@ const NewOrders = () => {
           </Table>
         )}
 
-        {/* Orders by Category */}
-        <div className="mt-5">
-          <h5 className="fw-bold mb-3">Orders by Category</h5>
-          <div className="d-flex flex-wrap gap-3">
-            {orderCategories.map((cat, idx) => (
-              <div
-                key={idx}
-                className="p-3 rounded-4 bg-white shadow-sm text-center"
-                style={{
-                  width: "150px",
-                  borderTop: `4px solid ${cat.color}`,
-                }}
-              >
-                <div className="fw-bold mb-1">{cat.name}</div>
-                <div className="text-muted small">{cat.count} Orders</div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Skeleton animation */}
         <style>{`
