@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import ProductNavbar from "./productnav";
 import { FiRefreshCw, FiSettings, FiDownload } from "react-icons/fi";
+import Footer from "../Navbar/footer";
 
 const OrderHistory = () => {
   const id = localStorage.getItem("vendorId");
@@ -310,6 +311,7 @@ const OrderHistory = () => {
           }
         `}</style>
       </div>
+      <Footer></Footer>
     </div>
   );
 };

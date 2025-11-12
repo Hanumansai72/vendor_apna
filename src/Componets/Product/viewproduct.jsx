@@ -6,6 +6,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ProductNavbar from "./productnav";
+import Footer from "../Navbar/footer";
 
 const MyProducts = () => {
   const vendorId = localStorage.getItem("vendorId");
@@ -159,6 +160,7 @@ const MyProducts = () => {
   }, [products]);
 
   return (
+    <>
     <div className="myproducts-page">
       <ProductNavbar />
       <ToastContainer position="top-right" autoClose={2500} />
@@ -417,6 +419,8 @@ const MyProducts = () => {
         @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
       `}</style>
     </div>
+    <Footer></Footer>
+    </>
   );
 };
 

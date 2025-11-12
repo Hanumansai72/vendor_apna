@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Button, Badge, Row, Col } from 'react-bootstrap';
 import ProductNavbar from './productnav';
-
+import Footer from '../Navbar/footer';
 
 const OrderStatus = () => {
   return (
@@ -112,7 +112,9 @@ const OrderStatus = () => {
           </Card>
         </Col>
       </Row>
-    </div></div>
+    </div>
+    <Footer></Footer>
+    </div>
   );
 };
 

@@ -3,19 +3,9 @@ import { Table, Badge, Button, Form, Toast, ToastContainer } from "react-bootstr
 import ProductNavbar from "./productnav";
 import axios from "axios";
 import { FiRefreshCw, FiDownload } from "react-icons/fi";
+import Footer from "../Navbar/footer";
 
 const id = localStorage.getItem("vendorId");
-
-const getPriorityBadge = (priority) => {
-  switch (priority) {
-    case "Urgent":
-      return <Badge bg="danger">Urgent</Badge>;
-    case "High":
-      return <Badge bg="warning">High</Badge>;
-    default:
-      return <Badge bg="secondary">Normal</Badge>;
-  }
-};
 
 const getStatusBadge = (status) => {
   switch (status) {
@@ -25,6 +15,8 @@ const getStatusBadge = (status) => {
       return <Badge bg="warning">Pending</Badge>;
     case "Processing":
       return <Badge bg="info">Processing</Badge>;
+    case "Shipped":
+      return <Badge bg="primary">Shipped</Badge>;
     case "Cancelled":
       return <Badge bg="danger">Cancelled</Badge>;
     default:
@@ -43,7 +35,7 @@ const NewOrders = () => {
     setToast({ show: true, message, variant });
   };
 
-  // 🧠 Fetch all pending/active orders
+  // 🧠 Fetch all vendor orders
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -76,67 +68,26 @@ const NewOrders = () => {
     );
   };
 
-  // ✅ Accept order → set to "Processing"
-  const handleAccept = async (orderId) => {
+  // ✅ Update order status via dropdown
+  const handleStatusChange = async (orderId, newStatus) => {
     try {
       await axios.put(`https://backend-d6mx.vercel.app/update-order-status/${orderId}`, {
-        orderStatus: "Processing",
+        orderStatus: newStatus,
       });
 
       setFiltered((prev) =>
         prev.map((o) =>
-          o._id === orderId ? { ...o, orderStatus: "Processing" } : o
+          o._id === orderId ? { ...o, orderStatus: newStatus } : o
         )
       );
 
-      showToast("Order accepted successfully!", "success");
+      showToast(`Order status updated to ${newStatus}`, "success");
     } catch (err) {
-      console.error("Error updating order:", err);
-      showToast("Failed to accept order.", "danger");
+      console.error("Error updating order status:", err);
+      showToast("Failed to update order status.", "danger");
     }
   };
 
-  // ❌ Reject order → set to "Cancelled"
-  const handleReject = async (orderId) => {
-    try {
-      await axios.put(`https://backend-d6mx.vercel.app/update-order-status/${orderId}`, {
-        orderStatus: "Cancelled",
-      });
-
-      setFiltered((prev) =>
-        prev.map((o) =>
-          o._id === orderId ? { ...o, orderStatus: "Cancelled" } : o
-        )
-      );
-
-      showToast("Order rejected successfully.", "warning");
-    } catch (err) {
-      console.error("Error updating order:", err);
-      showToast("Failed to reject order.", "danger");
-    }
-  };
-
-  // ✅ Mark as Delivered (optional future feature)
-  const handleDelivered = async (orderId) => {
-    try {
-      await axios.put(`https://backend-d6mx.vercel.app/update-order-status/${orderId}`, {
-        orderStatus: "Delivered",
-      });
-
-      setFiltered((prev) =>
-        prev.map((o) =>
-          o._id === orderId ? { ...o, orderStatus: "Delivered" } : o
-        )
-      );
-
-      showToast("Order marked as delivered!", "success");
-    } catch (err) {
-      console.error("Error marking delivered:", err);
-      showToast("Failed to update delivery.", "danger");
-    }
-  };
-
-  // Dummy analytics for visuals
   const orderCategories = [
     { name: "Construction", count: 12, color: "#fde68a" },
     { name: "Tools", count: 5, color: "#fef9c3" },
@@ -147,14 +98,15 @@ const NewOrders = () => {
   ];
 
   return (
+    <>
     <div className="orders-page bg-light min-vh-100">
       <ProductNavbar />
       <div className="container py-4">
         {/* Header */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <h4 className="fw-bold mb-0">New Orders</h4>
-            <p className="text-muted mb-0">Orders awaiting your confirmation</p>
+            <h4 className="fw-bold mb-0">Manage Orders</h4>
+            <p className="text-muted mb-0">View and update order statuses easily</p>
           </div>
           <div className="d-flex gap-2">
             <Button variant="outline-secondary">
@@ -176,18 +128,9 @@ const NewOrders = () => {
             <option>All Orders</option>
             <option>Pending</option>
             <option>Processing</option>
+            <option>Shipped</option>
             <option>Delivered</option>
-          </Form.Select>
-          <Form.Select style={{ width: "200px" }}>
-            <option>All Categories</option>
-            <option>Plumbing</option>
-            <option>Electrical</option>
-            <option>Painting</option>
-          </Form.Select>
-          <Form.Select style={{ width: "200px" }}>
-            <option>Sort by: Latest</option>
-            <option>Oldest</option>
-            <option>Price: Low to High</option>
+            <option>Cancelled</option>
           </Form.Select>
           <div className="ms-auto d-flex align-items-center gap-2">
             <Form.Control
@@ -209,7 +152,7 @@ const NewOrders = () => {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-5 text-muted">
-            No new or pending orders found.
+            No orders found for this vendor.
           </div>
         ) : (
           <Table responsive hover className="bg-white rounded-3 shadow-sm">
@@ -218,11 +161,10 @@ const NewOrders = () => {
                 <th>Order ID</th>
                 <th>Product</th>
                 <th>Customer</th>
-                <th>Quantity</th>
+                <th>Qty</th>
                 <th>Total</th>
                 <th>Date</th>
                 <th>Status</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -239,37 +181,23 @@ const NewOrders = () => {
                   <td>{order.quantity}</td>
                   <td>₹{order.totalPrice}</td>
                   <td>{new Date(order.orderedAt).toLocaleDateString()}</td>
-                  <td>{getStatusBadge(order.orderStatus)}</td>
                   <td>
-                    {order.orderStatus === "Pending" && (
-                      <>
-                        <Button
-                          variant="success"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleAccept(order._id)}
-                        >
-                          ✓ Accept
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleReject(order._id)}
-                        >
-                          ✕ Reject
-                        </Button>
-                      </>
-                    )}
-
-                    {order.orderStatus === "Processing" && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleDelivered(order._id)}
-                      >
-                        Mark Delivered
-                      </Button>
-                    )}
+                    <Form.Select
+                      value={order.orderStatus}
+                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                      style={{
+                        width: "150px",
+                        fontSize: "0.9rem",
+                        backgroundColor: "#f8f9fa",
+                      }}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </Form.Select>
+                    <div className="mt-1">{getStatusBadge(order.orderStatus)}</div>
                   </td>
                 </tr>
               ))}
@@ -325,7 +253,7 @@ const NewOrders = () => {
           <Toast.Body>{toast.message}</Toast.Body>
         </Toast>
       </ToastContainer>
-    </div>
+    </div><Footer></Footer></>
   );
 };
 
