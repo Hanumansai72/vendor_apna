@@ -132,16 +132,7 @@ const MyProducts = () => {
   };
 
   // Analytics + Top Selling + Category Perf
-  const topSelling = [...products]
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 3)
-    .map((p) => ({
-      name: p.name,
-      thumb: p.image,
-      info: `${p.unitsSold} units sold`,
-      money: `₹${(p.revenue / 100000).toFixed(2)}L`,
-      growth: `+${(Math.random() * 25 + 5).toFixed(0)}%`,
-    }));
+  
 
   const categoryPerf = useMemo(() => {
     const totals = products.reduce((acc, p) => {
@@ -320,59 +311,7 @@ const MyProducts = () => {
         )}
       </div>
 
-      {/* Insights Section */}
-      <div className="container pb-5">
-        <div className="row g-4">
-          <div className="col-lg-6">
-            <div className="p-4 rounded-4 bg-white shadow-sm h-100">
-              <h5 className="fw-bold mb-3">Top Selling Products</h5>
-              <div className="d-flex flex-column gap-3">
-                {topSelling.map((item, idx) => (
-                  <div className="d-flex align-items-center gap-3" key={idx}>
-                    <img src={item.thumb} alt={item.name} style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover" }} />
-                    <div className="flex-grow-1">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <h6 className="fw-semibold mb-0">{item.name}</h6>
-                        <span className="fw-bold">{item.money}</span>
-                      </div>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <small className="text-muted">{item.info}</small>
-                        <small className="text-success fw-semibold">{item.growth}</small>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="col-lg-6">
-            <div className="p-4 rounded-4 bg-white shadow-sm h-100">
-              <h5 className="fw-bold mb-3">Category Performance</h5>
-              <div className="d-flex flex-column gap-3">
-                {categoryPerf.map((row, i) => (
-                  <div key={i}>
-                    <div className="d-flex justify-content-between">
-                      <div className="fw-semibold">{row.label}</div>
-                      <div className="text-muted small">{row.pct}%</div>
-                    </div>
-                    <div className="progress" style={{ height: 10, background: "#eef2f7" }}>
-                      <div
-                        className="progress-bar"
-                        style={{
-                          width: `${row.pct}%`,
-                          background: i % 4 === 0 ? "#3575ff" : i % 4 === 1 ? "#22c55e" : i % 4 === 2 ? "#fbbf24" : "#a78bfa",
-                        }}
-                      ></div>
-                    </div>
-                    <small className="text-muted">{row.money} revenue</small>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Edit Modal */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
