@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Badge, Button, Form, Modal } from "react-bootstrap";
+import { Table, Badge, Button, Form, Toast, ToastContainer } from "react-bootstrap";
 import ProductNavbar from "./productnav";
 import axios from "axios";
 import { FiRefreshCw, FiDownload } from "react-icons/fi";
@@ -37,21 +37,23 @@ const NewOrders = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filtered, setFiltered] = useState([]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
+  const [toast, setToast] = useState({ show: false, message: "", variant: "success" });
 
+  const showToast = (message, variant = "success") => {
+    setToast({ show: true, message, variant });
+  };
+
+  // 🧠 Fetch all pending/active orders
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `https://backend-d6mx.vercel.app/pending-orders/${id}`
-      );
+      const res = await axios.get(`https://backend-d6mx.vercel.app/pending-orders/${id}`);
       const data = Array.isArray(res.data) ? res.data : res.data.orders || [];
       setOrders(data);
       setFiltered(data);
     } catch (err) {
       console.error("Error fetching orders:", err);
+      showToast("Failed to load orders.", "danger");
     } finally {
       setLoading(false);
     }
@@ -74,42 +76,67 @@ const NewOrders = () => {
     );
   };
 
-  const handleView = (order) => {
-    setSelectedOrder(order);
-    setNewStatus(order.orderStatus);
-    setShowModal(true);
-  };
-
-  const handleUpdateStatus = async () => {
+  // ✅ Accept order → set to "Processing"
+  const handleAccept = async (orderId) => {
     try {
-      await axios.put(
-        `https://backend-d6mx.vercel.app/update-order-status/${selectedOrder._id}`,
-        { orderStatus: newStatus }
+      await axios.put(`https://backend-d6mx.vercel.app/update-order-status/${orderId}`, {
+        orderStatus: "Processing",
+      });
+
+      setFiltered((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, orderStatus: "Processing" } : o
+        )
       );
-      fetchOrders();
-      setShowModal(false);
+
+      showToast("Order accepted successfully!", "success");
     } catch (err) {
-      console.error("Failed to update status", err);
+      console.error("Error updating order:", err);
+      showToast("Failed to accept order.", "danger");
     }
   };
 
-  const handleAccept = (orderId) => {
-    setFiltered((prev) =>
-      prev.map((o) =>
-        o._id === orderId ? { ...o, orderStatus: "Processing" } : o
-      )
-    );
+  // ❌ Reject order → set to "Cancelled"
+  const handleReject = async (orderId) => {
+    try {
+      await axios.put(`https://backend-d6mx.vercel.app/update-order-status/${orderId}`, {
+        orderStatus: "Cancelled",
+      });
+
+      setFiltered((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, orderStatus: "Cancelled" } : o
+        )
+      );
+
+      showToast("Order rejected successfully.", "warning");
+    } catch (err) {
+      console.error("Error updating order:", err);
+      showToast("Failed to reject order.", "danger");
+    }
   };
 
-  const handleReject = (orderId) => {
-    setFiltered((prev) =>
-      prev.map((o) =>
-        o._id === orderId ? { ...o, orderStatus: "Cancelled" } : o
-      )
-    );
+  // ✅ Mark as Delivered (optional future feature)
+  const handleDelivered = async (orderId) => {
+    try {
+      await axios.put(`https://backend-d6mx.vercel.app/update-order-status/${orderId}`, {
+        orderStatus: "Delivered",
+      });
+
+      setFiltered((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, orderStatus: "Delivered" } : o
+        )
+      );
+
+      showToast("Order marked as delivered!", "success");
+    } catch (err) {
+      console.error("Error marking delivered:", err);
+      showToast("Failed to update delivery.", "danger");
+    }
   };
 
-  // Dummy analytics data
+  // Dummy analytics for visuals
   const orderCategories = [
     { name: "Construction", count: 12, color: "#fde68a" },
     { name: "Tools", count: 5, color: "#fef9c3" },
@@ -143,7 +170,7 @@ const NewOrders = () => {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Search Filters */}
         <div className="d-flex flex-wrap gap-3 mb-3 align-items-center bg-white p-3 rounded-3 shadow-sm">
           <Form.Select style={{ width: "200px" }}>
             <option>All Orders</option>
@@ -173,7 +200,7 @@ const NewOrders = () => {
           </div>
         </div>
 
-        {/* Skeleton Animation */}
+        {/* Table */}
         {loading ? (
           <div className="skeleton-table my-4">
             {[1, 2, 3].map((i) => (
@@ -193,8 +220,8 @@ const NewOrders = () => {
                 <th>Customer</th>
                 <th>Quantity</th>
                 <th>Total</th>
-                <th>Order Date</th>
-                <th>Priority</th>
+                <th>Date</th>
+                <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -207,50 +234,14 @@ const NewOrders = () => {
                       {new Date(order.orderedAt).toLocaleString()}
                     </div>
                   </td>
-                  <td>
-                    <div className="d-flex align-items-center gap-2">
-                      <div
-                        className="rounded-circle d-flex align-items-center justify-content-center"
-                        style={{
-                          width: 36,
-                          height: 36,
-                          background: "#f5f7fa",
-                        }}
-                      >
-                        🧰
-                      </div>
-                      <div>
-                        <div className="fw-semibold">{order.productName}</div>
-                        <small className="text-muted">SKU: {order.productId}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="d-flex align-items-center gap-2">
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${order.customerName}`}
-                        alt="avatar"
-                        className="rounded-circle"
-                        width={36}
-                        height={36}
-                      />
-                      <div>
-                        <div className="fw-semibold">{order.customerName}</div>
-                        <small className="text-muted">{order.customerPhone}</small>
-                      </div>
-                    </div>
-                  </td>
+                  <td>{order.productName}</td>
+                  <td>{order.customerName}</td>
                   <td>{order.quantity}</td>
                   <td>₹{order.totalPrice}</td>
+                  <td>{new Date(order.orderedAt).toLocaleDateString()}</td>
+                  <td>{getStatusBadge(order.orderStatus)}</td>
                   <td>
-                    {new Date(order.orderedAt).toLocaleDateString()} <br />
-                    <small className="text-muted">
-                      {new Date(order.orderedAt).toLocaleTimeString()}
-                    </small>
-                  </td>
-                  <td>{getPriorityBadge(order.priority || "Normal")}</td>
-                  <td>
-                    {order.orderStatus === "Pending" ? (
+                    {order.orderStatus === "Pending" && (
                       <>
                         <Button
                           variant="success"
@@ -268,8 +259,16 @@ const NewOrders = () => {
                           ✕ Reject
                         </Button>
                       </>
-                    ) : (
-                      getStatusBadge(order.orderStatus)
+                    )}
+
+                    {order.orderStatus === "Processing" && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleDelivered(order._id)}
+                      >
+                        Mark Delivered
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -278,73 +277,9 @@ const NewOrders = () => {
           </Table>
         )}
 
-        {/* Order Trends + Top Categories */}
-        <div className="row mt-4 g-4">
-          <div className="col-md-6">
-            <div className="p-4 bg-white rounded-4 shadow-sm h-100">
-              <div className="d-flex justify-content-between">
-                <h6 className="fw-bold">Order Trends</h6>
-                <span className="text-warning fw-semibold">View Details</span>
-              </div>
-              <div className="mt-3">
-                <p className="mb-1">Response Rate</p>
-                <div className="progress mb-2">
-                  <div className="progress-bar bg-success" style={{ width: "92%" }}></div>
-                </div>
-                <p className="mb-1">Acceptance Rate</p>
-                <div className="progress mb-2">
-                  <div className="progress-bar bg-warning" style={{ width: "88%" }}></div>
-                </div>
-                <p className="mb-1">Avg Response Time</p>
-                <div className="progress">
-                  <div className="progress-bar bg-primary" style={{ width: "60%" }}></div>
-                </div>
-                <p className="small mt-1 text-muted">15 mins</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
-            <div className="p-4 bg-white rounded-4 shadow-sm h-100">
-              <div className="d-flex justify-content-between">
-                <h6 className="fw-bold">Top Categories</h6>
-                <span className="text-warning fw-semibold">View All</span>
-              </div>
-              <div className="mt-3 d-flex flex-column gap-3">
-                {[
-                  { name: "Electrical", orders: 35, total: "₹18,500", color: "#bfdbfe" },
-                  { name: "Plumbing", orders: 28, total: "₹14,200", color: "#dcfce7" },
-                  { name: "Painting", orders: 22, total: "₹11,300", color: "#fef9c3" },
-                ].map((cat, i) => (
-                  <div className="d-flex justify-content-between align-items-center" key={i}>
-                    <div className="d-flex align-items-center gap-2">
-                      <div
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: "12px",
-                          background: cat.color,
-                        }}
-                      ></div>
-                      <div>
-                        <div className="fw-semibold">{cat.name}</div>
-                        <small className="text-muted">{cat.orders} orders</small>
-                      </div>
-                    </div>
-                    <div className="fw-bold">{cat.total}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Orders by Category Section */}
+        {/* Orders by Category */}
         <div className="mt-5">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="fw-bold">Orders by Category</h5>
-            <span className="text-warning fw-semibold">View All Categories</span>
-          </div>
+          <h5 className="fw-bold mb-3">Orders by Category</h5>
           <div className="d-flex flex-wrap gap-3">
             {orderCategories.map((cat, idx) => (
               <div
@@ -377,6 +312,19 @@ const NewOrders = () => {
           }
         `}</style>
       </div>
+
+      {/* ✅ Toast Notification */}
+      <ToastContainer position="top-end" className="p-3">
+        <Toast
+          bg={toast.variant}
+          onClose={() => setToast({ ...toast, show: false })}
+          show={toast.show}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body>{toast.message}</Toast.Body>
+        </Toast>
+      </ToastContainer>
     </div>
   );
 };
