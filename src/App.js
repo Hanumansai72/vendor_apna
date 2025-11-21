@@ -2,7 +2,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-
 import JobListings from './Componets/Vendor/accpet';
 import JobHistory from './Componets/Vendor/jobhistory';
 import NewHistory from './Componets/Product/neworder';
@@ -26,42 +25,156 @@ import Wallet from './Componets/Vendor/wallet';
 import ProdWallet from './Componets/Product/productwallet';
 import AdminApprovalPending from './Componets/Vendor/Adminapprovalpage';
 
-const Protected = ({ element }) => (
-  <ProtectedRoute>
-    {element}
-  </ProtectedRoute>
-);
-
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
+
+        {/* PUBLIC ROUTES */}
         <Route path="/" element={<LoginPage />} />
-        <Route path='/wallet/:id' element={<Wallet></Wallet>}/>
         <Route path="/signup" element={<Registration />} />
-                <Route path='/vendor/Viewproject/:id' element={<VendorProjects></VendorProjects>}/>
+        <Route path="/admin" element={<AdminApprovalPending />} />
 
-        <Route path='/vendor/projectupload/:id' element={<VendorCard></VendorCard>}/>
-        <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>}/>
-        <Route path='/admin' element={<AdminApprovalPending></AdminApprovalPending>}/>
-        
+        {/* Vendor Project Public Routes */}
+        <Route path="/vendor/viewproject/:id" element={<VendorProjects />} />
+        <Route path="/vendor/projectupload/:id" element={<VendorCard />} />
 
-        {/* Protected Routes */}
-        <Route path="/vendor/:id/" element={<Protected element={<TechnicalNonDashboard />} />} />
-        <Route path=":id/settings" element={<Protected element={<VendorProfileSettings />} />} />
-        <Route path="/vendor/:id/Jobs" element={<Protected element={<JobListings />} />} />
-        <Route path="/vendor/:id/Job/history" element={<Protected element={<JobHistory />} />} />
-        <Route path="/vendor/:id/Job/Progress" element={<Protected element={<JobInProgress />} />} />
-        <Route path="/vendor/:id/Job/Progress/reached" element={<Protected element={<JobProgress />} />} />
-        <Route path="/vendor/:id/Payment" element={<Protected element={<OrderStatus />} />} />
-        <Route path="/vendor/:id/Payment/success" element={<Protected element={<JobPaymentSummary />} />} />
-        <Route path="/product/:id/ViewProduct" element={<Protected element={<ProductList />} />} />
-        <Route path="/addproduct/:id" element={<Protected element={<AddProductForm />} />} />
-        <Route path="/addproduct/:id/BulkUpload" element={<Protected element={<BulkProductUpload />} />} />
-        <Route path="/Product/:id" element={<Protected element={<Product />} />} />
-        <Route path="/Product/:id/order" element={<Protected element={<NewHistory />} />} />
-        <Route path="/Product/:id/order/history" element={<Protected element={<OrderHistory />} />} />
+        {/* Product Wallet (Public or Protected? You decide) */}
+        <Route path="/product/wallet/:id" element={<ProdWallet />} />
+
+        {/* Vendor Wallet (Public or Protected?) */}
+        <Route path="/vendor/wallet/:id" element={<Wallet />} />
+
+
+        {/* ------------------------------- */}
+        {/*        PROTECTED ROUTES         */}
+        {/* ------------------------------- */}
+
+        <Route
+          path="/vendor/:id"
+          element={
+            <ProtectedRoute>
+              <TechnicalNonDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/settings"
+          element={
+            <ProtectedRoute>
+              <VendorProfileSettings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/jobs"
+          element={
+            <ProtectedRoute>
+              <JobListings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/job/history"
+          element={
+            <ProtectedRoute>
+              <JobHistory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/job/progress"
+          element={
+            <ProtectedRoute>
+              <JobInProgress />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/job/progress/reached"
+          element={
+            <ProtectedRoute>
+              <JobProgress />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/payment"
+          element={
+            <ProtectedRoute>
+              <OrderStatus />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/payment/success"
+          element={
+            <ProtectedRoute>
+              <JobPaymentSummary />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/products"
+          element={
+            <ProtectedRoute>
+              <ProductList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/products/add"
+          element={
+            <ProtectedRoute>
+              <AddProductForm />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/products/bulk-upload"
+          element={
+            <ProtectedRoute>
+              <BulkProductUpload />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/products/all"
+          element={
+            <ProtectedRoute>
+              <Product />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/products/order"
+          element={
+            <ProtectedRoute>
+              <NewHistory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/vendor/:id/products/order/history"
+          element={
+            <ProtectedRoute>
+              <OrderHistory />
+            </ProtectedRoute>
+          }
+        />
 
       </Routes>
     </Router>
