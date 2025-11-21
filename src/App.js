@@ -24,6 +24,7 @@ import VendorCard from './Componets/Vendor/projectupload';
 import VendorProjects from './Componets/Vendor/viewprojecs';
 import Wallet from './Componets/Vendor/wallet';
 import ProdWallet from './Componets/Product/productwallet';
+import AdminApprovalPending from './Componets/Vendor/Adminapprovalpage';
 
 const Protected = ({ element }) => (
   <ProtectedRoute>
@@ -43,6 +44,7 @@ function App() {
 
         <Route path='/vendor/projectupload/:id' element={<VendorCard></VendorCard>}/>
         <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>}/>
+        <Route path='/admin' element={<AdminApprovalPending></AdminApprovalPending>}/>
         
 
         {/* Protected Routes */}

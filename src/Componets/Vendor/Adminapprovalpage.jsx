@@ -217,7 +217,293 @@ const AdminApprovalPending = () => {
             </motion.div>
           </div>
         </div>
+        <div>
+          <div className="mt-5">
+
+<div className="mt-5">
+  <h4 className="fw-bold mb-4 text-center">FAQ’S</h4>
+
+  <div className="accordion" id="vendorFAQ">
+
+    {/* 1. What is Apna Mestri Vendor Portal? */}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="accordion-item shadow-sm"
+    >
+      <h2 className="accordion-header" id="faq1">
+        <button
+          className="accordion-button"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse1"
+          aria-expanded="true"
+          aria-controls="faqCollapse1"
+        >
+          <i className="bi bi-info-circle-fill me-2 text-primary"></i>
+          What is Apna Mestri Vendor Portal?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse1"
+        className="accordion-collapse collapse show"
+        aria-labelledby="faq1"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          A platform for professionals to receive job requests, manage
+          bookings & track earnings.
+        </div>
       </div>
+    </motion.div>
+
+    {/* 2. How to create an account? */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq2">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse2"
+        >
+          <i className="bi bi-person-plus-fill me-2 text-success"></i>
+          How do I create an account?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse2"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq2"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Visit <strong>partner.apnamestri.com</strong> → Register → Verify OTP →
+          Upload documents. Verification takes <strong>24–48 hours</strong>.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 3. Profile & Verification */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq3">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse3"
+        >
+          <i className="bi bi-file-earmark-check-fill me-2 text-warning"></i>
+          What documents are required for verification?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse3"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq3"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Required:
+          <ul>
+            <li>Aadhaar/PAN</li>
+            <li>Address Proof</li>
+            <li>Photo</li>
+            <li>Bank Details</li>
+          </ul>
+          <strong>Common rejection reasons:</strong> blurry documents, mismatched info.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 4. Job Booking Process */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq4">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse4"
+        >
+          <i className="bi bi-briefcase-fill me-2 text-danger"></i>
+          How do I receive and accept job requests?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse4"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq4"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Jobs arrive via <strong>SMS, notifications,</strong> and <strong>dashboard alerts</strong>.
+          Open job → Check details → Accept.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 5. Payments */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq5">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse5"
+        >
+          <i className="bi bi-cash-coin me-2 text-success"></i>
+          How do I receive payments?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse5"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq5"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Payments are transferred directly to your bank account with
+          a <strong>24-hour payout cycle</strong>.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 6. Ratings */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq6">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse6"
+        >
+          <i className="bi bi-star-fill me-2 text-warning"></i>
+          How do ratings & reviews work?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse6"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq6"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Customers rate you on punctuality, work quality & behaviour.
+          You may dispute unfair reviews.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 7. Customer Interaction */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq7">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse7"
+        >
+          <i className="bi bi-chat-dots-fill me-2 text-primary"></i>
+          How should I interact with customers?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse7"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq7"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Be polite, confirm job details clearly & share before/after photos.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 8. Technical Issues */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq8">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse8"
+        >
+          <i className="bi bi-wifi-off me-2 text-danger"></i>
+          Jobs are not showing — what should I do?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse8"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq8"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Check network, GPS, notifications. Restart the app if needed.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 9. Safety */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq9">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse9"
+        >
+          <i className="bi bi-shield-fill-check me-2 text-success"></i>
+          What safety guidelines should I follow?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse9"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq9"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Wear protective gear & follow work-site safety rules.
+        </div>
+      </div>
+    </motion.div>
+
+    {/* 10. Support */}
+    <motion.div whileHover={{ scale: 1.02 }} className="accordion-item shadow-sm mt-2">
+      <h2 className="accordion-header" id="faq10">
+        <button
+          className="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse10"
+        >
+          <i className="bi bi-headset me-2 text-primary"></i>
+          How do I contact support?
+        </button>
+      </h2>
+      <div
+        id="faqCollapse10"
+        className="accordion-collapse collapse"
+        aria-labelledby="faq10"
+        data-bs-parent="#vendorFAQ"
+      >
+        <div className="accordion-body">
+          Support options:
+          <ul>
+            <li>Live Chat</li>
+            <li>Call Helpline</li>
+            <li>Email</li>
+          </ul>
+        </div>
+      </div>
+    </motion.div>
+
+  </div>
+</div>
+
+          </div>
+        </div>
+      </div>
+
 
       <Footer />
     </>

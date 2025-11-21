@@ -423,12 +423,22 @@ const TechnicalNonDashboard = () => {
               </p>
             </div>
             <div className="d-flex gap-3 mt-3 mt-md-0">
-              <button className="btn btn-warning fw-semibold d-flex align-items-center rounded-3 px-4">
-                <i className="bi bi-telephone-fill me-2"></i> Call Now
-              </button>
-              <button className="btn btn-dark fw-semibold d-flex align-items-center rounded-3 px-4">
-                <i className="bi bi-chat-dots-fill me-2"></i> Live Chat
-              </button>
+  <a
+    href="tel:+917083932122" 
+    className="btn btn-warning fw-semibold d-flex align-items-center rounded-3 px-4"
+  >
+    <i className="bi bi-telephone-fill me-2"></i> Call Now
+  </a>
+
+              <a
+  href="https://wa.me/917083932122" 
+  target="_blank"
+  rel="noopener noreferrer"
+  className="btn btn-dark fw-semibold d-flex align-items-center rounded-3 px-4"
+>
+  <i className="bi bi-whatsapp me-2"></i> Live Chat
+</a>
+
             </div>
           </div>
         </motion.div>
