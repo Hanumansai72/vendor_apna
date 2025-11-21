@@ -424,14 +424,14 @@ const TechnicalNonDashboard = () => {
             </div>
             <div className="d-flex gap-3 mt-3 mt-md-0">
   <a
-    href="tel:+917083932122" 
+    href="tel:+917093832122" 
     className="btn btn-warning fw-semibold d-flex align-items-center rounded-3 px-4"
   >
     <i className="bi bi-telephone-fill me-2"></i> Call Now
   </a>
 
               <a
-  href="https://wa.me/917083932122" 
+  href="https://wa.me/917093832122" 
   target="_blank"
   rel="noopener noreferrer"
   className="btn btn-dark fw-semibold d-flex align-items-center rounded-3 px-4"
