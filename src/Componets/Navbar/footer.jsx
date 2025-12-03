@@ -26,17 +26,19 @@ const Footer = () => {
       paddingRight:"-5px"
     }}
   />
-  <h5 className="mb-0 fw-bold text-warning" style={{paddingLeft:"8px", width:"100%"}}>Apna Mestri</h5>
+<sub style={{ fontSize: "10px", opacity: 0.8,float:"left" ,position:"relative",right:"28px",top:"9px"}}>
+    Powered By Smart Mestri Solutions
+  </sub>  
 </div>
 
             <p className="text-white-50 small">
               Your trusted platform for civil engineering services and construction materials. Building dreams with quality and precision across India.
             </p>
             <div className="d-flex gap-3 mt-3">
-              <a href="#" className="text-light"><FaFacebookF /></a>
-              <a href="#" className="text-light"><FaTwitter /></a>
-              <a href="#" className="text-light"><FaInstagram /></a>
-              <a href="#" className="text-light"><FaLinkedinIn /></a>
+              <a href="/" className="text-light"><FaFacebookF /></a>
+              <a href="/" className="text-light"><FaTwitter /></a>
+              <a href="/" className="text-light"><FaInstagram /></a>
+              <a href="/" className="text-light"><FaLinkedinIn /></a>
             </div>
           </Col>
 
@@ -70,7 +72,7 @@ const Footer = () => {
           <Col md={3}>
             <h6 className="fw-bold text-light">Contact</h6>
             <ul className="list-unstyled text-white-50 small">
-              <li><FaPhoneAlt className="me-2 text-warning" />+91 8555965140</li>
+              <li><FaPhoneAlt className="me-2 text-warning" />+91 7093832122</li>
               <li><FaEnvelope className="me-2 text-danger" />help@apnamestri.com</li>
               <li><FaMapMarkerAlt className="me-2 text-warning" />Hyderabadm India</li>
               <li><FaRegClock className="me-2 text-info" />24/7 Available</li>
@@ -80,11 +82,11 @@ const Footer = () => {
 
         {/* Bottom links */}
         <div className="d-flex justify-content-between border-top border-secondary pt-3 text-white-50 small flex-column flex-md-row">
-          <p className="mb-2 mb-md-0">© 2025 Civil Mestri. All rights reserved.</p>
+          <p className="mb-2 mb-md-0">© 2025 Smart Mestri Solutions. All rights reserved.</p>
           <div className="d-flex gap-3">
-            <a href="#" className="text-white-50">Privacy Policy</a>
-            <a href="#" className="text-white-50">Terms of Service</a>
-            <a href="#" className="text-white-50">Support</a>
+            <a href="/" className="text-white-50">Privacy Policy</a>
+            <a href="/" className="text-white-50">Terms of Service</a>
+            <a href="/" className="text-white-50">Support</a>
           </div>
         </div>
       </Container>
