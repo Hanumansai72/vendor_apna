@@ -62,7 +62,7 @@ export default function Registration() {
     ],
     "Non-Technical": [
       "EarthWork Labour", "Civil Mason", "Plumber", "Electrician", "Painter",
-      "Carpenter", "False Ceiling Worker", "Fabrication",
+      "Carpenter", "False Ceiling Worker", "Fabrication","Lift Technician","Dismantaling Expert"
     ],
   };
 
