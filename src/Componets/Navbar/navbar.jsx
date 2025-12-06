@@ -132,7 +132,7 @@ function Navbar() {
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="shadow-sm mt-2">
-                <Dropdown.Item as={Link} to={`vendor/${vendorId}/settings`}>
+                <Dropdown.Item as={Link} to={`/vendor/${vendorId}/settings`}>
                   My Profile
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} to={`/wallet/${vendorId}`}>
@@ -208,7 +208,7 @@ function Navbar() {
           <hr />
           <div>
             <Link
-              to={`vendor/${vendorId}/settings`}
+              to={`/vendor/${vendorId}/settings`}
               className="d-block py-2 text-dark"
               onClick={() => setShowProfile(false)}
             >
