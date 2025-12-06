@@ -7,6 +7,7 @@ function Navbar() {
   const vendorId = localStorage.getItem("vendorId");
   const [isOnline, setIsOnline] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const name=localStorage.getItem('vendorname')
 
   function signout() {
     localStorage.removeItem("vendorId");
@@ -124,16 +125,14 @@ function Navbar() {
               >
                 
                 <div className="d-flex flex-column lh-1">
-                  <span className="fw-semibold text-dark">John Anderson</span>
-                  <small className="text-muted" style={{ fontSize: "0.8rem" }}>
-                    Premium Vendor
-                  </small>
+                  <span className="fw-semibold text-dark">${name}</span>
+                  
                 </div>
                 <i className="bi bi-caret-down-fill text-secondary ms-1"></i>
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="shadow-sm mt-2">
-                <Dropdown.Item as={Link} to={`/${vendorId}/settings`}>
+                <Dropdown.Item as={Link} to={`vendor/${vendorId}/settings`}>
                   My Profile
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} to={`/wallet/${vendorId}`}>
@@ -204,13 +203,12 @@ function Navbar() {
               width="80"
               height="80"
             />
-            <h6 className="mt-2 mb-0 fw-semibold">John Anderson</h6>
-            <small className="text-muted">Premium Vendor</small>
+            <h6 className="mt-2 mb-0 fw-semibold">${name}</h6>
           </div>
           <hr />
           <div>
             <Link
-              to={`/${vendorId}/settings`}
+              to={`vendor/${vendorId}/settings`}
               className="d-block py-2 text-dark"
               onClick={() => setShowProfile(false)}
             >
@@ -251,13 +249,7 @@ function Navbar() {
             >
               Job History
             </Link>
-            <Link
-              to={`/vendor/${vendorId}/earnings`}
-              className="d-block py-2 text-dark"
-              onClick={() => setShowProfile(false)}
-            >
-              Earnings
-            </Link>
+            
             <hr />
             <span
               className="d-block py-2 text-danger"

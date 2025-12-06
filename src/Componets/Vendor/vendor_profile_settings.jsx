@@ -88,6 +88,10 @@ function VendorProfileSettings() {
             Charge_Per_Hour_or_Day: data?.Charge_Per_Hour_or_Day || "",
             description: data?.description || "",
           });
+          if (data.Owner_name) {
+          localStorage.setItem("vendorname", data.Owner_name);
+        }
+    
         })
         .catch((err) => console.error("Failed to fetch vendor data", err));
     }
