@@ -25,6 +25,7 @@ import Wallet from './Componets/Vendor/wallet';
 import ProdWallet from './Componets/Product/productwallet';
 import AdminApprovalPending from './Componets/Vendor/Adminapprovalpage';
 import VendorChat from './Componets/Vendor/Vendorchat';
+import VendorInbox from './Componets/Vendor/inbox';
 
 function App() {
   return (
@@ -39,6 +40,11 @@ function App() {
         {/* Vendor Project Public Routes */}
         <Route path="/vendor/viewproject/:id" element={<VendorProjects />} />
         <Route path="/vendor/projectupload/:id" element={<VendorCard />} />
+        <Route
+  path="/user/inbox"
+  element={<UserInbox />}
+/>
+
 
         {/* Product Wallet (Public or Protected? You decide) */}
         <Route path="/product/wallet/:id" element={<ProdWallet />} />
