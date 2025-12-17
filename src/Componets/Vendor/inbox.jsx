@@ -39,7 +39,7 @@ export default function VendorInbox() {
           className="d-flex align-items-center p-2 mb-2 rounded bg-light"
           style={{ cursor: "pointer" }}
           onClick={() =>
-            navigate(`/vendor${c._id}/chat`)
+            navigate(`/vendor/${c._id}/chat`)
           }
         >
           <img
