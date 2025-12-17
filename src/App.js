@@ -42,7 +42,7 @@ function App() {
         <Route path="/vendor/projectupload/:id" element={<VendorCard />} />
         <Route
   path="/user/inbox"
-  element={<UserInbox />}
+  element={<VendorInbox />}
 />
 
 
