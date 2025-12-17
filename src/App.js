@@ -24,6 +24,7 @@ import VendorProjects from './Componets/Vendor/viewprojecs';
 import Wallet from './Componets/Vendor/wallet';
 import ProdWallet from './Componets/Product/productwallet';
 import AdminApprovalPending from './Componets/Vendor/Adminapprovalpage';
+import VendorChat from './Componets/Vendor/Vendorchat';
 
 function App() {
   return (
@@ -58,6 +59,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/vendor/:id/chat"
+  element={
+    <ProtectedRoute>
+      <VendorChat />
+    </ProtectedRoute>
+  }
+/>
 
         <Route
           path="/vendor/:id/settings"
