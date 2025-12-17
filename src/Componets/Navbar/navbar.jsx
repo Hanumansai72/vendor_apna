@@ -141,6 +141,9 @@ function Navbar() {
                 <Dropdown.Item as={Link} to={`/vendor/Viewproject/${vendorId}`}>
                   View Projects
                 </Dropdown.Item>
+                <Dropdown.Item as={Link} to={"/user/inbox"}>
+                Inbox
+                </Dropdown.Item>
                 <Dropdown.Item
                   as={Link}
                   to={`/vendor/projectupload/${vendorId}`}
@@ -227,6 +230,13 @@ function Navbar() {
               onClick={() => setShowProfile(false)}
             >
               View Projects
+            </Link>
+            <Link
+              to={"/user/inbox"}
+              className="d-block py-2 text-dark"
+              onClick={() => setShowProfile(false)}
+            >
+              Inbox
             </Link>
             <Link
               to={`/vendor/projectupload/${vendorId}`}

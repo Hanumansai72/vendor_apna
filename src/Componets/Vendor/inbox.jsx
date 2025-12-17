@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Navbar from "../Navbar/navbar";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -23,6 +24,8 @@ export default function VendorInbox() {
   }, [vendorId]);
 
   return (
+    <>
+    <Navbar></Navbar>
     <div className="container py-3">
       <h5 className="mb-3">Customer Chats</h5>
 
@@ -36,7 +39,7 @@ export default function VendorInbox() {
           className="d-flex align-items-center p-2 mb-2 rounded bg-light"
           style={{ cursor: "pointer" }}
           onClick={() =>
-            navigate(`/vendor/chat/${c._id}`)
+            navigate(`/vendor${c._id}/chat`)
           }
         >
           <img
@@ -55,5 +58,6 @@ export default function VendorInbox() {
         </div>
       ))}
     </div>
+    </>
   );
 }
