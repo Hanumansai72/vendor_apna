@@ -26,7 +26,7 @@ export default function VendorChat() {
     axios
       .get(`${API_BASE}/api/chat/conversations/vendor/${vendorId}`)
       .then((res) => setConversations(res.data))
-      .catch(console.error);
+      .catch((err) => console.error("Load conversations failed", err));
   }, [vendorId]);
 
   /* ---------------- JOIN SOCKET ROOM ---------------- */
@@ -35,21 +35,27 @@ export default function VendorChat() {
 
     socket.emit("joinConversation", activeConversation._id);
 
-    socket.on("receiveMessage", (msg) => {
-      setMessages((prev) => [...prev, msg]);
-    });
+    const handler = (msg) => {
+      if (msg.conversationId === activeConversation._id) {
+        setMessages((prev) => [...prev, msg]);
+      }
+    };
 
-    return () => socket.off("receiveMessage");
+    socket.on("receiveMessage", handler);
+
+    return () => socket.off("receiveMessage", handler);
   }, [activeConversation]);
 
   /* ---------------- LOAD MESSAGES ---------------- */
   useEffect(() => {
     if (!activeConversation?._id) return;
 
+    setMessages([]); // reset when switching chats
+
     axios
       .get(`${API_BASE}/api/chat/messages/${activeConversation._id}`)
       .then((res) => setMessages(res.data))
-      .catch(console.error);
+      .catch((err) => console.error("Load messages failed", err));
   }, [activeConversation]);
 
   /* ---------------- AUTO SCROLL ---------------- */
@@ -79,7 +85,12 @@ export default function VendorChat() {
     ]);
 
     socket.emit("sendMessage", payload);
-    await axios.post(`${API_BASE}/api/chat/message`, payload);
+
+    try {
+      await axios.post(`${API_BASE}/api/chat/message`, payload);
+    } catch (err) {
+      console.error("Message send failed", err);
+    }
   };
 
   return (
@@ -100,14 +111,15 @@ export default function VendorChat() {
                   style={{ cursor: "pointer" }}
                 >
                   <img
-                    src={c.userId.Profile_Image || "https://i.pravatar.cc/80"}
+                    src={c.userId?.Profile_Image || "https://i.pravatar.cc/80"}
                     className="rounded-circle me-2"
                     width="46"
                     height="46"
+                    alt=""
                   />
                   <div>
                     <div style={{ fontWeight: 600 }}>
-                      {c.userId.Full_Name}
+                      {c.userId?.Full_Name || "Customer"}
                     </div>
                     <small className="text-muted">{c.lastMessage}</small>
                   </div>
@@ -122,7 +134,7 @@ export default function VendorChat() {
           <div className="card h-100 d-flex flex-column">
             <div className="card-header bg-white border-bottom">
               <strong>
-                {activeConversation?.userId.Full_Name || "Select a customer"}
+                {activeConversation?.userId?.Full_Name || "Select a customer"}
               </strong>
             </div>
 
@@ -134,12 +146,14 @@ export default function VendorChat() {
               <AnimatePresence>
                 {messages.map((m, i) => (
                   <motion.div
-                    key={i}
+                    key={m._id || i}
                     className={`d-flex mb-3 ${
                       m.senderType === "vendor"
                         ? "justify-content-end"
                         : "justify-content-start"
                     }`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                   >
                     <div
                       className={`p-2 rounded ${
@@ -165,6 +179,7 @@ export default function VendorChat() {
               <div className="d-flex gap-2">
                 <input
                   className="form-control"
+                  placeholder="Type a message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
