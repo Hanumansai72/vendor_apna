@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { socket } from "../Login/Signup/socket";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useAuth } from "../Auth/AuthContext";
+import API_BASE_URL from "../../config";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -10,7 +12,8 @@ const API_BASE =
     : "http://localhost:5000";
 
 export default function VendorChat() {
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
 
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -24,7 +27,7 @@ export default function VendorChat() {
     if (!vendorId) return;
 
     axios
-      .get(`${API_BASE}/api/chat/conversations/vendor/${vendorId}`)
+      .get(`${API_BASE_URL}/api/chat/conversations/vendor/${vendorId}`)
       .then((res) => setConversations(res.data))
       .catch((err) => console.error("Load conversations failed", err));
   }, [vendorId]);
@@ -53,7 +56,7 @@ export default function VendorChat() {
     setMessages([]); // reset when switching chats
 
     axios
-      .get(`${API_BASE}/api/chat/messages/${activeConversation._id}`)
+      .get(`${API_BASE_URL}/api/chat/messages/${activeConversation._id}`)
       .then((res) => setMessages(res.data))
       .catch((err) => console.error("Load messages failed", err));
   }, [activeConversation]);
@@ -87,7 +90,7 @@ export default function VendorChat() {
     socket.emit("sendMessage", payload);
 
     try {
-      await axios.post(`${API_BASE}/api/chat/message`, payload);
+      await axios.post(`${API_BASE_URL}/api/chat/message`, payload);
     } catch (err) {
       console.error("Message send failed", err);
     }
@@ -104,9 +107,8 @@ export default function VendorChat() {
               {conversations.map((c) => (
                 <div
                   key={c._id}
-                  className={`d-flex align-items-center p-2 mb-2 rounded ${
-                    activeConversation?._id === c._id ? "bg-white" : "bg-light"
-                  }`}
+                  className={`d-flex align-items-center p-2 mb-2 rounded ${activeConversation?._id === c._id ? "bg-white" : "bg-light"
+                    }`}
                   onClick={() => setActiveConversation(c)}
                   style={{ cursor: "pointer" }}
                 >
@@ -147,20 +149,18 @@ export default function VendorChat() {
                 {messages.map((m, i) => (
                   <motion.div
                     key={m._id || i}
-                    className={`d-flex mb-3 ${
-                      m.senderType === "vendor"
+                    className={`d-flex mb-3 ${m.senderType === "vendor"
                         ? "justify-content-end"
                         : "justify-content-start"
-                    }`}
+                      }`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
                     <div
-                      className={`p-2 rounded ${
-                        m.senderType === "vendor"
+                      className={`p-2 rounded ${m.senderType === "vendor"
                           ? "bg-warning"
                           : "bg-white"
-                      }`}
+                        }`}
                       style={{ maxWidth: "70%" }}
                     >
                       {m.message}

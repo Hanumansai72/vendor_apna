@@ -1,31 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Table, Badge, Button, Form, Toast, ToastContainer } from "react-bootstrap";
 import ProductNavbar from "./productnav";
+import { useAuth } from "../Auth/AuthContext";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import { FiRefreshCw, FiDownload } from "react-icons/fi";
 import Footer from "../Navbar/footer";
 
-const id = localStorage.getItem("vendorId");
-
-const getStatusBadge = (status) => {
-  switch (status) {
-    case "Delivered":
-      return <Badge bg="success">Delivered</Badge>;
-    case "Pending":
-      return <Badge bg="warning">Pending</Badge>;
-    case "Processing":
-      return <Badge bg="info">Processing</Badge>;
-    case "Shipped":
-      return <Badge bg="primary">Shipped</Badge>;
-    case "Cancelled":
-      return <Badge bg="danger">Cancelled</Badge>;
-    default:
-      return <Badge bg="secondary">{status}</Badge>;
-  }
-};
-
 const NewOrders = () => {
+  const { user: authUser } = useAuth();
+  const id = authUser?.id;
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -36,8 +20,26 @@ const NewOrders = () => {
     setToast({ show: true, message, variant });
   };
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "Delivered":
+        return <Badge bg="success">Delivered</Badge>;
+      case "Pending":
+        return <Badge bg="warning">Pending</Badge>;
+      case "Processing":
+        return <Badge bg="info">Processing</Badge>;
+      case "Shipped":
+        return <Badge bg="primary">Shipped</Badge>;
+      case "Cancelled":
+        return <Badge bg="danger">Cancelled</Badge>;
+      default:
+        return <Badge bg="secondary">{status}</Badge>;
+    }
+  };
+
   // 🧠 Fetch all vendor orders
   const fetchOrders = async () => {
+    if (!id) return;
     setLoading(true);
     try {
       const res = await axios.get(`${API_BASE_URL}/pending-orders/${id}`);
@@ -54,7 +56,7 @@ const NewOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [id]);
 
   const handleSearch = (e) => {
     const q = e.target.value.toLowerCase();
@@ -88,8 +90,6 @@ const NewOrders = () => {
       showToast("Failed to update order status.", "danger");
     }
   };
-
-
 
   return (
     <>
@@ -199,7 +199,6 @@ const NewOrders = () => {
             </Table>
           )}
 
-
           {/* Skeleton animation */}
           <style>{`
           .skeleton-row {
@@ -228,7 +227,9 @@ const NewOrders = () => {
             <Toast.Body>{toast.message}</Toast.Body>
           </Toast>
         </ToastContainer>
-      </div><Footer></Footer></>
+      </div>
+      <Footer />
+    </>
   );
 };
 

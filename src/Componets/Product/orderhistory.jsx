@@ -14,9 +14,11 @@ import API_BASE_URL from "../../config";
 import ProductNavbar from "./productnav";
 import { FiRefreshCw, FiSettings, FiDownload } from "react-icons/fi";
 import Footer from "../Navbar/footer";
+import { useAuth } from "../Auth/AuthContext";
 
 const OrderHistory = () => {
-  const id = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const id = authUser?.id;
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [dateFilter, setDateFilter] = useState("Last 30 Days");

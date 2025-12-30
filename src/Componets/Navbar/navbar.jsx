@@ -1,17 +1,18 @@
-import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Dropdown, Offcanvas, Button } from "react-bootstrap";
+import { useAuth } from "../Auth/AuthContext";
 
 function Navbar() {
-  const navigate = useNavigate();
-  const vendorId = localStorage.getItem("vendorId");
   const [isOnline, setIsOnline] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const name=localStorage.getItem('vendorname')
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  function signout() {
-    localStorage.removeItem("vendorId");
-    localStorage.removeItem("role");
+  const vendorId = user?.id;
+  const name = user?.businessName || user?.ownerName || "Vendor";
+
+  async function signout() {
+    await logout();
     navigate("/");
   }
 
@@ -71,7 +72,7 @@ function Navbar() {
                 Job History
               </Link>
             </li>
-            
+
           </ul>
 
           {/* Right Side */}
@@ -123,10 +124,10 @@ function Navbar() {
                 className="d-flex align-items-center gap-2 border-0 bg-transparent"
                 style={{ cursor: "pointer" }}
               >
-                
+
                 <div className="d-flex flex-column lh-1">
-                  <span className="fw-semibold text-dark">${name}</span>
-                  
+                  <span className="fw-semibold text-dark">{name}</span>
+
                 </div>
                 <i className="bi bi-caret-down-fill text-secondary ms-1"></i>
               </Dropdown.Toggle>
@@ -142,7 +143,7 @@ function Navbar() {
                   View Projects
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} to={"/user/inbox"}>
-                Inbox
+                  Inbox
                 </Dropdown.Item>
                 <Dropdown.Item
                   as={Link}
@@ -206,7 +207,7 @@ function Navbar() {
               width="80"
               height="80"
             />
-            <h6 className="mt-2 mb-0 fw-semibold">${name}</h6>
+            <h6 className="mt-2 mb-0 fw-semibold">{name}</h6>
           </div>
           <hr />
           <div>
@@ -259,7 +260,7 @@ function Navbar() {
             >
               Job History
             </Link>
-            
+
             <hr />
             <span
               className="d-block py-2 text-danger"

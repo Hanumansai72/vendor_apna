@@ -4,6 +4,7 @@ import axios from "axios";
 import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Auth/AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Footer from "../Navbar/footer";
 
@@ -24,7 +25,8 @@ const dateStr = (iso) => {
 };
 
 const JobListings = () => {
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
   const navigate = useNavigate();
 
   const [jobs, setJobs] = useState([]);

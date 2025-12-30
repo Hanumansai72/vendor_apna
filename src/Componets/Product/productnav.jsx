@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Dropdown, Offcanvas, Button } from "react-bootstrap";
+import { useAuth } from "../Auth/AuthContext";
 
 function ProductNavbar() {
   const navigate = useNavigate();
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser, logout } = useAuth();
+  const vendorId = authUser?.id;
   const [isOnline, setIsOnline] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
-  function signout() {
-    localStorage.removeItem("vendorId");
-    localStorage.removeItem("role");
+  async function signout() {
+    await logout();
     navigate("/");
   }
 

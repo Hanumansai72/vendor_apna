@@ -5,12 +5,14 @@ import axios from "axios";
 import API_BASE_URL from "../../config";
 import ProductNavbar from "./productnav";
 import Footer from "../Navbar/footer";
+import { useAuth } from "../Auth/AuthContext";
 
 export default function ProductDashboard() {
+  const { user: authUser } = useAuth();
+  const id = authUser?.id;
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const id = localStorage.getItem("vendorId");
   const [count, setcount] = useState("")
 
   useEffect(() => {

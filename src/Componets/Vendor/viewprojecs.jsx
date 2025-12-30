@@ -5,12 +5,14 @@ import axios from "axios";
 import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Navbar/footer";
+import { useAuth } from "../Auth/AuthContext";
 
 const VendorProjects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
 
   // Fetch projects
   const fetchProjects = async () => {

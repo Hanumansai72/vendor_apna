@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import ProductNavbar from "../Product/productnav";
-const id=localStorage.getItem("vendorId")
-
+import { useAuth } from "../Auth/AuthContext";
 const BulkProductUpload = () => {
+  const { user: authUser } = useAuth();
+  const id = authUser?.id;
   const [fileName, setFileName] = useState("");
   const [uploadPreview, setUploadPreview] = useState([]);
   const [file, setFile] = useState(null);
@@ -26,7 +27,7 @@ const BulkProductUpload = () => {
 
   return (
     <div>
-            <ProductNavbar></ProductNavbar>
+      <ProductNavbar></ProductNavbar>
 
 
       <div className="container mt-5 p-4 border rounded shadow-sm">

@@ -4,9 +4,11 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "../Navbar/navbar";
 import API_BASE_URL from "../../config";
+import { useAuth } from "../Auth/AuthContext";
 
 export default function VendorInbox() {
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
   const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
 

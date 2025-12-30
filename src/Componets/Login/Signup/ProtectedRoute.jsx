@@ -1,31 +1,30 @@
-import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../Auth/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [checking, setChecking] = useState(true);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    const vendorId = localStorage.getItem("vendorId");
+    if (loading) return;
 
-    // 1. User not logged in → go to login page (NOT vendor/:id)
-    if (!vendorId) {
-      navigate("/login", { replace: true });
+    // 1. User not logged in
+    if (!user) {
+      navigate("/", { replace: true });
       return;
     }
 
-    // 2. If URL has an ID, but doesn't match → FIX URL instead of logging out
+    const vendorId = user.id;
+
+    // 2. If URL has an ID, but doesn't match → FIX URL
     if (id && id !== vendorId) {
       navigate(`/vendor/${vendorId}`, { replace: true });
       return;
     }
+  }, [id, navigate, user, loading]);
 
-    // If everything is ok
-    setChecking(false);
-  }, [id, navigate]);
-
-  if (checking) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
 
   return children;
 };

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ProductNavbar from "./productnav";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Auth/AuthContext";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import { ToastContainer, toast } from "react-toastify";
@@ -39,7 +40,8 @@ const categoryBrands = {
 };
 
 const AddProductForm = () => {
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({

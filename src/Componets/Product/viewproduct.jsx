@@ -8,9 +8,11 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ProductNavbar from "./productnav";
 import Footer from "../Navbar/footer";
+import { useAuth } from "../Auth/AuthContext";
 
 const MyProducts = () => {
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -277,10 +279,10 @@ const MyProducts = () => {
                       <img src={p.image || "https://via.placeholder.com/600x400"} alt={p.name} className="product-img rounded-top-4" />
                       <span
                         className={`badge position-absolute top-2 end-2 ${p.status === "Available"
-                            ? "bg-success"
-                            : p.status === "Low Stock"
-                              ? "bg-warning"
-                              : "bg-danger"
+                          ? "bg-success"
+                          : p.status === "Low Stock"
+                            ? "bg-warning"
+                            : "bg-danger"
                           }`}
                         style={{ borderRadius: 12, padding: "6px 12px" }}
                       >

@@ -3,15 +3,17 @@ import { Alert, Card, Row, Col, Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_BASE_URL from "../../config";
+import { useAuth } from "../Auth/AuthContext";
 
 const JobProgress = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [job, setJob] = useState(null);
 
-  const vendorIds = localStorage.getItem("vendorId");
-  const vendorId = localStorage.getItem("JObid");
+  const { user: authUser } = useAuth();
+  const currentVendorId = authUser?.id;
+  const jobId = localStorage.getItem("JObid");
   const navigate = useNavigate();
-  console.log("vendorID:", vendorIds, "Jobid:", vendorId)
+  console.log("vendorID:", currentVendorId, "Jobid:", jobId)
 
   useEffect(() => {
     if (vendorId) {
@@ -37,12 +39,12 @@ const JobProgress = () => {
 
   const handleMarkCompleted = async () => {
     try {
-      await axios.put(`${API_BASE_URL}/api/bookings/${vendorId}/status`, {
+      await axios.put(`${API_BASE_URL}/api/bookings/${jobId}/status`, {
         status: "Completed"
       });
 
       alert("Job marked as completed!");
-      navigate(`/vendor/${vendorIds}`);
+      navigate(`/vendor/${currentVendorId}`);
     } catch (error) {
       console.error("Error marking job as completed:", error);
       alert("Failed to update status. Please try again.");

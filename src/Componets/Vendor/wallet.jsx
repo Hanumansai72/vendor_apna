@@ -5,6 +5,7 @@ import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import Footer from "../Navbar/footer";
+import { useAuth } from "../Auth/AuthContext";
 
 const Wallet = () => {
   const [wallet, setWallet] = useState(null);
@@ -12,7 +13,8 @@ const Wallet = () => {
   useEffect(() => {
     async function fetchWallet() {
       try {
-        const vendorId = localStorage.getItem("vendorId"); // stored at login
+        const { user: authUser } = useAuth();
+        const vendorId = authUser?.id;
         const res = await axios.get(`${API_BASE_URL}/wallet/${vendorId}`);
         setWallet(res.data);
       } catch (err) {
@@ -76,8 +78,8 @@ const Wallet = () => {
                       <div className="d-flex align-items-center gap-3">
                         <div
                           className={`p-3 rounded-circle ${txn.type === "credit"
-                              ? "bg-success-subtle text-success"
-                              : "bg-danger-subtle text-danger"
+                            ? "bg-success-subtle text-success"
+                            : "bg-danger-subtle text-danger"
                             }`}
                         >
                           {txn.type === "credit" ? <FaArrowDown /> : <FaArrowUp />}

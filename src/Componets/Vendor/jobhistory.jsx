@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
+import { useAuth } from "../Auth/AuthContext";
 import "./jobhistory.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Footer from "../Navbar/footer";
@@ -34,7 +35,8 @@ const SERVICE_PILLS = {
 };
 
 const JobHistory = () => {
-  const vendorId = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);

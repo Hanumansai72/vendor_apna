@@ -5,6 +5,7 @@ import Navbar from "../Navbar/navbar";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import Footer from "../Navbar/footer";
+import { useAuth } from "../Auth/AuthContext";
 
 const VendorCard = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,8 @@ const VendorCard = () => {
     image: null,
   });
 
-  const id = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const id = authUser?.id;
 
   // handle input change
   const handleChange = (e) => {

@@ -3,6 +3,7 @@ import "./vendor_settings.css";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import Footer from "../Navbar/footer";
+import { useAuth } from "../Auth/AuthContext";
 
 function VendorProfileSettings() {
   const [formData, setFormData] = useState({
@@ -26,7 +27,8 @@ function VendorProfileSettings() {
   });
   const [profilePic, setProfilePic] = useState(null);
   const [imageFiles, setImageFiles] = useState([]);
-  const id = localStorage.getItem("vendorId");
+  const { user: authUser } = useAuth();
+  const id = authUser?.id;
 
   // Auto-fetch location
   useEffect(() => {
@@ -89,9 +91,6 @@ function VendorProfileSettings() {
             Charge_Per_Hour_or_Day: data?.Charge_Per_Hour_or_Day || "",
             description: data?.description || "",
           });
-          if (data.Owner_name) {
-            localStorage.setItem("vendorname", data.Owner_name);
-          }
 
         })
         .catch((err) => console.error("Failed to fetch vendor data", err));

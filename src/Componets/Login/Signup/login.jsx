@@ -7,10 +7,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import AdminApprovalPending from "../../Vendor/Adminapprovalpage";
+import { useAuth } from "../../Auth/AuthContext";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("vendor");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -52,7 +54,7 @@ export default function LoginPage() {
         });
 
         if (loginRes.data.message === "Success" && loginRes.data.vendorId) {
-          localStorage.setItem("vendorId", loginRes.data.vendorId);
+          login(loginRes.data.vendor || { id: loginRes.data.vendorId });
           setVendorId(loginRes.data.vendorId);
         } else if (loginRes.data.message === "User not found") {
           const tempRes = await axios.post(`${API_BASE_URL}/checktempvendor`, {
@@ -89,7 +91,7 @@ export default function LoginPage() {
 
       if (res.data.message === "Success") {
         toast.success("Login successful");
-        localStorage.setItem("vendorId", res.data.vendorId);
+        login(res.data.vendor || { id: res.data.vendorId });
         setVendorId(res.data.vendorId);
       } else if (res.data.message === "User not found") {
         const tempRes = await axios.post(`${API_BASE_URL}/checktempvendor`, {
@@ -123,8 +125,8 @@ export default function LoginPage() {
 
       if (res.data.message === "Success") {
         toast.success("Google login successful");
-        const vendorId = res.data.vendorId;
-        localStorage.setItem("vendorId", vendorId);
+        const vId = res.data.vendorId;
+        login({ id: vId });
 
         // Fetch category immediately
         const catRes = await axios.get(`${API_BASE_URL}/api/categories/${vendorId}`);
