@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Navbar/footer";
 
@@ -14,7 +15,7 @@ const VendorProjects = () => {
   // Fetch projects
   const fetchProjects = async () => {
     try {
-      const res = await axios.get(`https://backend-d6mx.vercel.app/api/projects/${vendorId}`);
+      const res = await axios.get(`${API_BASE_URL}/api/projects/${vendorId}`);
       setProjects(res.data);
     } catch (error) {
       console.error("❌ Error fetching projects:", error);
@@ -27,7 +28,7 @@ const VendorProjects = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this project?")) return;
     try {
-      await axios.delete(`https://backend-d6mx.vercel.app/api/projects/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/projects/${id}`);
       setProjects(projects.filter((p) => p._id !== id));
       alert("✅ Project deleted successfully!");
     } catch (error) {

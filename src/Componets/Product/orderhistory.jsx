@@ -10,6 +10,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import ProductNavbar from "./productnav";
 import { FiRefreshCw, FiSettings, FiDownload } from "react-icons/fi";
 import Footer from "../Navbar/footer";
@@ -29,7 +30,7 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
       try {
         const res = await axios.get(
-          `https://backend-d6mx.vercel.app/wow/${id}`
+          `${API_BASE_URL}/wow/${id}`
         );
         const data = res.data.all || [];
         setOrders(data);

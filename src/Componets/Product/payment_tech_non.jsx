@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Card, Row, Col, Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from "../../config";
 
 const JobProgress = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -10,11 +11,11 @@ const JobProgress = () => {
   const vendorIds = localStorage.getItem("vendorId");
   const vendorId = localStorage.getItem("JObid");
   const navigate = useNavigate();
-  console.log("vendorID:",vendorIds,"Jobid:",vendorId)
+  console.log("vendorID:", vendorIds, "Jobid:", vendorId)
 
   useEffect(() => {
     if (vendorId) {
-      axios.get(`https://backend-d6mx.vercel.app/services/jobs/${vendorId}`)
+      axios.get(`${API_BASE_URL}/services/jobs/${vendorId}`)
         .then(res => {
           console.log(res.data);
           setJob(res.data);
@@ -36,7 +37,7 @@ const JobProgress = () => {
 
   const handleMarkCompleted = async () => {
     try {
-      await axios.put(`https://backend-d6mx.vercel.app/api/bookings/${vendorId}/status`, {
+      await axios.put(`${API_BASE_URL}/api/bookings/${vendorId}/status`, {
         status: "Completed"
       });
 
@@ -53,10 +54,10 @@ const JobProgress = () => {
   }
   const formattedDate = job.serviceDate
     ? new Date(job.serviceDate).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : '';
 
   return (

@@ -3,6 +3,7 @@ import { Card, Button, Container, Row, Col } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import Footer from "../Navbar/footer";
 
 const Wallet = () => {
@@ -12,7 +13,7 @@ const Wallet = () => {
     async function fetchWallet() {
       try {
         const vendorId = localStorage.getItem("vendorId"); // stored at login
-        const res = await axios.get(`https://backend-d6mx.vercel.app/wallet/${vendorId}`);
+        const res = await axios.get(`${API_BASE_URL}/wallet/${vendorId}`);
         setWallet(res.data);
       } catch (err) {
         console.error(err);
@@ -74,11 +75,10 @@ const Wallet = () => {
                     <Card.Body className="d-flex align-items-center justify-content-between">
                       <div className="d-flex align-items-center gap-3">
                         <div
-                          className={`p-3 rounded-circle ${
-                            txn.type === "credit"
+                          className={`p-3 rounded-circle ${txn.type === "credit"
                               ? "bg-success-subtle text-success"
                               : "bg-danger-subtle text-danger"
-                          }`}
+                            }`}
                         >
                           {txn.type === "credit" ? <FaArrowDown /> : <FaArrowUp />}
                         </div>
@@ -90,9 +90,8 @@ const Wallet = () => {
                         </div>
                       </div>
                       <p
-                        className={`fw-bold ${
-                          txn.type === "credit" ? "text-success" : "text-danger"
-                        } mb-0`}
+                        className={`fw-bold ${txn.type === "credit" ? "text-success" : "text-danger"
+                          } mb-0`}
                       >
                         {txn.type === "credit" ? "+" : "-"}₹{txn.amount}
                       </p>

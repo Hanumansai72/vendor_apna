@@ -1,10 +1,11 @@
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { GoogleLogin } from "@react-oauth/google";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import AdminApprovalPending from "../../Vendor/Adminapprovalpage";
 
 export default function LoginPage() {
@@ -24,7 +25,7 @@ export default function LoginPage() {
   // Send OTP for email login
   const sendOtp = async () => {
     try {
-      await axios.post("https://backend-d6mx.vercel.app/sendotp", { Email: username });
+      await axios.post(`${API_BASE_URL}/sendotp`, { Email: username });
       toast.success("OTP sent to your email");
       setOtpSent(true);
       setLoginMethod("otp");
@@ -36,7 +37,7 @@ export default function LoginPage() {
   // Verify OTP and login
   const verifyOtp = async () => {
     try {
-      const res = await axios.post("https://backend-d6mx.vercel.app/verifyotp", {
+      const res = await axios.post(`${API_BASE_URL}/verifyotp`, {
         Email: username,
         otp: otp,
       });
@@ -46,7 +47,7 @@ export default function LoginPage() {
         setOtpVerified(true);
 
         // After OTP verified, login via OTP
-        const loginRes = await axios.post("https://backend-d6mx.vercel.app/loginwith-otp", {
+        const loginRes = await axios.post(`${API_BASE_URL}/loginwith-otp`, {
           email: username,
         });
 
@@ -54,7 +55,7 @@ export default function LoginPage() {
           localStorage.setItem("vendorId", loginRes.data.vendorId);
           setVendorId(loginRes.data.vendorId);
         } else if (loginRes.data.message === "User not found") {
-          const tempRes = await axios.post("https://backend-d6mx.vercel.app/checktempvendor", {
+          const tempRes = await axios.post(`${API_BASE_URL}/checktempvendor`, {
             Email_address: username,
           });
 
@@ -81,7 +82,7 @@ export default function LoginPage() {
     setLoginMethod("password");
 
     try {
-      const res = await axios.post("https://backend-d6mx.vercel.app/postusername", {
+      const res = await axios.post(`${API_BASE_URL}/postusername`, {
         username,
         password,
       });
@@ -91,7 +92,7 @@ export default function LoginPage() {
         localStorage.setItem("vendorId", res.data.vendorId);
         setVendorId(res.data.vendorId);
       } else if (res.data.message === "User not found") {
-        const tempRes = await axios.post("https://backend-d6mx.vercel.app/checktempvendor", {
+        const tempRes = await axios.post(`${API_BASE_URL}/checktempvendor`, {
           Email_address: username,
         });
 
@@ -111,45 +112,45 @@ export default function LoginPage() {
 
   // Handle Google Login success
   const handleGoogleSuccess = async (credentialResponse) => {
-  try {
-    const decoded = jwtDecode(credentialResponse.credential);
-    const { email, name } = decoded;
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      const { email, name } = decoded;
 
-    const res = await axios.post("https://backend-d6mx.vercel.app/google-login", {
-      email,
-      name,
-    });
+      const res = await axios.post(`${API_BASE_URL}/google-login`, {
+        email,
+        name,
+      });
 
-    if (res.data.message === "Success") {
-      toast.success("Google login successful");
-      const vendorId = res.data.vendorId;
-      localStorage.setItem("vendorId", vendorId);
+      if (res.data.message === "Success") {
+        toast.success("Google login successful");
+        const vendorId = res.data.vendorId;
+        localStorage.setItem("vendorId", vendorId);
 
-      // Fetch category immediately
-      const catRes = await axios.get(`https://backend-d6mx.vercel.app/api/categories/${vendorId}`);
-      const category = catRes.data.Category.toLowerCase();
+        // Fetch category immediately
+        const catRes = await axios.get(`${API_BASE_URL}/api/categories/${vendorId}`);
+        const category = catRes.data.Category.toLowerCase();
 
-      // Navigate based on category
-      if (category === "technical" || category === "non-technical") {
-        navigate(`/vendor/${vendorId}`);
+        // Navigate based on category
+        if (category === "technical" || category === "non-technical") {
+          navigate(`/vendor/${vendorId}`);
+        } else {
+          navigate(`/product/${vendorId}`);
+        }
+      } else if (res.data.message === "User pending approval") {
+        setIsPendingApproval(true);
       } else {
-        navigate(`/product/${vendorId}`);
+        toast.error(res.data.message || "Google login error");
       }
-    } else if (res.data.message === "User pending approval") {
-      setIsPendingApproval(true);
-    } else {
-      toast.error(res.data.message || "Google login error");
+    } catch (error) {
+      toast.error("Google login failed");
     }
-  } catch (error) {
-    toast.error("Google login failed");
-  }
-};
+  };
 
   // Fetch category after login
   useEffect(() => {
     if (!vendorId) return;
     axios
-      .get(`https://backend-d6mx.vercel.app/api/categories/${vendorId}`)
+      .get(`${API_BASE_URL}/api/categories/${vendorId}`)
       .then((res) => {
         setTech(res.data.Category);
       })
@@ -184,17 +185,15 @@ export default function LoginPage() {
         <div className="d-flex mb-4">
           <button
             onClick={() => setActiveTab("vendor")}
-            className={`btn ${
-              activeTab === "vendor" ? "btn-warning text-white" : "btn-light text-secondary"
-            } me-2`}
+            className={`btn ${activeTab === "vendor" ? "btn-warning text-white" : "btn-light text-secondary"
+              } me-2`}
           >
             Professional
           </button>
           <button
             onClick={() => setActiveTab("product")}
-            className={`btn ${
-              activeTab === "product" ? "btn-warning text-white" : "btn-light text-secondary"
-            }`}
+            className={`btn ${activeTab === "product" ? "btn-warning text-white" : "btn-light text-secondary"
+              }`}
           >
             Product
           </button>

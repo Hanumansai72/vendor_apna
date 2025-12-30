@@ -5,6 +5,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../Navbar/navbar";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import { motion } from "framer-motion";
 
 const WEATHER_API_KEY = "be12bfe18a5e6692622153268ca9e7b3";
@@ -24,7 +25,7 @@ const JobInProgress = () => {
   useEffect(() => {
     if (!vendorId) return;
     axios
-      .get(`https://backend-d6mx.vercel.app/services/jobs/${vendorId}`)
+      .get(`${API_BASE_URL}/services/jobs/${vendorId}`)
       .then((res) => {
         const data = Array.isArray(res.data)
           ? res.data.find((j) => j._id === id || j.jobId === id) || res.data[0]
@@ -49,9 +50,8 @@ const JobInProgress = () => {
           temp: Math.round(d.main?.temp ?? 0),
           description: d.weather?.[0]?.description ?? "—",
           precip: d.rain?.["1h"] ? `${d.rain["1h"]} mm` : "0%",
-          wind: `${Math.round(d.wind?.speed ?? 0)} km/h ${
-            d.wind?.deg ? degToCompass(d.wind.deg) : ""
-          }`.trim(),
+          wind: `${Math.round(d.wind?.speed ?? 0)} km/h ${d.wind?.deg ? degToCompass(d.wind.deg) : ""
+            }`.trim(),
         });
       })
       .catch((e) => console.error("Weather error:", e));
@@ -74,7 +74,7 @@ const JobInProgress = () => {
   const openOtp = async () => {
     setShowOtp(true);
     try {
-      await axios.post("https://backend-d6mx.vercel.app/sendotp", {
+      await axios.post(`${API_BASE_URL}/sendotp`, {
         Email: job?.customer?.email,
       });
       alert("OTP sent to customer email!");
@@ -96,7 +96,7 @@ const JobInProgress = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "https://backend-d6mx.vercel.app/verifyotp",
+        `${API_BASE_URL}/verifyotp`,
         {
           Email: job?.customer?.email,
           otp: otp.join(""),

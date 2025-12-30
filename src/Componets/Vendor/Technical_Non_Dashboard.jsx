@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../Navbar/navbar";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Techincal.css";
@@ -16,12 +17,12 @@ const TechnicalNonDashboard = () => {
   const [works, setWorks] = useState([]); // ✅ holds upcoming work dates + times
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [analytics, setAnalytics] = useState({
-  acceptanceRate: 0,
-  completionRate: 0,
-  avgResponseTime: 0,
-  avgRating: 0,
-  earningsGrowth: 0,
-});
+    acceptanceRate: 0,
+    completionRate: 0,
+    avgResponseTime: 0,
+    avgRating: 0,
+    earningsGrowth: 0,
+  });
 
 
   // Helper: Month name & year for header
@@ -33,17 +34,17 @@ const TechnicalNonDashboard = () => {
   // 🟡 Fetch count, upcoming jobs & upcoming works
   useEffect(() => {
     axios
-      .get(`https://backend-d6mx.vercel.app/count/service/${id}`)
+      .get(`${API_BASE_URL}/count/service/${id}`)
       .then((res) => setCount(res.data))
       .catch(console.error);
 
     axios
-      .get(`https://backend-d6mx.vercel.app/upcomingworks/${id}`)
+      .get(`${API_BASE_URL}/upcomingworks/${id}`)
       .then((res) => setWorks(res.data.show_works || [])) // ✅ includes time
       .catch(console.error);
 
     axios
-      .get(`https://backend-d6mx.vercel.app/upcomingjobs/${id}`)
+      .get(`${API_BASE_URL}/upcomingjobs/${id}`)
       .then((res) => {
         setUpcomingJobs(res.data || []);
         if (res.data && res.data.length > 0) {
@@ -54,10 +55,10 @@ const TechnicalNonDashboard = () => {
       .catch(console.error);
   }, [id]);
   useEffect(() => {
-  axios.get(`https://backend-d6mx.vercel.app/vendor/${id}/analytics`)
-    .then(res => setAnalytics(res.data))
-    .catch(console.error);
-}, [id]);
+    axios.get(`${API_BASE_URL}/vendor/${id}/analytics`)
+      .then(res => setAnalytics(res.data))
+      .catch(console.error);
+  }, [id]);
 
 
   // Auto-hide job popup
@@ -206,11 +207,10 @@ const TechnicalNonDashboard = () => {
                   const matchingWorks = findWorkForDate(day);
                   return (
                     <div
-                      className={`col calendar-cell p-3 ${
-                        matchingWorks.length
+                      className={`col calendar-cell p-3 ${matchingWorks.length
                           ? "bg-warning-subtle text-dark rounded-3 fw-bold shadow-sm"
                           : ""
-                      }`}
+                        }`}
                       key={j}
                     >
                       <div>{day}</div>
@@ -312,40 +312,40 @@ const TechnicalNonDashboard = () => {
 
         {/* ===== Analytics Section ===== */}
         <div className="p-4 rounded-4 shadow-sm bg-white mb-5">
-  <h4 className="fw-bold mb-4">Alert Performance Analytics</h4>
-  <div className="row g-3 text-center">
-    <div className="col-md-2">
-      <div className="stat-box bg-light rounded-4 p-3">
-        <h5 className="fw-bold text-success">{analytics.acceptanceRate?.toFixed(1)}%</h5>
-        <p className="text-muted small">Acceptance Rate</p>
-      </div>
-    </div>
-    <div className="col-md-2">
-      <div className="stat-box bg-light rounded-4 p-3">
-        <h5 className="fw-bold text-warning">{analytics.completionRate?.toFixed(1)}%</h5>
-        <p className="text-muted small">Completion Rate</p>
-      </div>
-    </div>
-    <div className="col-md-2">
-      <div className="stat-box bg-light rounded-4 p-3">
-        <h5 className="fw-bold text-primary">{analytics.avgResponseTime} min</h5>
-        <p className="text-muted small">Avg Response</p>
-      </div>
-    </div>
-    <div className="col-md-2">
-      <div className="stat-box bg-light rounded-4 p-3">
-        <h5 className="fw-bold text-info">{analytics.avgRating}★</h5>
-        <p className="text-muted small">Customer Rating</p>
-      </div>
-    </div>
-    <div className="col-md-2">
-      <div className="stat-box bg-light rounded-4 p-3">
-        <h5 className="fw-bold text-success">{analytics.earningsGrowth?.toFixed(1)}%</h5>
-        <p className="text-muted small">Earnings Growth</p>
-      </div>
-    </div>
-  </div>
-</div>
+          <h4 className="fw-bold mb-4">Alert Performance Analytics</h4>
+          <div className="row g-3 text-center">
+            <div className="col-md-2">
+              <div className="stat-box bg-light rounded-4 p-3">
+                <h5 className="fw-bold text-success">{analytics.acceptanceRate?.toFixed(1)}%</h5>
+                <p className="text-muted small">Acceptance Rate</p>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="stat-box bg-light rounded-4 p-3">
+                <h5 className="fw-bold text-warning">{analytics.completionRate?.toFixed(1)}%</h5>
+                <p className="text-muted small">Completion Rate</p>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="stat-box bg-light rounded-4 p-3">
+                <h5 className="fw-bold text-primary">{analytics.avgResponseTime} min</h5>
+                <p className="text-muted small">Avg Response</p>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="stat-box bg-light rounded-4 p-3">
+                <h5 className="fw-bold text-info">{analytics.avgRating}★</h5>
+                <p className="text-muted small">Customer Rating</p>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="stat-box bg-light rounded-4 p-3">
+                <h5 className="fw-bold text-success">{analytics.earningsGrowth?.toFixed(1)}%</h5>
+                <p className="text-muted small">Earnings Growth</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* ===== Support & Help ===== */}
         <motion.div
@@ -423,21 +423,21 @@ const TechnicalNonDashboard = () => {
               </p>
             </div>
             <div className="d-flex gap-3 mt-3 mt-md-0">
-  <a
-    href="tel:+917093832122" 
-    className="btn btn-warning fw-semibold d-flex align-items-center rounded-3 px-4"
-  >
-    <i className="bi bi-telephone-fill me-2"></i> Call Now
-  </a>
+              <a
+                href="tel:+917093832122"
+                className="btn btn-warning fw-semibold d-flex align-items-center rounded-3 px-4"
+              >
+                <i className="bi bi-telephone-fill me-2"></i> Call Now
+              </a>
 
               <a
-  href="https://wa.me/917093832122" 
-  target="_blank"
-  rel="noopener noreferrer"
-  className="btn btn-dark fw-semibold d-flex align-items-center rounded-3 px-4"
->
-  <i className="bi bi-whatsapp me-2"></i> Live Chat
-</a>
+                href="https://wa.me/917093832122"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-dark fw-semibold d-flex align-items-center rounded-3 px-4"
+              >
+                <i className="bi bi-whatsapp me-2"></i> Live Chat
+              </a>
 
             </div>
           </div>

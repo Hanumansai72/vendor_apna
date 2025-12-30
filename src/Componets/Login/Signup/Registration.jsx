@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { motion } from "framer-motion";
@@ -62,7 +63,7 @@ export default function Registration() {
     ],
     "Non-Technical": [
       "EarthWork Labour", "Civil Mason", "Plumber", "Electrician", "Painter",
-      "Carpenter", "False Ceiling Worker", "Fabrication","Lift Technician","Dismantaling Expert"
+      "Carpenter", "False Ceiling Worker", "Fabrication", "Lift Technician", "Dismantaling Expert"
     ],
   };
 
@@ -104,7 +105,7 @@ export default function Registration() {
   const handleSendOtp = async () => {
     if (!formData.Email_address) return toast.warning("Enter your email first");
     try {
-      await axios.post("https://backend-d6mx.vercel.app/sendotp", {
+      await axios.post(`${API_BASE_URL}/sendotp`, {
         Email: formData.Email_address,
       });
       toast.success("OTP sent to your email!");
@@ -118,7 +119,7 @@ export default function Registration() {
   const verifyOtp = async () => {
     if (!otp) return toast.warning("Enter OTP");
     try {
-      await axios.post("https://backend-d6mx.vercel.app/verifyotp", {
+      await axios.post(`${API_BASE_URL}/verifyotp`, {
         Email: formData.Email_address,
         otp,
       });
@@ -148,7 +149,7 @@ export default function Registration() {
       if (registrationType === "Product") {
         const data = new FormData();
         Object.keys(formData).forEach((k) => data.append(k, formData[k]));
-        await axios.post("https://backend-d6mx.vercel.app/register", data, {
+        await axios.post(`${API_BASE_URL}/register`, data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Registered successfully with Google!");
@@ -199,7 +200,7 @@ export default function Registration() {
       imageFiles.forEach((f) => data.append("productImages", f));
       if (profilePic) data.append("profileImage", profilePic);
 
-      await axios.post("https://backend-d6mx.vercel.app/register", data, {
+      await axios.post(`${API_BASE_URL}/register`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Registration successful!");
@@ -315,8 +316,8 @@ export default function Registration() {
                   >
                     {otpTimer > 0
                       ? `Resend in ${Math.floor(otpTimer / 60)}:${String(
-                          otpTimer % 60
-                        ).padStart(2, "0")}`
+                        otpTimer % 60
+                      ).padStart(2, "0")}`
                       : "Send OTP"}
                   </button>
                 </div>
@@ -410,11 +411,10 @@ export default function Registration() {
                     <button
                       key={type}
                       type="button"
-                      className={`btn mx-1 ${
-                        selectedServiceType === type
+                      className={`btn mx-1 ${selectedServiceType === type
                           ? "btn-warning text-dark"
                           : "btn-outline-secondary"
-                      }`}
+                        }`}
                       onClick={() => handleServiceTypeClick(type)}
                     >
                       {type}
@@ -448,11 +448,10 @@ export default function Registration() {
                   <button
                     key={type}
                     type="button"
-                    className={`btn mx-1 ${
-                      formData.Category === type
+                    className={`btn mx-1 ${formData.Category === type
                         ? "btn-warning text-dark"
                         : "btn-outline-secondary"
-                    }`}
+                      }`}
                     onClick={() => setFormData((p) => ({ ...p, Category: type }))}
                   >
                     {type}
@@ -567,11 +566,10 @@ export default function Registration() {
                     <button
                       key={type}
                       type="button"
-                      className={`btn mx-1 ${
-                        selectedServiceType === type
+                      className={`btn mx-1 ${selectedServiceType === type
                           ? "btn-warning text-dark"
                           : "btn-outline-secondary"
-                      }`}
+                        }`}
                       onClick={() => handleServiceTypeClick(type)}
                     >
                       {type}

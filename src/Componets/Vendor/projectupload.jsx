@@ -3,6 +3,7 @@ import { Container, Form, Button, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "../Navbar/navbar";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import Footer from "../Navbar/footer";
 
 const VendorCard = () => {
@@ -42,7 +43,7 @@ const VendorCard = () => {
       data.append("image", formData.image);
 
       // send to backend
-      const res = await axios.post("https://backend-d6mx.vercel.app/projecteatils/vendor", data, {
+      const res = await axios.post(`${API_BASE_URL}/projecteatils/vendor`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

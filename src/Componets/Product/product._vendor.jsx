@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import ProductNavbar from "./productnav";
 import Footer from "../Navbar/footer";
 
@@ -10,31 +11,31 @@ export default function ProductDashboard() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const id = localStorage.getItem("vendorId");
-  const[count,setcount]=useState("")
+  const [count, setcount] = useState("")
 
-  useEffect(()=>{
-    const fetchcount=async()=>{
-      try{
-       const res = await axios.get(`https://backend-d6mx.vercel.app/api/getproductcount/${id}`);
-       setcount(res.data)
+  useEffect(() => {
+    const fetchcount = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/getproductcount/${id}`);
+        setcount(res.data)
 
       }
-      catch(err){
+      catch (err) {
         console.log(err)
 
       }
     };
     fetchcount();
-    
-  },[id])
+
+  }, [id])
 
   // 🟡 Fetch Orders + Products
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [ordersRes, productsRes] = await Promise.all([
-          axios.get(`https://backend-d6mx.vercel.app/wow/${id}`),
-          axios.get(`https://backend-d6mx.vercel.app/viewproduct/${id}`)
+          axios.get(`${API_BASE_URL}/wow/${id}`),
+          axios.get(`${API_BASE_URL}/viewproduct/${id}`)
         ]);
 
         const allOrders = ordersRes.data || {};
@@ -53,8 +54,8 @@ export default function ProductDashboard() {
             parseInt(product.ProductStock) === 0
               ? "Out of Stock"
               : parseInt(product.ProductStock) < 10
-              ? "Low Stock"
-              : "Available",
+                ? "Low Stock"
+                : "Available",
         }));
         setProducts(mappedProducts);
       } catch (err) {
@@ -69,7 +70,7 @@ export default function ProductDashboard() {
 
   // 🟡 Static KPI Data
   const kpis = [
-    { icon: "bi-bag-fill", title: "Total Products", value:count.count, sub: "+12 this month", subClass: "text-success" },
+    { icon: "bi-bag-fill", title: "Total Products", value: count.count, sub: "+12 this month", subClass: "text-success" },
     { icon: "bi-coin", title: "Earnings This Month", value: count.balance, sub: "+18.2% from last month", subClass: "text-success" },
     { icon: "bi-basket2-fill", title: "Total Orders", value: count.total_order, sub: "+24 today", subClass: "text-success" },
   ];
@@ -159,9 +160,8 @@ export default function ProductDashboard() {
                       className="product-img"
                     />
                     <span
-                      className={`badge status-badge ${
-                        p.status === "Out of Stock" ? "bg-danger" : p.status === "Low Stock" ? "bg-warning" : "bg-success"
-                      }`}
+                      className={`badge status-badge ${p.status === "Out of Stock" ? "bg-danger" : p.status === "Low Stock" ? "bg-warning" : "bg-success"
+                        }`}
                     >
                       {p.status}
                     </span>

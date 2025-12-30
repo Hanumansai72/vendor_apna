@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import ProductNavbar from "./productnav";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
@@ -107,7 +108,7 @@ const AddProductForm = () => {
     }
     setLoadingAI(true);
     try {
-      const res = await axios.post("https://backend-d6mx.vercel.app/generate-content", {
+      const res = await axios.post(`${API_BASE_URL}/generate-content`, {
         category,
         subCategory,
       });
@@ -182,7 +183,7 @@ const AddProductForm = () => {
         isAvailable: formData.isAvailable,
       };
 
-      await axios.post("https://backend-d6mx.vercel.app/addproduct", productPayload);
+      await axios.post(`${API_BASE_URL}/addproduct`, productPayload);
       toast.success("Product submitted successfully!");
     } catch (error) {
       console.error("Error submitting product:", error);
@@ -279,13 +280,13 @@ const AddProductForm = () => {
               </div>
 
               {/* Optional brand/model fields purely for UI parity */}
-              
+
               <div className="col-md-6">
                 <label className="form-label fw-semibold">Model Number</label>
                 <input
                   className="form-control rounded-3"
                   placeholder="Enter model number"
-                  onChange={() => {}}
+                  onChange={() => { }}
                 />
               </div>
             </div>
@@ -365,7 +366,7 @@ const AddProductForm = () => {
                   onChange={(e) => setDimensions(e.target.value)}
                 />
               </div>
-              
+
             </div>
           </motion.div>
 
@@ -646,7 +647,7 @@ const AddProductForm = () => {
         }
       `}</style>
     </div>
-        
+
   );
 };
 

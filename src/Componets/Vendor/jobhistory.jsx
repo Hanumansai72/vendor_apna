@@ -10,6 +10,7 @@ import {
   Row,
 } from "react-bootstrap";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
 import "./jobhistory.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -51,26 +52,26 @@ const JobHistory = () => {
 
   // ✅ Fetch jobs
   useEffect(() => {
-  setLoading(true);
-  axios
-    .get(`https://backend-d6mx.vercel.app/jobhistry/${vendorId}`, {
-      headers: { "Cache-Control": "no-cache" },
-    })
-    .then((res) => {
-      const normalized = (res.data || []).map((j) => ({
-        ...j,
-        _status: j.status || "Pending",
-        _service: j.Vendorid?.Category || "General",
-        _date: j.serviceDate ? new Date(j.serviceDate) : null,
-        _payment:
-          j.payment?.method || (j.totalAmount ? "Paid" : "Pending"),
-        _amount: j.totalAmount ?? 0,
-      }));
-      setJobs(normalized);
-    })
-    .catch((err) => console.error("❌ Fetch jobs error:", err))
-    .finally(() => setLoading(false));
-}, [vendorId]);
+    setLoading(true);
+    axios
+      .get(`${API_BASE_URL}/jobhistry/${vendorId}`, {
+        headers: { "Cache-Control": "no-cache" },
+      })
+      .then((res) => {
+        const normalized = (res.data || []).map((j) => ({
+          ...j,
+          _status: j.status || "Pending",
+          _service: j.Vendorid?.Category || "General",
+          _date: j.serviceDate ? new Date(j.serviceDate) : null,
+          _payment:
+            j.payment?.method || (j.totalAmount ? "Paid" : "Pending"),
+          _amount: j.totalAmount ?? 0,
+        }));
+        setJobs(normalized);
+      })
+      .catch((err) => console.error("❌ Fetch jobs error:", err))
+      .finally(() => setLoading(false));
+  }, [vendorId]);
 
 
   const clearFilters = () => {

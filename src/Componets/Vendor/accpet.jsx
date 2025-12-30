@@ -1,6 +1,7 @@
 // src/Components/Vendor/JobListingsNew.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -41,7 +42,7 @@ const JobListings = () => {
     if (!vendorId) return;
     setLoading(true);
     axios
-      .get(`https://backend-d6mx.vercel.app/api/newjob/${vendorId}`)
+      .get(`${API_BASE_URL}/api/newjob/${vendorId}`)
       .then((res) => {
         setJobs(Array.isArray(res.data) ? res.data : []);
         setUpdatedAt(new Date());
@@ -107,7 +108,7 @@ const JobListings = () => {
   const updateStatus = async (job, target) => {
     try {
       const { data } = await axios.put(
-        `https://backend-d6mx.vercel.app/api/bookings/${job._id}/status`,
+        `${API_BASE_URL}/api/bookings/${job._id}/status`,
         { status: target }
       );
 
@@ -253,10 +254,10 @@ const JobListings = () => {
                 status === "Accepted"
                   ? "st-accepted"
                   : status === "In Progress"
-                  ? "st-progress"
-                  : status === "Completed"
-                  ? "st-completed"
-                  : "st-pending";
+                    ? "st-progress"
+                    : status === "Completed"
+                      ? "st-completed"
+                      : "st-pending";
 
               return (
                 <div key={job._id} className="jl-card">
