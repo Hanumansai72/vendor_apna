@@ -2,33 +2,33 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './Componets/Auth/AuthContext';
-import ProtectedRoute from './Componets/Login/Signup/ProtectedRoute';
+import { AuthProvider } from './Components/Auth/AuthContext';
+import ProtectedRoute from './Components/Login/Signup/ProtectedRoute';
 
 // Lazy load components
-const JobListings = lazy(() => import('./Componets/Vendor/accpet'));
-const JobHistory = lazy(() => import('./Componets/Vendor/jobhistory'));
-const NewHistory = lazy(() => import('./Componets/Product/neworder'));
-const JobInProgress = lazy(() => import('./Componets/Vendor/next_accpet'));
-const OrderHistory = lazy(() => import('./Componets/Product/orderhistory'));
-const OrderStatus = lazy(() => import('./Componets/Product/orderstatusproduct'));
-const JobPaymentSummary = lazy(() => import('./Componets/Vendor/payment_order_tech'));
-const JobProgress = lazy(() => import('./Componets/Product/payment_tech_non'));
-const Product = lazy(() => import('./Componets/Product/product._vendor'));
-const Registration = lazy(() => import('./Componets/Login/Signup/Registration'));
-const TechnicalNonDashboard = lazy(() => import('./Componets/Vendor/Technical_Non_Dashboard'));
-const VendorProfileSettings = lazy(() => import('./Componets/Vendor/vendor_profile_settings'));
-const LoginPage = lazy(() => import('./Componets/Login/Signup/login'));
-const AddProductForm = lazy(() => import('./Componets/Product/addnewproduct'));
-const BulkProductUpload = lazy(() => import('./Componets/Product/Bulkupload'));
-const ProductList = lazy(() => import('./Componets/Product/viewproduct'));
-const VendorCard = lazy(() => import('./Componets/Vendor/projectupload'));
-const VendorProjects = lazy(() => import('./Componets/Vendor/viewprojecs'));
-const Wallet = lazy(() => import('./Componets/Vendor/wallet'));
-const ProdWallet = lazy(() => import('./Componets/Product/productwallet'));
-const AdminApprovalPending = lazy(() => import('./Componets/Vendor/Adminapprovalpage'));
-const VendorChat = lazy(() => import('./Componets/Vendor/Vendorchat'));
-const VendorInbox = lazy(() => import('./Componets/Vendor/inbox'));
+const JobListings = lazy(() => import('./Components/Vendor/accpet'));
+const JobHistory = lazy(() => import('./Components/Vendor/jobhistory'));
+const NewHistory = lazy(() => import('./Components/Product/neworder'));
+const JobInProgress = lazy(() => import('./Components/Vendor/next_accpet'));
+const OrderHistory = lazy(() => import('./Components/Product/orderhistory'));
+const OrderStatus = lazy(() => import('./Components/Product/orderstatusproduct'));
+const JobPaymentSummary = lazy(() => import('./Components/Vendor/payment_order_tech'));
+const JobProgress = lazy(() => import('./Components/Product/payment_tech_non'));
+const Product = lazy(() => import('./Components/Product/product._vendor'));
+const Registration = lazy(() => import('./Components/Login/Signup/Registration'));
+const TechnicalNonDashboard = lazy(() => import('./Components/Vendor/Technical_Non_Dashboard'));
+const VendorProfileSettings = lazy(() => import('./Components/Vendor/vendor_profile_settings'));
+const LoginPage = lazy(() => import('./Components/Login/Signup/login'));
+const AddProductForm = lazy(() => import('./Components/Product/addnewproduct'));
+const BulkProductUpload = lazy(() => import('./Components/Product/Bulkupload'));
+const ProductList = lazy(() => import('./Components/Product/viewproduct'));
+const VendorCard = lazy(() => import('./Components/Vendor/projectupload'));
+const VendorProjects = lazy(() => import('./Components/Vendor/viewprojecs'));
+const Wallet = lazy(() => import('./Components/Vendor/wallet'));
+const ProdWallet = lazy(() => import('./Components/Product/productwallet'));
+const AdminApprovalPending = lazy(() => import('./Components/Vendor/Adminapprovalpage'));
+const VendorChat = lazy(() => import('./Components/Vendor/Vendorchat'));
+const VendorInbox = lazy(() => import('./Components/Vendor/inbox'));
 
 const LoadingFallback = () => (
   <div className="d-flex justify-content-center align-items-center vh-100">

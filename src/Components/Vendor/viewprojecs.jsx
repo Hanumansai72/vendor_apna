@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Container, Row, Col, Card, Button, Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
@@ -15,7 +15,8 @@ const VendorProjects = () => {
   const vendorId = authUser?.id;
 
   // Fetch projects
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
+    if (!vendorId) return;
     try {
       const res = await axios.get(`${API_BASE_URL}/api/projects/${vendorId}`);
       setProjects(res.data);
@@ -24,7 +25,7 @@ const VendorProjects = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vendorId]);
 
   // Delete project
   const handleDelete = async (id) => {
@@ -40,8 +41,8 @@ const VendorProjects = () => {
   };
 
   useEffect(() => {
-    if (vendorId) fetchProjects();
-  }, [vendorId]);
+    fetchProjects();
+  }, [fetchProjects]);
 
   return (
     <>

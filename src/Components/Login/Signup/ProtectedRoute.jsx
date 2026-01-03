@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../Auth/AuthContext";
+import { useAuth } from "../../Auth/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();

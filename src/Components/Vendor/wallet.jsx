@@ -9,12 +9,13 @@ import { useAuth } from "../Auth/AuthContext";
 
 const Wallet = () => {
   const [wallet, setWallet] = useState(null);
+  const { user: authUser } = useAuth();
+  const vendorId = authUser?.id;
 
   useEffect(() => {
     async function fetchWallet() {
+      if (!vendorId) return;
       try {
-        const { user: authUser } = useAuth();
-        const vendorId = authUser?.id;
         const res = await axios.get(`${API_BASE_URL}/wallet/${vendorId}`);
         setWallet(res.data);
       } catch (err) {
@@ -22,7 +23,7 @@ const Wallet = () => {
       }
     }
     fetchWallet();
-  }, []);
+  }, [vendorId]);
 
   if (!wallet) return <p className="text-center mt-5">Loading wallet...</p>;
 

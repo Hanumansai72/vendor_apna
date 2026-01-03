@@ -208,8 +208,8 @@ const TechnicalNonDashboard = () => {
                   return (
                     <div
                       className={`col calendar-cell p-3 ${matchingWorks.length
-                          ? "bg-warning-subtle text-dark rounded-3 fw-bold shadow-sm"
-                          : ""
+                        ? "bg-warning-subtle text-dark rounded-3 fw-bold shadow-sm"
+                        : ""
                         }`}
                       key={j}
                     >
@@ -313,35 +313,35 @@ const TechnicalNonDashboard = () => {
         {/* ===== Analytics Section ===== */}
         <div className="p-4 rounded-4 shadow-sm bg-white mb-5">
           <h4 className="fw-bold mb-4">Alert Performance Analytics</h4>
-          <div className="row g-3 text-center">
-            <div className="col-md-2">
-              <div className="stat-box bg-light rounded-4 p-3">
-                <h5 className="fw-bold text-success">{analytics.acceptanceRate?.toFixed(1)}%</h5>
-                <p className="text-muted small">Acceptance Rate</p>
+          <div className="row g-3">
+            <div className="col-6 col-lg">
+              <div className="stat-box rounded-4 p-3">
+                <h5 className="fw-bold text-success mb-1">{analytics.acceptanceRate?.toFixed(1)}%</h5>
+                <p className="text-muted small mb-0">Acceptance Rate</p>
               </div>
             </div>
-            <div className="col-md-2">
-              <div className="stat-box bg-light rounded-4 p-3">
-                <h5 className="fw-bold text-warning">{analytics.completionRate?.toFixed(1)}%</h5>
-                <p className="text-muted small">Completion Rate</p>
+            <div className="col-6 col-lg">
+              <div className="stat-box rounded-4 p-3">
+                <h5 className="fw-bold text-warning mb-1">{analytics.completionRate?.toFixed(1)}%</h5>
+                <p className="text-muted small mb-0">Completion Rate</p>
               </div>
             </div>
-            <div className="col-md-2">
-              <div className="stat-box bg-light rounded-4 p-3">
-                <h5 className="fw-bold text-primary">{analytics.avgResponseTime} min</h5>
-                <p className="text-muted small">Avg Response</p>
+            <div className="col-6 col-lg">
+              <div className="stat-box rounded-4 p-3">
+                <h5 className="fw-bold text-primary mb-1">{analytics.avgResponseTime} min</h5>
+                <p className="text-muted small mb-0">Avg Response</p>
               </div>
             </div>
-            <div className="col-md-2">
-              <div className="stat-box bg-light rounded-4 p-3">
-                <h5 className="fw-bold text-info">{analytics.avgRating}★</h5>
-                <p className="text-muted small">Customer Rating</p>
+            <div className="col-6 col-lg">
+              <div className="stat-box rounded-4 p-3">
+                <h5 className="fw-bold text-info mb-1">{analytics.avgRating}★</h5>
+                <p className="text-muted small mb-0">Customer Rating</p>
               </div>
             </div>
-            <div className="col-md-2">
-              <div className="stat-box bg-light rounded-4 p-3">
-                <h5 className="fw-bold text-success">{analytics.earningsGrowth?.toFixed(1)}%</h5>
-                <p className="text-muted small">Earnings Growth</p>
+            <div className="col-12 col-lg">
+              <div className="stat-box rounded-4 p-3">
+                <h5 className="fw-bold text-success mb-1">{analytics.earningsGrowth?.toFixed(1)}%</h5>
+                <p className="text-muted small mb-0">Earnings Growth</p>
               </div>
             </div>
           </div>

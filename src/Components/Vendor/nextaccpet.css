@@ -1,0 +1,420 @@
+/* =============================================
+   Job Accept/Route - Professional UI Styling
+   ============================================= */
+
+/* ===== Global ===== */
+body {
+  background: #f7f9fc;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ===== Header Pills ===== */
+.pill-yellow {
+  background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%);
+  color: #111;
+  padding: 0.625rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(255, 214, 0, 0.3);
+}
+
+.pill-blue {
+  background: #DBEAFE;
+  color: #1E40AF;
+  padding: 0.625rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===== Sticky Action Bar ===== */
+.sticky-action-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.sticky-action-bar .btn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .sticky-action-bar {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .sticky-action-bar .btn {
+    width: 100%;
+  }
+}
+
+/* ===== Route Navigation Card ===== */
+.route-wrap {
+  background: #fff;
+  border: 1px solid #FFE07A;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.route-header {
+  background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.route-header h5 {
+  color: #111;
+  font-weight: 700;
+  margin: 0;
+}
+
+.route-header p {
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+/* Map Container */
+.map-container {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 300px;
+  background: #f3f4f6;
+}
+
+.drive-badge {
+  position: absolute;
+  left: 1.5rem;
+  top: 1rem;
+  background: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.drive-badge i {
+  color: #22c55e;
+}
+
+.map-fabs {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.map-fab {
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map-fab:hover {
+  background: #FFD600;
+  border-color: #FFD600;
+  color: #111;
+  transform: scale(1.05);
+}
+
+/* ===== Service Overview ===== */
+.service-head {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  color: #fff;
+  padding: 1.5rem;
+  border-radius: 16px 16px 0 0;
+}
+
+.service-head h5 {
+  font-weight: 700;
+  margin: 0;
+}
+
+.service-head p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+.bg-body-tertiary {
+  background: #f9fafb !important;
+  border-radius: 0 0 16px 16px;
+  padding: 1.5rem;
+}
+
+/* Service Info Grid */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.service-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.service-item-icon {
+  width: 40px;
+  height: 40px;
+  background: #FFF8E6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #B45309;
+  flex-shrink: 0;
+}
+
+.service-item-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.125rem;
+}
+
+.service-item-value {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+/* ===== Schedule & Compensation ===== */
+.schedule-head {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px 16px 0 0;
+}
+
+.schedule-head h6 {
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comp-box {
+  background: linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1px solid #FDE68A;
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.comp-box h4 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #92400E;
+  margin-bottom: 0.25rem;
+}
+
+.comp-box p {
+  color: #B45309;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ===== Weather / Traffic Cards ===== */
+.info-card {
+  border-radius: 16px;
+  padding: 1.25rem;
+  color: #fff;
+}
+
+.weather-card {
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+}
+
+.traffic-card {
+  background: linear-gradient(135deg, #34D399 0%, #22c55e 100%);
+}
+
+.info-card h5 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-card p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+/* ===== Contact Cards ===== */
+.contact-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.contact-card:hover {
+  border-color: #FFD600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.contact-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.contact-icon.phone {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.contact-icon.message {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.contact-icon.email {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.contact-info h6 {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.125rem;
+}
+
+.contact-info p {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ===== Section Cards ===== */
+.section-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-header h5 {
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-body {
+  padding: 1.5rem;
+}
+
+/* ===== Utility ===== */
+.rounded-4 {
+  border-radius: 20px !important;
+}
+
+.rounded-3 {
+  border-radius: 12px !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .route-header {
+    padding: 1rem;
+  }
+
+  .drive-badge {
+    left: 1rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .map-fabs {
+    right: 0.5rem;
+  }
+
+  .map-fab {
+    width: 36px;
+    height: 36px;
+  }
+
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .comp-box h4 {
+    font-size: 1.5rem;
+  }
+
+  .contact-card {
+    padding: 1rem;
+  }
+
+  .contact-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+}

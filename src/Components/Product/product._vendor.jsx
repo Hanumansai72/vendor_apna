@@ -251,36 +251,219 @@ export default function ProductDashboard() {
       {/* Styles */}
       <style>{`
         :root {
-          --amYellow: #FFC107;
-          --softBlue: #e8f0ff;
-          --softGray: #eef2f6;
-          --softOrange: #fff1e5;
-          --softPurple: #f3e9ff;
+          --amYellow: #FFD600;
+          --amYellowDark: #E6C200;
+          --amYellowLight: #FFF8E6;
+          --softBlue: #DBEAFE;
+          --softGray: #F3F4F6;
+          --softOrange: #FEF3C7;
+          --softPurple: #F3E8FF;
+          --textPrimary: #111827;
+          --textSecondary: #4B5563;
+          --textMuted: #9CA3AF;
+          --borderLight: #E5E7EB;
         }
-        .wave { animation: wave 1.2s ease-in-out infinite; display: inline-block; transform-origin: 70% 70%; }
-        @keyframes wave { 0% { transform: rotate(0) } 50% { transform: rotate(12deg) } 100% { transform: rotate(0) } }
+        
+        body {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+          background: #F9FAFB;
+        }
+        
+        .wave { 
+          animation: wave 1.2s ease-in-out infinite; 
+          display: inline-block; 
+          transform-origin: 70% 70%; 
+        }
+        @keyframes wave { 
+          0% { transform: rotate(0) } 
+          50% { transform: rotate(12deg) } 
+          100% { transform: rotate(0) } 
+        }
 
-        .kpi-card { border-radius: 16px; }
-        .kpi-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,193,7,.2); color: #f5a400; }
-        .btn-am { background: var(--amYellow); border: none; color: #111; font-weight: 700; }
-        .wallet-banner { background: var(--amYellow); color: #111; }
-        .wallet-icon { width: 40px; height: 40px; border-radius: 12px; background: #fff3cd; color: #111; display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-        .wallet-coin { font-size: 72px; color: rgba(255,255,255,.35); }
-        .product-card { border-radius: 18px; }
-        .product-img { width: 100%; height: 220px; object-fit: cover; border-top-left-radius: 18px; border-top-right-radius: 18px; }
-        .status-badge { position: absolute; top: 14px; right: 14px; padding: .45rem .7rem; border-radius: 999px; font-weight: 600; }
-        .cat-icon { width: 68px; height: 68px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto; }
+        /* KPI Cards */
+        .kpi-card { 
+          border-radius: 16px; 
+          background: #fff;
+          transition: all 0.3s ease;
+          border: 1px solid var(--borderLight);
+        }
+        .kpi-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+          border-color: var(--amYellow);
+        }
+        .kpi-icon { 
+          width: 52px; 
+          height: 52px; 
+          border-radius: 14px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          background: var(--amYellowLight); 
+          color: var(--amYellowDark);
+          font-size: 1.25rem;
+        }
+        
+        /* Primary Button */
+        .btn-am { 
+          background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%); 
+          border: none; 
+          color: var(--textPrimary); 
+          font-weight: 600;
+          padding: 0.75rem 1.5rem;
+          border-radius: 10px;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 8px rgba(255, 214, 0, 0.3);
+        }
+        .btn-am:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(255, 214, 0, 0.4);
+          background: linear-gradient(135deg, #E6C200 0%, #F5A400 100%);
+        }
+        
+        /* Wallet Banner */
+        .wallet-banner { 
+          background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%); 
+          color: var(--textPrimary);
+          border-radius: 16px;
+        }
+        .wallet-icon { 
+          width: 44px; 
+          height: 44px; 
+          border-radius: 12px; 
+          background: rgba(255,255,255,0.9); 
+          color: var(--textPrimary); 
+          display: inline-flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: 1.25rem;
+        }
+        .wallet-coin { 
+          font-size: 72px; 
+          color: rgba(255,255,255,.25);
+        }
+        
+        /* Product Cards */
+        .product-card { 
+          border-radius: 16px;
+          background: #fff;
+          border: 1px solid var(--borderLight);
+          transition: all 0.3s ease;
+          overflow: hidden;
+        }
+        .product-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+          border-color: var(--amYellow);
+        }
+        .product-img { 
+          width: 100%; 
+          height: 200px; 
+          object-fit: cover;
+        }
+        .status-badge { 
+          position: absolute; 
+          top: 12px; 
+          right: 12px; 
+          padding: 0.4rem 0.75rem; 
+          border-radius: 999px; 
+          font-weight: 600;
+          font-size: 0.75rem;
+        }
+        .price {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--textPrimary);
+        }
+        
+        /* Category Cards */
+        .cat-icon { 
+          width: 64px; 
+          height: 64px; 
+          border-radius: 16px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: 1.75rem; 
+          margin: 0 auto;
+        }
+        
+        /* Table Improvements */
+        .table th {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--textSecondary);
+          background: var(--softGray);
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid var(--borderLight);
+        }
+        .table td {
+          padding: 1rem 1.25rem;
+          vertical-align: middle;
+          border-bottom: 1px solid #F3F4F6;
+        }
+        .table tbody tr {
+          transition: background-color 0.15s ease;
+        }
+        .table tbody tr:hover {
+          background-color: var(--amYellowLight);
+        }
+        
+        /* Improved Buttons */
+        .btn-outline-secondary {
+          border-color: var(--borderLight);
+          color: var(--textSecondary);
+          border-radius: 8px;
+          transition: all 0.2s ease;
+        }
+        .btn-outline-secondary:hover {
+          background: var(--amYellowLight);
+          border-color: var(--amYellow);
+          color: var(--textPrimary);
+        }
+        .btn-outline-danger {
+          border-radius: 8px;
+        }
 
         /* 🦴 Skeleton Styles */
         .skeleton {
-          background: linear-gradient(90deg, #f2f2f2 25%, #e8e8e8 37%, #f2f2f2 63%);
+          background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
           border-radius: 8px;
-          animation: shimmer 1.6s infinite;
-          background-size: 400% 100%;
+          animation: shimmer 1.5s infinite;
+          background-size: 200% 100%;
         }
-        .skeleton-text { height: 14px; margin-top: 6px; margin-bottom: 6px; }
-        .skeleton-img { height: 180px; width: 100%; border-radius: 12px; }
-        @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+        .skeleton-text { 
+          height: 14px; 
+          margin: 6px 0;
+        }
+        .skeleton-img { 
+          height: 200px; 
+          width: 100%; 
+          border-radius: 12px;
+        }
+        @keyframes shimmer { 
+          0% { background-position: 200% 0; } 
+          100% { background-position: -200% 0; } 
+        }
+        
+        /* Section Headers */
+        h4.fw-bold {
+          color: var(--textPrimary);
+          font-size: 1.25rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+          .product-img {
+            height: 180px;
+          }
+          .kpi-icon {
+            width: 44px;
+            height: 44px;
+          }
+        }
       `}</style>
       <Footer></Footer>
     </div>

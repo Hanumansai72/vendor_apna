@@ -16,15 +16,15 @@ const JobProgress = () => {
   console.log("vendorID:", currentVendorId, "Jobid:", jobId)
 
   useEffect(() => {
-    if (vendorId) {
-      axios.get(`${API_BASE_URL}/services/jobs/${vendorId}`)
+    if (currentVendorId) {
+      axios.get(`${API_BASE_URL}/services/jobs/${currentVendorId}`)
         .then(res => {
           console.log(res.data);
           setJob(res.data);
         })
         .catch(err => console.error('Error fetching jobs:', err));
     }
-  }, [vendorId]);
+  }, [currentVendorId]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];

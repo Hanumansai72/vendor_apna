@@ -1,0 +1,393 @@
+/* =============================================
+   Job History - Professional UI Styling
+   ============================================= */
+
+/* ===== Page Background ===== */
+.job-history-bg {
+  background: linear-gradient(180deg, var(--primary-yellow-light, #fff8e6) 0%, var(--bg-white, #fff) 220px);
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ===== Filter Card ===== */
+.filter-card {
+  background: var(--bg-white, #fff);
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.muted-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* Search Input */
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  height: 42px;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #FFD600;
+  box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.15);
+  outline: none;
+}
+
+/* Sort Select */
+.sort-select {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  height: 42px;
+  min-width: 160px;
+  padding: 0 1rem;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.sort-select:focus {
+  border-color: #FFD600;
+  box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.15);
+  outline: none;
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  color: #4b5563;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+  background: #FFF8E6;
+  border-color: #FFD600;
+  color: #111;
+}
+
+/* ===== Table Styling ===== */
+.table-container {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+}
+
+.table-head {
+  background: #fafafa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-head th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.25rem;
+  white-space: nowrap;
+}
+
+/* Table Row */
+.job-row {
+  border-top: 1px solid #f3f4f6;
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.job-row:hover {
+  background: #fefce8;
+}
+
+.job-row td {
+  padding: 1rem 1.25rem;
+  vertical-align: middle;
+}
+
+/* ===== Avatar ===== */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.avatar-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 1.25rem;
+}
+
+.avatar-yellow {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.avatar-blue {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+.avatar-green {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+/* ===== Status & Service Pills ===== */
+.status-pill,
+.service-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+/* Status Variants */
+.pill-success {
+  color: #15803D;
+  background: #DCFCE7;
+}
+
+.pill-yellow {
+  color: #854D0E;
+  background: #FEF9C3;
+}
+
+.pill-warning {
+  color: #9A3412;
+  background: #FFEDD5;
+}
+
+.pill-danger {
+  color: #991B1B;
+  background: #FEE2E2;
+}
+
+.pill-info {
+  color: #1E40AF;
+  background: #DBEAFE;
+}
+
+/* Service Variants */
+.svc-electrical {
+  color: #92400E;
+  background: #FEF3C7;
+}
+
+.svc-plumbing {
+  color: #166534;
+  background: #DCFCE7;
+}
+
+.svc-painting {
+  color: #9F1239;
+  background: #FFE4E6;
+}
+
+.svc-cleaning {
+  color: #1E40AF;
+  background: #DBEAFE;
+}
+
+/* ===== Drawer ===== */
+.details-drawer .offcanvas-body {
+  background: #fafafa;
+  padding: 1.5rem;
+}
+
+.details-drawer .offcanvas-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+}
+
+.details-drawer .offcanvas-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.empty-state-icon i {
+  font-size: 2rem;
+  color: #9ca3af;
+}
+
+.empty-state h5 {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* ===== Pagination ===== */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #f3f4f6;
+  background: #fafafa;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.page-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #4b5563;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.page-btn:hover {
+  background: #FEF3C7;
+  border-color: #FFD600;
+}
+
+.page-btn.active {
+  background: #FFD600;
+  border-color: #FFD600;
+  color: #111;
+}
+
+/* ===== Action Buttons ===== */
+.action-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+  transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.action-btn.view:hover {
+  background: #DBEAFE;
+  border-color: #3B82F6;
+  color: #1D4ED8;
+}
+
+.action-btn.edit:hover {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  color: #B45309;
+}
+
+.action-btn.delete:hover {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #DC2626;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 992px) {
+  .filter-card {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sort-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .table-head th,
+  .job-row td {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+
+  .status-pill,
+  .service-pill {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+}
