@@ -94,14 +94,19 @@
     color: var(--text-muted);
 }
 
-/* Navigation Links */
+/* Navigation Links - ALWAYS HORIZONTAL ROW */
 .navbar-nav {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
     list-style: none;
     margin: 0;
     padding: 0;
+}
+
+.nav-item {
+    display: inline-block;
 }
 
 .nav-link {

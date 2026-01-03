@@ -46,16 +46,18 @@ function Navbar() {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
+  // Main navigation links - must match App.js routes exactly
   const navLinks = [
     { path: `/vendor/${vendorId}`, label: "Dashboard", icon: "bi-grid-fill" },
     { path: `/vendor/${vendorId}/jobs`, label: "Jobs", icon: "bi-briefcase-fill" },
-    { path: `/vendor/${vendorId}/Job/history`, label: "History", icon: "bi-clock-history" },
+    { path: `/vendor/${vendorId}/job/history`, label: "History", icon: "bi-clock-history" },
   ];
 
+  // Dropdown links - must match App.js routes exactly
   const dropdownLinks = [
     { path: `/vendor/${vendorId}/settings`, label: "My Profile", icon: "bi-person-fill" },
-    { path: `/wallet/${vendorId}`, label: "Wallet", icon: "bi-wallet2" },
-    { path: `/vendor/Viewproject/${vendorId}`, label: "View Projects", icon: "bi-folder-fill" },
+    { path: `/vendor/wallet/${vendorId}`, label: "Wallet", icon: "bi-wallet2" },
+    { path: `/vendor/viewproject/${vendorId}`, label: "View Projects", icon: "bi-folder-fill" },
     { path: "/user/inbox", label: "Inbox", icon: "bi-envelope-fill" },
     { path: `/vendor/projectupload/${vendorId}`, label: "Upload Project", icon: "bi-cloud-arrow-up-fill" },
   ];
@@ -63,7 +65,7 @@ function Navbar() {
   return (
     <>
       {/* Desktop Navbar */}
-      <nav className="premium-navbar d-none d-lg-block">
+      <nav className="premium-navbar d-none d-lg-flex">
         <div className="navbar-container">
           {/* Logo */}
           <Link to={`/vendor/${vendorId}`} className="navbar-brand">
@@ -76,16 +78,16 @@ function Navbar() {
             </div>
           </Link>
 
-          {/* Navigation Links */}
+          {/* Navigation Links - Horizontal Row */}
           <ul className="navbar-nav">
             {navLinks.map((link) => (
-              <li key={link.path}>
+              <li key={link.path} className="nav-item">
                 <Link
                   to={link.path}
                   className={`nav-link ${isActiveRoute(link.path) ? 'active' : ''}`}
                 >
                   <i className={`bi ${link.icon}`}></i>
-                  {link.label}
+                  <span>{link.label}</span>
                 </Link>
               </li>
             ))}
@@ -102,12 +104,12 @@ function Navbar() {
             </div>
 
             {/* Messages */}
-            <div className="action-icon">
+            <Link to="/user/inbox" className="action-icon">
               <i className="bi bi-chat-dots-fill"></i>
               {messages > 0 && (
                 <span className="action-badge">{messages}</span>
               )}
-            </div>
+            </Link>
 
             {/* Online Toggle */}
             <div className="online-toggle">
@@ -173,7 +175,7 @@ function Navbar() {
             <span className="brand-name">Apna Mestri</span>
           </Link>
 
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="mobile-actions">
             {/* Notifications */}
             <div className="action-icon">
               <i className="bi bi-bell-fill"></i>
@@ -187,7 +189,7 @@ function Navbar() {
               className="mobile-menu-btn"
               onClick={() => setIsMobileMenuOpen(true)}
             >
-              <i className="bi bi-list fs-4"></i>
+              <i className="bi bi-list"></i>
             </div>
           </div>
         </div>
@@ -197,7 +199,7 @@ function Navbar() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            className="mobile-sidebar-overlay open"
+            className="mobile-sidebar-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -213,10 +215,9 @@ function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: 300 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              style={{ right: 0 }}
             >
               <div className="sidebar-header">
-                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Menu</span>
+                <span className="sidebar-title">Menu</span>
                 <div
                   className="sidebar-close"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -233,7 +234,7 @@ function Navbar() {
               </div>
 
               {/* Online Toggle */}
-              <div className="online-toggle" style={{ marginBottom: '1.5rem', justifyContent: 'center' }}>
+              <div className="sidebar-toggle-wrapper">
                 <div
                   className={`toggle-switch ${isOnline ? 'active' : ''}`}
                   onClick={() => setIsOnline(!isOnline)}
@@ -253,11 +254,11 @@ function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <i className={`bi ${link.icon}`}></i>
-                    {link.label}
+                    <span>{link.label}</span>
                   </Link>
                 ))}
 
-                <div style={{ height: '1px', background: 'var(--navbar-border)', margin: '1rem 0' }}></div>
+                <div className="sidebar-divider"></div>
 
                 {dropdownLinks.map((link) => (
                   <Link
@@ -267,19 +268,18 @@ function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <i className={`bi ${link.icon}`}></i>
-                    {link.label}
+                    <span>{link.label}</span>
                   </Link>
                 ))}
 
-                <div style={{ height: '1px', background: 'var(--navbar-border)', margin: '1rem 0' }}></div>
+                <div className="sidebar-divider"></div>
 
                 <div
                   className="sidebar-link danger"
                   onClick={handleSignout}
-                  style={{ cursor: 'pointer' }}
                 >
                   <i className="bi bi-box-arrow-right"></i>
-                  Sign Out
+                  <span>Sign Out</span>
                 </div>
               </nav>
             </motion.div>
