@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Navbar from "../Navbar/navbar";
 import axios from "axios";
 import API_BASE_URL from "../../config";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Techincal.css";
 import Footer from "../Navbar/footer";
@@ -14,7 +14,7 @@ const TechnicalNonDashboard = () => {
   const [upcomingJobs, setUpcomingJobs] = useState([]);
   const [newJobAlert, setNewJobAlert] = useState(null);
   const [showJobPopup, setShowJobPopup] = useState(false);
-  const [works, setWorks] = useState([]); // ✅ holds upcoming work dates + times
+  const [works, setWorks] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [analytics, setAnalytics] = useState({
     acceptanceRate: 0,
@@ -24,27 +24,22 @@ const TechnicalNonDashboard = () => {
     earningsGrowth: 0,
   });
 
-
-  // Helper: Month name & year for header
   const monthName = currentMonth.toLocaleString("default", {
     month: "long",
     year: "numeric",
   });
 
-  // 🟡 Fetch count, upcoming jobs & upcoming works
+  // Data fetching
   useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/count/service/${id}`)
+    axios.get(`${API_BASE_URL}/count/service/${id}`)
       .then((res) => setCount(res.data))
       .catch(console.error);
 
-    axios
-      .get(`${API_BASE_URL}/upcomingworks/${id}`)
-      .then((res) => setWorks(res.data.show_works || [])) // ✅ includes time
+    axios.get(`${API_BASE_URL}/upcomingworks/${id}`)
+      .then((res) => setWorks(res.data.show_works || []))
       .catch(console.error);
 
-    axios
-      .get(`${API_BASE_URL}/upcomingjobs/${id}`)
+    axios.get(`${API_BASE_URL}/upcomingjobs/${id}`)
       .then((res) => {
         setUpcomingJobs(res.data || []);
         if (res.data && res.data.length > 0) {
@@ -54,14 +49,13 @@ const TechnicalNonDashboard = () => {
       })
       .catch(console.error);
   }, [id]);
+
   useEffect(() => {
     axios.get(`${API_BASE_URL}/vendor/${id}/analytics`)
-      .then(res => setAnalytics(res.data))
+      .then((res) => setAnalytics(res.data))
       .catch(console.error);
   }, [id]);
 
-
-  // Auto-hide job popup
   useEffect(() => {
     if (showJobPopup) {
       const timer = setTimeout(() => setShowJobPopup(false), 15000);
@@ -69,18 +63,16 @@ const TechnicalNonDashboard = () => {
     }
   }, [showJobPopup]);
 
-  // 🧮 Generate days for calendar
+  // Calendar logic
   const generateCalendarDays = (monthDate) => {
     const year = monthDate.getFullYear();
     const month = monthDate.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     let startDay = firstDay.getDay();
-
     const calendar = [];
     let week = new Array(7).fill("");
     for (let i = 0; i < startDay; i++) week[i] = "";
-
     for (let day = 1; day <= lastDay.getDate(); day++) {
       week[startDay] = day;
       if (startDay === 6 || day === lastDay.getDate()) {
@@ -89,13 +81,16 @@ const TechnicalNonDashboard = () => {
       }
       startDay = (startDay + 1) % 7;
     }
-
     return calendar;
   };
 
   const calendarDays = generateCalendarDays(currentMonth);
+  const today = new Date();
+  const isToday = (day) =>
+    day && today.getDate() === day &&
+    today.getMonth() === currentMonth.getMonth() &&
+    today.getFullYear() === currentMonth.getFullYear();
 
-  // Month navigation
   const handlePrevMonth = () => {
     const newMonth = new Date(currentMonth);
     newMonth.setMonth(currentMonth.getMonth() - 1);
@@ -108,7 +103,6 @@ const TechnicalNonDashboard = () => {
     setCurrentMonth(newMonth);
   };
 
-  // 🟣 Check if day has work
   const findWorkForDate = (day) => {
     if (!day) return [];
     const date = new Date(
@@ -120,393 +114,327 @@ const TechnicalNonDashboard = () => {
       month: "short",
       year: "numeric",
     });
-
-    return works.filter((w) => w.date === date); // ✅ support multiple works per day
+    return works.filter((w) => w.date === date);
   };
 
   return (
     <>
       <Navbar />
 
-      <div className="container-fluid p-4">
-        {/* ===== Job Alert Dashboard ===== */}
-        <motion.div
-          className="p-4 rounded-4 mb-4 shadow-sm dashboard-header"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="d-flex justify-content-between align-items-center flex-wrap">
-            <div>
-              <h3 className="fw-bold text-dark">Job Alert Dashboard</h3>
-              <p className="text-muted mb-0">
-                Stay updated with real-time opportunities
-              </p>
+      <div className="dashboard-wrapper">
+        <div className="container-xl py-4">
+          {/* ===== Welcome Header ===== */}
+          <motion.div
+            className="welcome-section mb-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="row align-items-center">
+              <div className="col-lg-8">
+                <h1 className="welcome-title">
+                  Welcome back! <span className="wave">👋</span>
+                </h1>
+                <p className="welcome-subtitle">
+                  Here's your dashboard overview. Stay updated with your jobs and earnings.
+                </p>
+              </div>
+              <div className="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <span className="today-date">
+                  <i className="bi bi-calendar3 me-2"></i>
+                  {today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </span>
+              </div>
             </div>
-            <h5 className="fw-bold text-dark">
-              {count?.count1 || 0} Active Alerts Today
-            </h5>
-          </div>
+          </motion.div>
 
-          <div className="d-flex flex-wrap justify-content-between mt-4 gap-3">
+          {/* ===== Stats Cards ===== */}
+          <motion.div
+            className="row g-3 mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
             {[
-              { label: "New Today", value: count.count1, icon: "bi-bell-fill" },
-              { label: "Completed", value: count.count2, icon: "bi-check2-all" },
-              { label: "Earnings", value: count.count3, icon: "bi-currency-rupee" },
+              { label: "Active Jobs", value: count.count1 || 0, icon: "bi-briefcase-fill", color: "warning", trend: "+3 today" },
+              { label: "Completed", value: count.count2 || 0, icon: "bi-check-circle-fill", color: "success", trend: "This month" },
+              { label: "Total Earnings", value: `₹${count.count3 || 0}`, icon: "bi-wallet2", color: "primary", trend: "+12% growth" },
+              { label: "Rating", value: `${analytics.avgRating || 4.5}★`, icon: "bi-star-fill", color: "info", trend: "Avg score" },
             ].map((stat, i) => (
-              <div
-                key={i}
-                className="stat-card flex-fill text-center p-4 rounded-3 bg-light shadow-sm"
-              >
-                <i className={`bi ${stat.icon} fs-3 text-dark`}></i>
-                <h4 className="fw-bold mt-2">{stat.value || 0}</h4>
-                <p className="text-dark mb-0 fw-semibold">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ===== Upcoming Schedule Calendar ===== */}
-        <motion.div
-          className="p-4 rounded-4 shadow-sm bg-white mb-5"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <h4 className="fw-bold mb-0">Upcoming Schedule</h4>
-            <div className="d-flex align-items-center gap-3">
-              <button
-                className="btn btn-light rounded-circle shadow-sm"
-                onClick={handlePrevMonth}
-              >
-                <i className="bi bi-chevron-left"></i>
-              </button>
-              <h6 className="fw-semibold mb-0">{monthName}</h6>
-              <button
-                className="btn btn-light rounded-circle shadow-sm"
-                onClick={handleNextMonth}
-              >
-                <i className="bi bi-chevron-right"></i>
-              </button>
-            </div>
-          </div>
-
-          {/* Calendar Header */}
-          <div className="calendar-header row text-center fw-semibold text-secondary">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, i) => (
-              <div className="col calendar-cell py-2" key={i}>
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar Body */}
-          <div className="calendar-body">
-            {calendarDays.map((week, i) => (
-              <div className="row text-center" key={i}>
-                {week.map((day, j) => {
-                  const matchingWorks = findWorkForDate(day);
-                  return (
-                    <div
-                      className={`col calendar-cell p-3 ${matchingWorks.length
-                        ? "bg-warning-subtle text-dark rounded-3 fw-bold shadow-sm"
-                        : ""
-                        }`}
-                      key={j}
-                    >
-                      <div>{day}</div>
-                      {matchingWorks.map((work, idx) => (
-                        <div
-                          key={idx}
-                          className="small text-muted mt-1 fw-normal"
-                        >
-                          <i className="bi bi-clock me-1"></i>
-                          {work.time}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ===== Recent Job Alerts ===== */}
-        <div className="p-4 rounded-4 shadow-sm bg-white mb-5">
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-            <h4 className="fw-bold mb-0 text-dark">Recent Job Alerts</h4>
-            <div className="d-flex gap-2">
-              <button className="btn btn-outline-secondary d-flex align-items-center">
-                <i className="bi bi-funnel me-2"></i>Filter
-              </button>
-              <button className="btn btn-outline-secondary d-flex align-items-center">
-                <i className="bi bi-download me-2"></i>Export
-              </button>
-            </div>
-          </div>
-
-          {upcomingJobs.length > 0 ? (
-            upcomingJobs.map((job, i) => (
-              <div
-                key={i}
-                className="p-4 mb-3 rounded-4 shadow-sm border border-light bg-light-subtle d-flex justify-content-between align-items-start flex-wrap"
-              >
-                <div className="d-flex align-items-start flex-wrap">
-                  <div
-                    className="rounded-circle bg-white d-flex align-items-center justify-content-center me-3 shadow-sm"
-                    style={{ width: 50, height: 50 }}
-                  >
-                    <i className="bi bi-tools text-warning fs-4"></i>
+              <div className="col-6 col-lg-3" key={i}>
+                <div className="stat-card-modern">
+                  <div className={`stat-icon bg-${stat.color}-subtle text-${stat.color}`}>
+                    <i className={`bi ${stat.icon}`}></i>
                   </div>
-                  <div>
-                    <h5 className="fw-bold text-dark mb-1">
-                      {job.Vendorid?.Category || "General Service"}
-                    </h5>
-                    <p className="text-muted mb-1 small">
-                      <i className="bi bi-person-fill me-1 text-secondary"></i>
-                      {job.customerid?.fullName || "Customer"} •{" "}
-                      <i className="bi bi-geo-alt-fill me-1 text-secondary"></i>
-                      {job.address?.city || "Location not available"}
-                    </p>
-                    <p className="text-dark mb-1 small fw-semibold">
-                      <i className="bi bi-calendar-event me-2 text-warning"></i>
-                      {new Date(job.serviceDate).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}{" "}
-                      • {job.serviceTime || "N/A"}
-                    </p>
-                    <p className="text-muted small mb-2">
-                      {job.description ||
-                        "Scheduled maintenance or urgent task — details not provided."}
-                    </p>
-                    <div className="d-flex gap-2 mt-2">
-                      <span className="badge bg-success-subtle text-success">
-                        Upcoming
-                      </span>
-                      <span className="badge bg-warning-subtle text-dark">
-                        ₹{job.totalAmount || 0}
-                      </span>
-                    </div>
+                  <div className="stat-content">
+                    <span className="stat-label">{stat.label}</span>
+                    <h3 className="stat-value">{stat.value}</h3>
+                    <span className="stat-trend">{stat.trend}</span>
                   </div>
                 </div>
-
-                <div className="mt-3 mt-md-0">
-                  <button
-                    className="btn btn-warning text-dark fw-semibold px-4 rounded-pill shadow-sm"
-                    onClick={() => alert(`Viewing details for job ID: ${job._id}`)}
-                  >
-                    View Details <i className="bi bi-arrow-right-short ms-1"></i>
-                  </button>
-                </div>
               </div>
-            ))
-          ) : (
-            <div className="text-center py-4 text-muted">
-              <i className="bi bi-info-circle me-2"></i>
-              No recent job alerts available.
-            </div>
-          )}
-        </div>
-
-        {/* ===== Analytics Section ===== */}
-        <div className="p-4 rounded-4 shadow-sm bg-white mb-5">
-          <h4 className="fw-bold mb-4">Alert Performance Analytics</h4>
-          <div className="row g-3">
-            <div className="col-6 col-lg">
-              <div className="stat-box rounded-4 p-3">
-                <h5 className="fw-bold text-success mb-1">{analytics.acceptanceRate?.toFixed(1)}%</h5>
-                <p className="text-muted small mb-0">Acceptance Rate</p>
-              </div>
-            </div>
-            <div className="col-6 col-lg">
-              <div className="stat-box rounded-4 p-3">
-                <h5 className="fw-bold text-warning mb-1">{analytics.completionRate?.toFixed(1)}%</h5>
-                <p className="text-muted small mb-0">Completion Rate</p>
-              </div>
-            </div>
-            <div className="col-6 col-lg">
-              <div className="stat-box rounded-4 p-3">
-                <h5 className="fw-bold text-primary mb-1">{analytics.avgResponseTime} min</h5>
-                <p className="text-muted small mb-0">Avg Response</p>
-              </div>
-            </div>
-            <div className="col-6 col-lg">
-              <div className="stat-box rounded-4 p-3">
-                <h5 className="fw-bold text-info mb-1">{analytics.avgRating}★</h5>
-                <p className="text-muted small mb-0">Customer Rating</p>
-              </div>
-            </div>
-            <div className="col-12 col-lg">
-              <div className="stat-box rounded-4 p-3">
-                <h5 className="fw-bold text-success mb-1">{analytics.earningsGrowth?.toFixed(1)}%</h5>
-                <p className="text-muted small mb-0">Earnings Growth</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ===== Support & Help ===== */}
-        <motion.div
-          className="p-4 rounded-4 shadow-sm bg-white mb-5 support-container"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h4 className="fw-bold mb-4">Support & Help</h4>
+            ))}
+          </motion.div>
 
           <div className="row g-4">
-            {/* FAQ */}
-            <div className="col-md-4">
-              <div className="support-card h-100 p-4 rounded-4 border">
-                <div className="d-flex align-items-center mb-3">
-                  <div className="icon-wrapper bg-primary-subtle text-primary">
-                    <i className="bi bi-question-circle-fill fs-3"></i>
+            {/* ===== Left Column - Calendar & Jobs ===== */}
+            <div className="col-lg-8">
+              {/* Calendar */}
+              <motion.div
+                className="card-section mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="section-header">
+                  <div>
+                    <h5 className="section-title">
+                      <i className="bi bi-calendar-week me-2 text-warning"></i>
+                      Upcoming Schedule
+                    </h5>
+                    <p className="section-subtitle">Your work calendar for {monthName}</p>
                   </div>
-                  <h5 className="fw-bold ms-3 mb-0">FAQ</h5>
+                  <div className="calendar-nav">
+                    <button className="nav-btn" onClick={handlePrevMonth}>
+                      <i className="bi bi-chevron-left"></i>
+                    </button>
+                    <span className="current-month">{monthName}</span>
+                    <button className="nav-btn" onClick={handleNextMonth}>
+                      <i className="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
                 </div>
-                <p className="text-muted small">
-                  Find answers to commonly asked questions about job alerts and
-                  notifications.
-                </p>
-                <a href="#" className="fw-semibold text-primary text-decoration-none">
-                  Browse FAQ <i className="bi bi-arrow-right"></i>
-                </a>
-              </div>
+
+                <div className="calendar-grid">
+                  <div className="calendar-header-row">
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, i) => (
+                      <div className="calendar-day-name" key={i}>{day}</div>
+                    ))}
+                  </div>
+                  {calendarDays.map((week, i) => (
+                    <div className="calendar-week" key={i}>
+                      {week.map((day, j) => {
+                        const matchingWorks = findWorkForDate(day);
+                        const hasWork = matchingWorks.length > 0;
+                        return (
+                          <div
+                            className={`calendar-day ${!day ? 'empty' : ''} ${isToday(day) ? 'today' : ''} ${hasWork ? 'has-work' : ''}`}
+                            key={j}
+                          >
+                            {day && (
+                              <>
+                                <span className="day-number">{day}</span>
+                                {hasWork && (
+                                  <div className="work-indicator">
+                                    <span className="work-dot"></span>
+                                    <span className="work-time">{matchingWorks[0]?.time}</span>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Recent Jobs */}
+              <motion.div
+                className="card-section"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <div className="section-header">
+                  <div>
+                    <h5 className="section-title">
+                      <i className="bi bi-lightning-fill me-2 text-warning"></i>
+                      Recent Job Alerts
+                    </h5>
+                    <p className="section-subtitle">Latest opportunities matched for you</p>
+                  </div>
+                  <Link to={`/vendor/${id}/jobs`} className="btn-view-all">
+                    View All <i className="bi bi-arrow-right"></i>
+                  </Link>
+                </div>
+
+                <div className="jobs-list">
+                  {upcomingJobs.length > 0 ? (
+                    upcomingJobs.slice(0, 3).map((job, i) => (
+                      <div className="job-card" key={i}>
+                        <div className="job-icon">
+                          <i className="bi bi-tools"></i>
+                        </div>
+                        <div className="job-info">
+                          <h6 className="job-title">{job.Vendorid?.Category || "Service Request"}</h6>
+                          <p className="job-meta">
+                            <span><i className="bi bi-person"></i> {job.customerid?.fullName || "Customer"}</span>
+                            <span><i className="bi bi-geo-alt"></i> {job.address?.city || "N/A"}</span>
+                          </p>
+                          <p className="job-time">
+                            <i className="bi bi-clock"></i>
+                            {new Date(job.serviceDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })} • {job.serviceTime || "TBD"}
+                          </p>
+                        </div>
+                        <div className="job-action">
+                          <span className="job-amount">₹{job.totalAmount || 0}</span>
+                          <button className="btn-accept">
+                            View <i className="bi bi-arrow-right-short"></i>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="empty-state">
+                      <i className="bi bi-inbox"></i>
+                      <p>No recent job alerts</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
             </div>
 
-            {/* Live Support */}
-            <div className="col-md-4">
-              <div className="support-card h-100 p-4 rounded-4 border">
-                <div className="d-flex align-items-center mb-3">
-                  <div className="icon-wrapper bg-success-subtle text-success">
-                    <i className="bi bi-headset fs-3"></i>
-                  </div>
-                  <h5 className="fw-bold ms-3 mb-0">Live Support</h5>
-                </div>
-                <p className="text-muted small">
-                  Get instant help from our support team via live chat or phone.
-                </p>
-                <a href="#" className="fw-semibold text-success text-decoration-none">
-                  Contact Support <i className="bi bi-arrow-right"></i>
-                </a>
-              </div>
-            </div>
+            {/* ===== Right Column - Analytics & Quick Actions ===== */}
+            <div className="col-lg-4">
+              {/* Performance */}
+              <motion.div
+                className="card-section mb-4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h5 className="section-title">
+                  <i className="bi bi-graph-up-arrow me-2 text-success"></i>
+                  Performance
+                </h5>
 
-            {/* User Guide */}
-            <div className="col-md-4">
-              <div className="support-card h-100 p-4 rounded-4 border">
-                <div className="d-flex align-items-center mb-3">
-                  <div className="icon-wrapper bg-purple-subtle text-purple">
-                    <i className="bi bi-book-fill fs-3"></i>
+                <div className="performance-list">
+                  <div className="perf-item">
+                    <div className="perf-label">
+                      <span>Acceptance Rate</span>
+                      <span className="perf-value text-success">{analytics.acceptanceRate?.toFixed(0) || 0}%</span>
+                    </div>
+                    <div className="progress-bar-wrapper">
+                      <div className="progress-bar-fill bg-success" style={{ width: `${analytics.acceptanceRate || 0}%` }}></div>
+                    </div>
                   </div>
-                  <h5 className="fw-bold ms-3 mb-0">User Guide</h5>
+                  <div className="perf-item">
+                    <div className="perf-label">
+                      <span>Completion Rate</span>
+                      <span className="perf-value text-warning">{analytics.completionRate?.toFixed(0) || 0}%</span>
+                    </div>
+                    <div className="progress-bar-wrapper">
+                      <div className="progress-bar-fill bg-warning" style={{ width: `${analytics.completionRate || 0}%` }}></div>
+                    </div>
+                  </div>
+                  <div className="perf-item">
+                    <div className="perf-label">
+                      <span>Response Time</span>
+                      <span className="perf-value text-primary">{analytics.avgResponseTime || 0} min</span>
+                    </div>
+                    <div className="progress-bar-wrapper">
+                      <div className="progress-bar-fill bg-primary" style={{ width: `${Math.min(100, 100 - analytics.avgResponseTime * 5)}%` }}></div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-muted small">
-                  Learn how to maximize your earnings with our comprehensive
-                  user guide.
-                </p>
-                <a href="#" className="fw-semibold text-purple text-decoration-none">
-                  Read Guide <i className="bi bi-arrow-right"></i>
+              </motion.div>
+
+              {/* Quick Actions */}
+              <motion.div
+                className="card-section mb-4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h5 className="section-title">
+                  <i className="bi bi-lightning-charge me-2 text-warning"></i>
+                  Quick Actions
+                </h5>
+
+                <div className="quick-actions">
+                  <Link to={`/vendor/${id}/settings`} className="quick-action-btn">
+                    <i className="bi bi-person-gear"></i>
+                    <span>Edit Profile</span>
+                  </Link>
+                  <Link to={`/wallet/${id}`} className="quick-action-btn">
+                    <i className="bi bi-wallet2"></i>
+                    <span>Wallet</span>
+                  </Link>
+                  <Link to={`/vendor/projectupload/${id}`} className="quick-action-btn">
+                    <i className="bi bi-upload"></i>
+                    <span>Upload Project</span>
+                  </Link>
+                  <Link to={`/vendor/${id}/Job/history`} className="quick-action-btn">
+                    <i className="bi bi-clock-history"></i>
+                    <span>Job History</span>
+                  </Link>
+                </div>
+              </motion.div>
+
+              {/* Support Card */}
+              <motion.div
+                className="support-card-compact"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="support-icon">
+                  <i className="bi bi-headset"></i>
+                </div>
+                <h6>Need Help?</h6>
+                <p>Our support team is available 24/7</p>
+                <a href="https://wa.me/917093832122" target="_blank" rel="noopener noreferrer" className="btn-support">
+                  <i className="bi bi-whatsapp me-2"></i>Chat Now
                 </a>
-              </div>
+              </motion.div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Footer */}
-          <div className="support-footer mt-5 p-4 rounded-4 bg-light d-flex flex-wrap justify-content-between align-items-center">
-            <div>
-              <h6 className="fw-bold mb-1">Need immediate assistance?</h6>
-              <p className="text-muted mb-0 small">
-                Our support team is available 24/7 to help you with any urgent
-                issues.
-              </p>
-            </div>
-            <div className="d-flex gap-3 mt-3 mt-md-0">
-              <a
-                href="tel:+917093832122"
-                className="btn btn-warning fw-semibold d-flex align-items-center rounded-3 px-4"
-              >
-                <i className="bi bi-telephone-fill me-2"></i> Call Now
-              </a>
-
-              <a
-                href="https://wa.me/917093832122"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-dark fw-semibold d-flex align-items-center rounded-3 px-4"
-              >
-                <i className="bi bi-whatsapp me-2"></i> Live Chat
-              </a>
-
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ===== New Job Popup ===== */}
+      {/* ===== New Job Popup ===== */}
+      <AnimatePresence>
         {showJobPopup && newJobAlert && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="position-fixed bottom-0 end-0 m-4 p-4 rounded-4 shadow-lg job-popup bg-white"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className="job-popup-modern"
           >
-            <div className="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <h5 className="fw-bold text-warning mb-0">
-                  <i className="bi bi-briefcase-fill me-2"></i>New Job Alert!
-                </h5>
-                <small className="text-muted">High priority match</small>
+            <div className="popup-header">
+              <div className="popup-badge">
+                <i className="bi bi-lightning-fill"></i> New Job
               </div>
-              <button
-                className="btn-close"
-                onClick={() => setShowJobPopup(false)}
-              ></button>
-            </div>
-
-            <span className="badge bg-warning-subtle text-dark rounded-pill px-3 py-1 mb-2">
-              {newJobAlert.Vendorid?.Category || "Emergency Plumbing"}
-            </span>
-
-            <div className="mb-2">
-              <i className="bi bi-calendar-event me-2 text-warning"></i>
-              {newJobAlert.serviceTime || "Today, 3:30 PM – 5:30 PM"}
-            </div>
-            <div className="mb-2">
-              <i className="bi bi-geo-alt-fill me-2 text-warning"></i>
-              {newJobAlert.address?.street || "1247 Oak Street"},{" "}
-              {newJobAlert.address?.city || "Downtown District"}
-            </div>
-            <div className="mb-3">
-              <i className="bi bi-signpost-split me-2 text-warning"></i>2.3 miles
-              away
-            </div>
-
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h4 className="fw-bold mb-0 text-dark">
-                ₹{newJobAlert.totalAmount || 185}
-              </h4>
-              <small className="text-muted">Estimated reward</small>
-            </div>
-
-            <div className="d-flex gap-2">
-              <button
-                className="btn btn-warning text-white fw-bold flex-fill"
-                onClick={() => alert("Viewing job details...")}
-              >
-                View Job Details
+              <button className="popup-close" onClick={() => setShowJobPopup(false)}>
+                <i className="bi bi-x"></i>
               </button>
-              <button
-                className="btn btn-outline-secondary flex-fill"
-                onClick={() => setShowJobPopup(false)}
-              >
-                Dismiss
+            </div>
+
+            <h5 className="popup-title">{newJobAlert.Vendorid?.Category || "Service Request"}</h5>
+
+            <div className="popup-details">
+              <div className="popup-detail">
+                <i className="bi bi-calendar3"></i>
+                <span>{newJobAlert.serviceTime || "Today, 3:30 PM"}</span>
+              </div>
+              <div className="popup-detail">
+                <i className="bi bi-geo-alt"></i>
+                <span>{newJobAlert.address?.city || "Location"}</span>
+              </div>
+            </div>
+
+            <div className="popup-footer">
+              <span className="popup-amount">₹{newJobAlert.totalAmount || 0}</span>
+              <button className="btn-view-job" onClick={() => alert("View job")}>
+                View Details
               </button>
             </div>
           </motion.div>
         )}
-      </div>
-      <Footer></Footer>
+      </AnimatePresence>
+
+      <Footer />
     </>
   );
 };
