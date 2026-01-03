@@ -29,6 +29,7 @@ const ProdWallet = lazy(() => import('./Components/Product/productwallet'));
 const AdminApprovalPending = lazy(() => import('./Components/Vendor/Adminapprovalpage'));
 const VendorChat = lazy(() => import('./Components/Vendor/Vendorchat'));
 const VendorInbox = lazy(() => import('./Components/Vendor/inbox'));
+const ProtectedRoute = lazy(() => import('./Components/Login/Signup/ProtectedRoute'));
 
 const LoadingFallback = () => (
   <div className="d-flex justify-content-center align-items-center vh-100">
