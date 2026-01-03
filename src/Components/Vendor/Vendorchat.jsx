@@ -28,6 +28,19 @@ export default function VendorChat() {
       .get(`${API_BASE_URL}/api/chat/conversations/vendor/${vendorId}`)
       .then((res) => {
         setConversations(res.data);
+
+        // Check if there's a stored conversation ID from inbox
+        const storedConvoId = localStorage.getItem("activeConversationId");
+        if (storedConvoId && res.data.length > 0) {
+          const foundConvo = res.data.find(c => c._id === storedConvoId);
+          if (foundConvo) {
+            setActiveConversation(foundConvo);
+            localStorage.removeItem("activeConversationId"); // Clear after use
+            return;
+          }
+        }
+
+        // Default to first conversation if no stored ID
         if (res.data.length > 0 && !activeConversation) {
           setActiveConversation(res.data[0]);
         }

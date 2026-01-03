@@ -314,9 +314,10 @@
 }
 
 /* Dropdown Menu */
-.dropdown-menu {
+.custom-dropdown-menu {
     position: absolute;
-    top: calc(100% + 8px);
+    top: 120%;
+    /* Pushes it down a bit more */
     right: 0;
     min-width: 200px;
     background: white;
@@ -331,7 +332,7 @@
     z-index: 1050;
 }
 
-.profile-dropdown.open .dropdown-menu {
+.profile-dropdown.open .custom-dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0) scale(1);

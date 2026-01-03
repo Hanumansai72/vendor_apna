@@ -139,7 +139,7 @@ function Navbar() {
                 <i className="bi bi-chevron-down profile-arrow"></i>
               </div>
 
-              <div className="dropdown-menu">
+              <div className="custom-dropdown-menu">
                 {dropdownLinks.map((link) => (
                   <Link
                     key={link.path}

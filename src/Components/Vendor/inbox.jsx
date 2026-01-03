@@ -122,7 +122,11 @@ export default function VendorInbox() {
                 >
                   <div
                     className="convo-card p-3 d-flex align-items-center cursor-pointer"
-                    onClick={() => navigate(`/vendor/${c._id}/chat`)}
+                    onClick={() => {
+                      // Store the conversation ID for the chat component
+                      localStorage.setItem("activeConversationId", c._id);
+                      navigate(`/vendor/${vendorId}/chat`);
+                    }}
                   >
                     <div className="unread-indicator"></div>
                     <div className="avatar-box me-3">
