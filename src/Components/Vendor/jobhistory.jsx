@@ -54,16 +54,19 @@ const JobHistory = () => {
 
   // ✅ Fetch jobs
   useEffect(() => {
+    if (!vendorId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     axios
-      .get(`${API_BASE_URL}/jobhistry/${vendorId}`, {
-        headers: { "Cache-Control": "no-cache" },
-      })
+      .get(`${API_BASE_URL}/jobhistry/${vendorId}`)
       .then((res) => {
+        console.log("Job history response:", res.data);
         const normalized = (res.data || []).map((j) => ({
           ...j,
           _status: j.status || "Pending",
-          _service: j.Vendorid?.Category || "General",
+          _service: j.Vendorid?.Category || j.service || "General",
           _date: j.serviceDate ? new Date(j.serviceDate) : null,
           _payment:
             j.payment?.method || (j.totalAmount ? "Paid" : "Pending"),
@@ -71,7 +74,10 @@ const JobHistory = () => {
         }));
         setJobs(normalized);
       })
-      .catch((err) => console.error("❌ Fetch jobs error:", err))
+      .catch((err) => {
+        console.error("❌ Fetch jobs error:", err);
+        setJobs([]);
+      })
       .finally(() => setLoading(false));
   }, [vendorId]);
 

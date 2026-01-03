@@ -1,27 +1,23 @@
-// src/Components/Vendor/JobListingsNew.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { motion, AnimatePresence } from "framer-motion";
 import Footer from "../Navbar/footer";
+import "./Techincal.css";
 
-// ---- Helper formatting
+// Helper functions
 const formatINR = (n) =>
   typeof n === "number"
-    ? n.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })
-    : "—";
+    ? `₹${n.toLocaleString("en-IN")}`
+    : "₹0";
 
 const dateStr = (iso) => {
   if (!iso) return "—";
   const d = new Date(iso);
-  return d.toLocaleDateString("en-IN", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return d.toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
 };
 
 const JobListings = () => {
@@ -31,43 +27,41 @@ const JobListings = () => {
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [updatedAt, setUpdatedAt] = useState(null);
-
-  // filters
+  const [activeTab, setActiveTab] = useState("all");
   const [q, setQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
-  const [locationFilter, setLocationFilter] = useState("All Locations");
   const [sortBy, setSortBy] = useState("DateDesc");
 
-  // fetch
+  // Fetch jobs
   useEffect(() => {
     if (!vendorId) return;
     setLoading(true);
     axios
       .get(`${API_BASE_URL}/api/newjob/${vendorId}`)
-      .then((res) => {
-        setJobs(Array.isArray(res.data) ? res.data : []);
-        setUpdatedAt(new Date());
-      })
+      .then((res) => setJobs(Array.isArray(res.data) ? res.data : []))
       .catch((e) => console.error("Fetch jobs error:", e))
       .finally(() => setLoading(false));
   }, [vendorId]);
 
-  // locations list
-  const locations = useMemo(() => {
-    const set = new Set();
-    jobs.forEach((j) => {
-      const city = j?.address?.city;
-      if (city) set.add(city);
-    });
-    return ["All Locations", ...Array.from(set)];
+  // Stats
+  const stats = useMemo(() => {
+    const pending = jobs.filter(j => j?.status === "Pending").length;
+    const accepted = jobs.filter(j => j?.status === "Accepted").length;
+    const inProgress = jobs.filter(j => j?.status === "In Progress").length;
+    const completed = jobs.filter(j => j?.status === "Completed").length;
+    return { pending, accepted, inProgress, completed, total: jobs.length };
   }, [jobs]);
 
-  // filter+sort
+  // Filtered list
   const list = useMemo(() => {
     let arr = [...jobs];
 
-    // search
+    // Tab filter
+    if (activeTab !== "all") {
+      const statusMap = { pending: "Pending", accepted: "Accepted", progress: "In Progress", completed: "Completed" };
+      arr = arr.filter(j => j?.status === statusMap[activeTab]);
+    }
+
+    // Search
     const query = q.trim().toLowerCase();
     if (query) {
       arr = arr.filter((j) => {
@@ -78,50 +72,24 @@ const JobListings = () => {
       });
     }
 
-    // status
-    if (statusFilter !== "All Status") {
-      arr = arr.filter((j) => j?.status === statusFilter);
-    }
-
-    // location
-    if (locationFilter !== "All Locations") {
-      arr = arr.filter((j) => j?.address?.city === locationFilter);
-    }
-
-    // sort
+    // Sort
     arr.sort((a, b) => {
-      if (sortBy === "DateAsc") {
-        return new Date(a.serviceDate) - new Date(b.serviceDate);
-      }
-      if (sortBy === "AmountDesc") {
-        return (b.totalAmount ?? 0) - (a.totalAmount ?? 0);
-      }
-      if (sortBy === "AmountAsc") {
-        return (a.totalAmount ?? 0) - (b.totalAmount ?? 0);
-      }
-      // default DateDesc
+      if (sortBy === "DateAsc") return new Date(a.serviceDate) - new Date(b.serviceDate);
+      if (sortBy === "AmountDesc") return (b.totalAmount ?? 0) - (a.totalAmount ?? 0);
       return new Date(b.serviceDate) - new Date(a.serviceDate);
     });
 
     return arr;
-  }, [jobs, q, statusFilter, locationFilter, sortBy]);
+  }, [jobs, activeTab, q, sortBy]);
 
-  // actions
+  // Update status
   const updateStatus = async (job, target) => {
     try {
-      const { data } = await axios.put(
-        `${API_BASE_URL}/api/bookings/${job._id}/status`,
-        { status: target }
-      );
-
-      setJobs((prev) =>
-        prev.map((j) => (j._id === job._id ? { ...j, status: data.status } : j))
-      );
-
-      // Route to progress screen if starting
+      const { data } = await axios.put(`${API_BASE_URL}/api/bookings/${job._id}/status`, { status: target });
+      setJobs((prev) => prev.map((j) => (j._id === job._id ? { ...j, status: data.status } : j)));
       if (target === "In Progress") {
         localStorage.setItem("JObid", job._id);
-        navigate(`/vendor/${vendorId}/Job/Progress`);
+        navigate(`/vendor/${vendorId}/job/progress`);
       }
     } catch (e) {
       console.error("Status update failed:", e);
@@ -129,217 +97,648 @@ const JobListings = () => {
     }
   };
 
-  const primaryAction = (status) => {
-    if (status === "Pending") return { label: "Accept Job", to: "Accepted", color: "btn-warning text-dark" };
-    if (status === "Accepted") return { label: "Start Job", to: "In Progress", color: "btn-warning text-dark" };
-    if (status === "In Progress") return { label: "Complete Job", to: "Completed", color: "btn-success text-white" };
-    return null;
+  const getStatusConfig = (status) => {
+    const configs = {
+      Pending: { color: "pending", icon: "bi-hourglass-split", action: { label: "Accept", to: "Accepted" } },
+      Accepted: { color: "accepted", icon: "bi-check-circle", action: { label: "Start", to: "In Progress" } },
+      "In Progress": { color: "progress", icon: "bi-play-circle", action: { label: "Complete", to: "Completed" } },
+      Completed: { color: "completed", icon: "bi-check-all", action: null }
+    };
+    return configs[status] || configs.Pending;
   };
 
   return (
     <>
-      {/* Inline CSS to match the screenshot look */}
-      <style>{`
-        .jl-bg { background: linear-gradient(180deg,#FFF9E6 0%,#FFFFFF 140px); min-height:100vh; }
-        .jl-filter { background:#fff; border:1px solid #FFECB3; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.06); }
-        .jl-input, .jl-select { border:1px solid #FFD54F !important; border-radius:14px !important; padding:12px 14px !important; }
-        .jl-label { font-size:0.85rem; color:#6B7280; margin-bottom:6px; }
-        .jl-clear { color:#F4B400; font-weight:600; cursor:pointer; }
-        .jl-card { background:#fff; border:1px solid #FFECB3; border-radius:18px; box-shadow:0 10px 24px rgba(0,0,0,0.06); padding:18px 20px; }
-        .jl-title { font-weight:800; color:#1F2937; font-size:1.25rem; }
-        .jl-sub { color:#6B7280; }
-        .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:600; font-size:.85rem; }
-        .chip-blue { background:#E6F0FF; color:#2A62F2; }
-        .chip-red { background:#FFECEC; color:#D92D20; }
-        .chip-yellow { background:#FFF4CC; color:#8A6D00; }
-        .chip-green { background:#E8F8EE; color:#118A4E; }
-        .status-pill { padding:6px 12px; border-radius:999px; font-weight:700; }
-        .st-accepted { background:#FFF4CC; color:#7C5E00; }
-        .st-progress { background:#E8F1FF; color:#2A62F2; }
-        .st-completed { background:#E8F8EE; color:#118A4E; }
-        .st-pending { background:#F3F4F6; color:#6B7280; }
-        .amount { color:#118A4E; font-weight:800; font-size:1.5rem; letter-spacing:.2px; }
-        .round-btn { width:54px; height:54px; border-radius:12px; border:1px solid #FFD54F; display:flex; align-items:center; justify-content:center; background:#fff; transition:.15s; }
-        .round-btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.08); }
-        .muted { color:#9CA3AF; }
-      `}</style>
+      <Navbar />
+      <div className="jobs-page">
+        <div className="container-xl py-4">
+          {/* Header */}
+          <motion.div
+            className="jobs-header"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div>
+              <h1 className="page-title">
+                <i className="bi bi-briefcase-fill text-warning me-3"></i>
+                Job Listings
+              </h1>
+              <p className="page-subtitle">Manage your service requests and track progress</p>
+            </div>
+            <Link to={`/vendor/${vendorId}/job/history`} className="btn-history">
+              <i className="bi bi-clock-history me-2"></i>
+              View History
+            </Link>
+          </motion.div>
 
-      <div className="jl-bg">
-        <Navbar />
+          {/* Stats */}
+          <motion.div
+            className="jobs-stats"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="stat-box" onClick={() => setActiveTab("pending")}>
+              <span className="stat-count pending">{stats.pending}</span>
+              <span className="stat-name">Pending</span>
+            </div>
+            <div className="stat-box" onClick={() => setActiveTab("accepted")}>
+              <span className="stat-count accepted">{stats.accepted}</span>
+              <span className="stat-name">Accepted</span>
+            </div>
+            <div className="stat-box" onClick={() => setActiveTab("progress")}>
+              <span className="stat-count progress">{stats.inProgress}</span>
+              <span className="stat-name">In Progress</span>
+            </div>
+            <div className="stat-box" onClick={() => setActiveTab("completed")}>
+              <span className="stat-count completed">{stats.completed}</span>
+              <span className="stat-name">Completed</span>
+            </div>
+          </motion.div>
 
-        <div className="container py-4">
-          {/* Filter bar */}
-          <div className="jl-filter p-3 p-md-4 mb-4">
-            <div className="row g-3 align-items-end">
-              <div className="col-md-4">
-                <div className="jl-label">Search jobs</div>
+          {/* Filters */}
+          <motion.div
+            className="jobs-filters"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <div className="filter-tabs">
+              {[
+                { id: "all", label: "All Jobs" },
+                { id: "pending", label: "Pending" },
+                { id: "accepted", label: "Accepted" },
+                { id: "progress", label: "In Progress" },
+                { id: "completed", label: "Completed" }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  className={`filter-tab ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="filter-actions">
+              <div className="search-box">
+                <i className="bi bi-search"></i>
                 <input
+                  type="text"
+                  placeholder="Search jobs..."
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  className="form-control jl-input"
-                  placeholder="Search jobs by customer, location, or service"
                 />
               </div>
-
-              <div className="col-md-3">
-                <div className="jl-label">Status</div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="form-select jl-select"
-                >
-                  {["All Status", "Pending", "Accepted", "In Progress", "Completed"].map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-md-3">
-                <div className="jl-label">Location</div>
-                <select
-                  value={locationFilter}
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                  className="form-select jl-select"
-                >
-                  {locations.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-md-2">
-                <div className="jl-label">Sort</div>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="form-select jl-select"
-                >
-                  <option value="DateDesc">Sort by Date</option>
-                  <option value="DateAsc">Oldest First</option>
-                  <option value="AmountDesc">Amount High → Low</option>
-                  <option value="AmountAsc">Amount Low → High</option>
-                </select>
-              </div>
+              <select
+                className="sort-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="DateDesc">Latest First</option>
+                <option value="DateAsc">Oldest First</option>
+                <option value="AmountDesc">Highest Amount</option>
+              </select>
             </div>
+          </motion.div>
 
-            <div className="d-flex justify-content-between align-items-center mt-3">
-              <small className="muted">
-                {updatedAt ? `Last updated ${Math.max(1, Math.round((Date.now() - updatedAt.getTime()) / 60000))} mins ago` : "Loading..."}
-              </small>
-              {(q || statusFilter !== "All Status" || locationFilter !== "All Locations") && (
-                <span
-                  className="jl-clear"
-                  onClick={() => {
-                    setQ("");
-                    setStatusFilter("All Status");
-                    setLocationFilter("All Locations");
-                  }}
-                >
-                  ⛳ Clear Filters
-                </span>
-              )}
-            </div>
-          </div>
+          {/* Jobs List */}
+          <div className="jobs-list">
+            {loading ? (
+              <div className="jobs-loading">
+                {[1, 2, 3].map(i => (
+                  <div className="job-skeleton" key={i}>
+                    <div className="skeleton-line w-50"></div>
+                    <div className="skeleton-line w-75"></div>
+                    <div className="skeleton-line w-25"></div>
+                  </div>
+                ))}
+              </div>
+            ) : list.length === 0 ? (
+              <div className="empty-jobs">
+                <i className="bi bi-inbox"></i>
+                <h4>No jobs found</h4>
+                <p>No jobs match your current filters</p>
+                <button className="btn-clear-filters" onClick={() => { setActiveTab("all"); setQ(""); }}>
+                  Clear Filters
+                </button>
+              </div>
+            ) : (
+              <AnimatePresence>
+                {list.map((job, index) => {
+                  const status = job?.status ?? "Pending";
+                  const config = getStatusConfig(status);
 
-          {/* Listing */}
-          {loading && <div className="text-center py-5">Loading jobs…</div>}
-          {!loading && list.length === 0 && (
-            <div className="text-center py-5 text-muted">No jobs found.</div>
-          )}
+                  return (
+                    <motion.div
+                      key={job._id}
+                      className={`job-card status-${config.color}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <div className="job-main">
+                        <div className="job-header">
+                          <div className="job-service">
+                            <h4>{job?.service || "Service Request"}</h4>
+                            <span className={`status-badge ${config.color}`}>
+                              <i className={`bi ${config.icon}`}></i>
+                              {status}
+                            </span>
+                          </div>
+                          <div className="job-amount">{formatINR(job?.totalAmount)}</div>
+                        </div>
 
-          <div className="d-flex flex-column gap-3">
-            {list.map((job) => {
-              const status = job?.status ?? "Pending";
-              const action = primaryAction(status);
+                        <div className="job-details">
+                          <div className="detail-item">
+                            <i className="bi bi-person"></i>
+                            <span>{job?.customer?.fullName || "Customer"}</span>
+                          </div>
+                          <div className="detail-item">
+                            <i className="bi bi-geo-alt"></i>
+                            <span>{job?.address?.city || "Location"}</span>
+                          </div>
+                          <div className="detail-item">
+                            <i className="bi bi-calendar3"></i>
+                            <span>{dateStr(job?.serviceDate)}</span>
+                          </div>
+                          <div className="detail-item">
+                            <i className="bi bi-clock"></i>
+                            <span>{job?.serviceTime || "Time TBD"}</span>
+                          </div>
+                        </div>
 
-              const statusClass =
-                status === "Accepted"
-                  ? "st-accepted"
-                  : status === "In Progress"
-                    ? "st-progress"
-                    : status === "Completed"
-                      ? "st-completed"
-                      : "st-pending";
-
-              return (
-                <div key={job._id} className="jl-card">
-                  <div className="row g-3 align-items-center">
-                    {/* Title + customer */}
-                    <div className="col-lg-6">
-                      <div className="d-flex align-items-center justify-content-between justify-content-lg-start gap-3">
-                        <div className="jl-title">{job?.service || "Service"}</div>
-                        <span className={`status-pill ${statusClass}`}>{status}</span>
-                      </div>
-
-                      <div className="jl-sub mt-1">
-                        {job?.customer?.fullName || "—"} • {job?.address?.city || "—"}
-                      </div>
-
-                      <div className="d-flex flex-wrap gap-2 mt-2">
-                        <span className="chip chip-blue">
-                          <i className="bi bi-wrench-adjustable-circle"></i> {job?.service || "Service"}
-                        </span>
                         {(job?.priority?.toLowerCase() === "urgent" || job?.urgent) && (
-                          <span className="chip chip-red">
-                            <i className="bi bi-exclamation-octagon"></i> Urgent
+                          <span className="urgent-badge">
+                            <i className="bi bi-exclamation-triangle-fill"></i> Urgent
                           </span>
                         )}
                       </div>
-                    </div>
 
-                    {/* Date/Time + Amount */}
-                    <div className="col-lg-3">
-                      <div className="d-flex align-items-center gap-2 jl-sub">
-                        <i className="bi bi-calendar-event"></i>
-                        <span>{dateStr(job?.serviceDate)}</span>
+                      <div className="job-actions">
+                        {config.action && (
+                          <button
+                            className={`btn-action ${config.color}`}
+                            onClick={() => updateStatus(job, config.action.to)}
+                          >
+                            {config.action.label}
+                            <i className="bi bi-arrow-right"></i>
+                          </button>
+                        )}
+                        <div className="action-icons">
+                          <button
+                            className="icon-btn"
+                            onClick={() => {
+                              const p = job?.customer?.phone || job?.customer?.Phone_number;
+                              if (p) window.location.href = `tel:${p}`;
+                            }}
+                          >
+                            <i className="bi bi-telephone-fill"></i>
+                          </button>
+                          <button
+                            className="icon-btn"
+                            onClick={() => {
+                              const e = job?.customer?.email || job?.customer?.Email_address;
+                              if (e) window.location.href = `mailto:${e}`;
+                            }}
+                          >
+                            <i className="bi bi-envelope-fill"></i>
+                          </button>
+                        </div>
                       </div>
-                      <div className="d-flex align-items-center gap-2 jl-sub mt-1">
-                        <i className="bi bi-clock"></i>
-                        <span>{job?.serviceTime || "—"}</span>
-                      </div>
-                      <div className="amount mt-2">{formatINR(job?.totalAmount ?? 0)}</div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="col-lg-3 d-flex flex-wrap gap-2 justify-content-lg-end">
-                      {action && (
-                        <button
-                          className={`btn ${action.color} px-4 fw-bold`}
-                          onClick={() => updateStatus(job, action.to)}
-                        >
-                          {action.label}
-                        </button>
-                      )}
-
-                      <button
-                        className="round-btn"
-                        title="Call customer"
-                        onClick={() => {
-                          const p = job?.customer?.phone || job?.customer?.Phone_number;
-                          if (p) window.location.href = `tel:${p}`;
-                        }}
-                      >
-                        <i className="bi bi-telephone-fill text-warning"></i>
-                      </button>
-                      <button
-                        className="round-btn"
-                        title="Email customer"
-                        onClick={() => {
-                          const e = job?.customer?.email || job?.customer?.Email_address;
-                          if (e) window.location.href = `mailto:${e}`;
-                        }}
-                      >
-                        <i className="bi bi-envelope-fill text-warning"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            )}
           </div>
         </div>
       </div>
-      <Footer></Footer>
+      <Footer />
+
+      <style>{`
+        .jobs-page {
+          min-height: 100vh;
+          background: var(--bg-light, #f9fafb);
+        }
+
+        .jobs-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .btn-history {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.625rem 1.25rem;
+          background: white;
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 10px;
+          color: var(--text-secondary, #4b5563);
+          font-size: 0.875rem;
+          font-weight: 500;
+          text-decoration: none;
+          transition: all 0.2s ease;
+        }
+
+        .btn-history:hover {
+          background: var(--primary-light, #FFF8E6);
+          border-color: var(--primary, #FFD600);
+          color: var(--text-primary, #111827);
+        }
+
+        /* Stats */
+        .jobs-stats {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+          background: white;
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 14px;
+          padding: 1.25rem;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .stat-box:hover {
+          border-color: var(--primary, #FFD600);
+          transform: translateY(-2px);
+        }
+
+        .stat-count {
+          display: block;
+          font-size: 2rem;
+          font-weight: 700;
+        }
+
+        .stat-count.pending { color: #6b7280; }
+        .stat-count.accepted { color: #f59e0b; }
+        .stat-count.progress { color: #3b82f6; }
+        .stat-count.completed { color: #22c55e; }
+
+        .stat-name {
+          font-size: 0.8rem;
+          color: var(--text-muted, #9ca3af);
+          margin-top: 0.25rem;
+        }
+
+        /* Filters */
+        .jobs-filters {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 1rem;
+          background: white;
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 14px;
+          padding: 0.75rem 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .filter-tabs {
+          display: flex;
+          gap: 0.5rem;
+          overflow-x: auto;
+        }
+
+        .filter-tab {
+          padding: 0.5rem 1rem;
+          border: none;
+          background: transparent;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: var(--text-secondary, #4b5563);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+
+        .filter-tab:hover {
+          background: var(--bg-subtle, #f3f4f6);
+        }
+
+        .filter-tab.active {
+          background: var(--primary, #FFD600);
+          color: var(--text-primary, #111827);
+          font-weight: 600;
+        }
+
+        .filter-actions {
+          display: flex;
+          gap: 0.75rem;
+        }
+
+        .search-box {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: var(--bg-subtle, #f3f4f6);
+          border-radius: 10px;
+          border: 1px solid transparent;
+          transition: all 0.2s ease;
+        }
+
+        .search-box:focus-within {
+          border-color: var(--primary, #FFD600);
+          background: white;
+        }
+
+        .search-box i {
+          color: var(--text-muted, #9ca3af);
+        }
+
+        .search-box input {
+          border: none;
+          background: transparent;
+          font-size: 0.875rem;
+          outline: none;
+          width: 180px;
+        }
+
+        .sort-select {
+          padding: 0.5rem 1rem;
+          background: var(--bg-subtle, #f3f4f6);
+          border: 1px solid transparent;
+          border-radius: 10px;
+          font-size: 0.875rem;
+          color: var(--text-secondary, #4b5563);
+          cursor: pointer;
+        }
+
+        .sort-select:focus {
+          border-color: var(--primary, #FFD600);
+          outline: none;
+        }
+
+        /* Jobs List */
+        .jobs-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .job-card {
+          background: white;
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 16px;
+          padding: 1.25rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1.5rem;
+          transition: all 0.2s ease;
+          border-left: 4px solid transparent;
+        }
+
+        .job-card:hover {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .job-card.status-pending { border-left-color: #9ca3af; }
+        .job-card.status-accepted { border-left-color: #f59e0b; }
+        .job-card.status-progress { border-left-color: #3b82f6; }
+        .job-card.status-completed { border-left-color: #22c55e; }
+
+        .job-main {
+          flex: 1;
+        }
+
+        .job-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 0.75rem;
+        }
+
+        .job-service h4 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: var(--text-primary, #111827);
+          margin: 0 0 0.5rem;
+        }
+
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.375rem;
+          padding: 0.375rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        .status-badge.pending { background: #f3f4f6; color: #6b7280; }
+        .status-badge.accepted { background: #fef3c7; color: #92400e; }
+        .status-badge.progress { background: #dbeafe; color: #1d4ed8; }
+        .status-badge.completed { background: #dcfce7; color: #166534; }
+
+        .job-amount {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #22c55e;
+        }
+
+        .job-details {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .detail-item {
+          display: flex;
+          align-items: center;
+          gap: 0.375rem;
+          font-size: 0.85rem;
+          color: var(--text-secondary, #4b5563);
+        }
+
+        .detail-item i {
+          color: var(--text-muted, #9ca3af);
+        }
+
+        .urgent-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          margin-top: 0.75rem;
+          padding: 0.375rem 0.75rem;
+          background: #fee2e2;
+          color: #dc2626;
+          font-size: 0.75rem;
+          font-weight: 600;
+          border-radius: 6px;
+        }
+
+        .job-actions {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 0.75rem;
+        }
+
+        .btn-action {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.625rem 1.25rem;
+          border: none;
+          border-radius: 10px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .btn-action.pending { background: #6b7280; color: white; }
+        .btn-action.accepted { background: var(--primary, #FFD600); color: #111827; }
+        .btn-action.progress { background: #22c55e; color: white; }
+
+        .btn-action:hover {
+          transform: translateY(-1px);
+        }
+
+        .action-icons {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .icon-btn {
+          width: 40px;
+          height: 40px;
+          border: 1px solid var(--border, #e5e7eb);
+          background: white;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: var(--text-muted, #9ca3af);
+          transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+          background: var(--primary-light, #FFF8E6);
+          border-color: var(--primary, #FFD600);
+          color: var(--primary-dark, #E6C200);
+        }
+
+        /* Empty & Loading */
+        .empty-jobs {
+          text-align: center;
+          padding: 4rem 2rem;
+          background: white;
+          border-radius: 16px;
+          border: 2px dashed var(--border, #e5e7eb);
+        }
+
+        .empty-jobs i {
+          font-size: 3rem;
+          color: var(--text-muted, #9ca3af);
+          margin-bottom: 1rem;
+        }
+
+        .empty-jobs h4 {
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+        }
+
+        .empty-jobs p {
+          color: var(--text-muted, #9ca3af);
+          margin-bottom: 1.5rem;
+        }
+
+        .btn-clear-filters {
+          padding: 0.625rem 1.5rem;
+          background: var(--primary, #FFD600);
+          border: none;
+          border-radius: 10px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .jobs-loading {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .job-skeleton {
+          background: white;
+          border-radius: 16px;
+          padding: 1.5rem;
+        }
+
+        .skeleton-line {
+          height: 16px;
+          background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 4px;
+          margin-bottom: 0.75rem;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        @media (max-width: 992px) {
+          .jobs-stats {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          
+          .job-card {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          
+          .job-actions {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border, #e5e7eb);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .jobs-filters {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          
+          .filter-tabs {
+            width: 100%;
+            padding-bottom: 0.5rem;
+          }
+          
+          .filter-actions {
+            width: 100%;
+          }
+          
+          .search-box {
+            flex: 1;
+          }
+          
+          .search-box input {
+            width: 100%;
+          }
+        }
+      `}</style>
     </>
   );
 };
