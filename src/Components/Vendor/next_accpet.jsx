@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../Vendor/nextaccpet.css";
-import { Modal, Button, Form } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../Navbar/navbar";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import API_BASE_URL from "../../config";
-import { motion } from "framer-motion";
+import Navbar from "../Navbar/navbar";
+import Footer from "../Navbar/footer";
+import "./Techincal.css";
 
 const WEATHER_API_KEY = "be12bfe18a5e6692622153268ca9e7b3";
 
@@ -15,15 +14,19 @@ const JobInProgress = () => {
   const navigate = useNavigate();
   const vendorId = localStorage.getItem("JObid");
 
-  // ---- State ----
   const [job, setJob] = useState(null);
   const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [verifying, setVerifying] = useState(false);
 
-  // ---- Fetch Job ----
+  // Fetch Job
   useEffect(() => {
-    if (!vendorId) return;
+    if (!vendorId) {
+      setLoading(false);
+      return;
+    }
     axios
       .get(`${API_BASE_URL}/services/jobs/${vendorId}`)
       .then((res) => {
@@ -32,54 +35,48 @@ const JobInProgress = () => {
           : res.data;
         setJob(data || null);
       })
-      .catch((e) => console.error("Job fetch error:", e));
+      .catch((e) => console.error("Job fetch error:", e))
+      .finally(() => setLoading(false));
   }, [vendorId, id]);
 
-  // ---- Live Weather ----
+  // Live Weather
   useEffect(() => {
     const lat = job?.address?.latitude;
     const lon = job?.address?.longitude;
-    if (!lat || !lon || !WEATHER_API_KEY) return;
+    if (!lat || !lon) return;
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API_KEY}`;
     axios
-      .get(url)
+      .get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API_KEY}`)
       .then((r) => {
         const d = r.data;
         setWeather({
           temp: Math.round(d.main?.temp ?? 0),
           description: d.weather?.[0]?.description ?? "—",
-          precip: d.rain?.["1h"] ? `${d.rain["1h"]} mm` : "0%",
-          wind: `${Math.round(d.wind?.speed ?? 0)} km/h ${d.wind?.deg ? degToCompass(d.wind.deg) : ""
-            }`.trim(),
+          icon: d.weather?.[0]?.icon,
         });
       })
-      .catch((e) => console.error("Weather error:", e));
+      .catch(console.error);
   }, [job]);
 
   const formattedDate = useMemo(() => {
     if (!job?.serviceDate) return "—";
     return new Date(job.serviceDate).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
+      weekday: "short",
+      month: "short",
       day: "numeric",
     });
   }, [job?.serviceDate]);
 
-  const serviceTime = job?.serviceTime || job?.time || "—";
   const lat = job?.address?.latitude ?? "";
   const lon = job?.address?.longitude ?? "";
 
-  // ---- OTP ----
+  // OTP
   const openOtp = async () => {
     setShowOtp(true);
     try {
-      await axios.post(`${API_BASE_URL}/sendotp`, {
-        Email: job?.customer?.email,
-      });
-      alert("OTP sent to customer email!");
+      await axios.post(`${API_BASE_URL}/sendotp`, { Email: job?.customer?.email });
     } catch {
-      alert("Failed to send OTP");
+      console.error("Failed to send OTP");
     }
   };
 
@@ -88,303 +85,738 @@ const JobInProgress = () => {
     const next = [...otp];
     next[i] = val;
     setOtp(next);
-    if (val && i < otp.length - 1)
-      document.getElementById(`otp-${i + 1}`)?.focus();
+    if (val && i < otp.length - 1) document.getElementById(`otp-${i + 1}`)?.focus();
   };
 
   const verifyOtp = async (e) => {
     e.preventDefault();
+    setVerifying(true);
     try {
-      const res = await axios.post(
-        `${API_BASE_URL}/verifyotp`,
-        {
-          Email: job?.customer?.email,
-          otp: otp.join(""),
-        }
-      );
+      const res = await axios.post(`${API_BASE_URL}/verifyotp`, {
+        Email: job?.customer?.email,
+        otp: otp.join(""),
+      });
       if (res.status === 200) {
-        alert("OTP Verified. Job marked as Reached.");
         setShowOtp(false);
-        navigate(`/vendor/${id}/Job/Progress/reached`);
+        navigate(`/vendor/${id}/job/progress/reached`);
       }
     } catch {
       alert("Invalid OTP, please try again.");
+    } finally {
+      setVerifying(false);
     }
   };
 
-  // ---- Actions ----
   const callCustomer = () => {
     const phone = job?.customer?.phone;
-    phone
-      ? (window.location.href = `tel:${phone}`)
-      : alert("Customer phone not available");
+    phone ? (window.location.href = `tel:${phone}`) : alert("Phone not available");
   };
 
-  const cancelJob = () => {
-    if (window.confirm("Cancel this job locally?"))
-      navigate("/vendor/dashboard");
-  };
-
-  // ✅ Open Google Maps
   const getDirections = () => {
-    if (!lat || !lon) {
-      alert("Location data not available for this job.");
-      return;
-    }
-    const mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
-    window.open(mapUrl, "_blank");
+    if (!lat || !lon) return alert("Location not available");
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`, "_blank");
   };
 
-  const fade = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="job-progress-page">
+          <div className="container-xl py-5 text-center">
+            <div className="spinner-border text-warning" role="status"></div>
+            <p className="mt-3 text-muted">Loading job details...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
-
-      <div className="container my-4">
-        {/* ======= Job Header ======= */}
-        <motion.div {...fade} transition={{ duration: 0.45 }} className="d-flex justify-content-between align-items-start mb-3">
-          <div>
-            <h2 className="display-6 fw-bold mb-0">Job Details</h2>
-            <div className="text-muted">Service Request #{job?.jobId || job?._id || "—"}</div>
-          </div>
-          <div className="d-flex align-items-center gap-2">
-            <span className="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2">
-              <span className="me-2 rounded-circle d-inline-block" style={{ width: 8, height: 8, background: "#28a745" }} /> Active Job
-            </span>
-          </div>
-        </motion.div>
-
-        {/* ======= Route Navigation ======= */}
-        <motion.div {...fade} transition={{ duration: 0.5 }} className="route-wrap rounded-4 shadow-sm mb-4">
-          <div className="route-header px-4 py-3 d-flex justify-content-between align-items-center">
-            <div>
-              <h5 className="text-white mb-0 fw-bold">Route Navigation</h5>
-              <div className="text-white-50">Optimized path to your destination</div>
+      <div className="job-progress-page">
+        <div className="container-xl py-4">
+          {/* Header */}
+          <motion.div
+            className="progress-header"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="header-info">
+              <span className="job-id">Job #{job?._id?.slice(-6) || "—"}</span>
+              <h1 className="page-title">Active Job</h1>
+              <p className="page-subtitle">{job?.category || "Service"} Request</p>
             </div>
-            <div className="badge bg-warning text-dark fw-bold rounded-pill px-3 py-2">2.4 mi</div>
-          </div>
-
-          <div className="position-relative p-3 pt-0">
-            {lat && lon ? (
-              <iframe
-                title="map"
-                className="w-100 rounded-3 shadow-sm"
-                style={{ border: 0, height: 280, background: "#eef9fb" }}
-                loading="lazy"
-                allowFullScreen
-                src={`https://www.google.com/maps?q=${lat},${lon}&hl=en&z=14&output=embed`}
-              />
-            ) : (
-              <div className="w-100 rounded-3 shadow-sm bg-light" style={{ height: 280 }} />
-            )}
-
-            <div className="text-center mt-3">
-              <button className="btn btn-primary rounded-pill px-4 fw-semibold" onClick={getDirections}>
-                <i className="bi bi-geo-alt-fill me-2"></i> Get Directions
-              </button>
+            <div className="header-status">
+              <span className="status-badge active">
+                <span className="status-dot"></span>
+                In Progress
+              </span>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* ======= Service Overview ======= */}
-        <motion.div {...fade} transition={{ duration: 0.5 }} className="rounded-4 overflow-hidden shadow-sm mb-4">
-          <div className="service-head d-flex justify-content-between align-items-center px-4 py-3">
-            <div>
-              <h5 className="text-white mb-0 fw-bold">Service Overview</h5>
-              <div className="text-white-50">Complete job information</div>
-            </div>
-            <span className="badge bg-warning text-dark fw-bold rounded-pill px-3 py-2">URGENT</span>
-          </div>
-
-          <div className="px-4 py-3 bg-white">
-            <div className="d-flex gap-3 mb-3 flex-wrap">
-              <span className="pill-yellow fw-bold">{job?.category || "PLUMBING"}</span>
-              <span className="pill-blue">{job?.serviceType || "Emergency Repair"}</span>
-            </div>
-
-            <div className="bg-body-tertiary rounded-4 p-4">
-              <h6 className="fw-bold mb-3"><i className="bi bi-person-fill me-2 text-warning"></i>Customer Details</h6>
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <div className="text-muted small">Name</div>
-                  <div className="fw-semibold">{job?.customer?.fullName || "—"}</div>
-                  <div className="mt-3 text-muted small">Email</div>
-                  <div className="text-muted">{job?.customer?.email || "—"}</div>
-                </div>
-                <div className="col-md-6">
-                  <div className="text-muted small">Phone</div>
-                  <div className="text-primary fw-bold">{job?.customer?.phone || "(—)"}</div>
-                  <div className="mt-3 text-muted small">Rating</div>
-                  <div className="text-warning">★★★★★ <span className="text-muted">(4.9)</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ======= Schedule & Compensation ======= */}
-        <motion.div {...fade} transition={{ duration: 0.5 }} className="rounded-4 overflow-hidden shadow-sm mb-4">
-          <div className="schedule-head px-4 py-3">
-            <h5 className="text-white mb-0 fw-bold">Schedule & Compensation</h5>
-            <div className="text-white-50">Time and payment details</div>
-          </div>
-
-          <div className="px-4 py-4 bg-white">
-            <div className="row g-3">
-              <div className="col-md-6">
-                <div className="p-4 rounded-4 bg-body-tertiary">
-                  <div className="fw-semibold"><i className="bi bi-calendar3 me-2 text-primary" />Service Date</div>
-                  <div className="fs-3 fw-bold mt-2">{formattedDate}</div>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="p-4 rounded-4 bg-body-tertiary">
-                  <div className="fw-semibold"><i className="bi bi-clock me-2 text-warning" />Time Window</div>
-                  <div className="fs-3 fw-bold mt-2">{serviceTime}</div>
-                  <div className="text-muted">Flexible +/- 30 min</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-3 p-4 rounded-4 comp-box">
-              <div className="fw-semibold"><i className="bi bi-currency-rupee me-2 text-success" />Estimated Compensation</div>
-              <div className="d-flex justify-content-between align-items-center mt-2">
-                <div className="text-muted">Base Service Fee</div>
-                <div className="fw-bold">₹{job?.payment?.amount || 120}</div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ======= Current Conditions ======= */}
-        <motion.div {...fade} transition={{ duration: 0.5 }} className="mb-4">
-          <h3 className="text-center fw-bold">Current Conditions</h3>
-          <p className="text-center text-muted">Weather and traffic updates for your trip</p>
-
-          <div className="row g-3">
-            <div className="col-md-6">
-              <div className="p-4 rounded-4 weather-card text-white h-100">
-                <div className="d-flex justify-content-between align-items-start">
-                  <h5 className="fw-bold mb-0">Weather Forecast</h5>
-                  <i className="bi bi-cloud-sun fs-2 text-white-50" />
-                </div>
-                <div className="mt-3">
-                  <div className="display-6 fw-bold">{weather ? `${weather.temp}°C` : "—"}</div>
-                  <div className="fw-semibold text-capitalize">{weather ? weather.description : "—"}</div>
-                  <div className="text-white-75 mt-2">Wind: {weather?.wind || "—"}</div>
-                  <div className="text-white-75 mt-1">Precipitation: {weather?.precip || "—"}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-6">
-              <div className="p-4 rounded-4 traffic-card text-white h-100">
-                <div className="d-flex justify-content-between align-items-start">
-                  <h5 className="fw-bold mb-0">Traffic Status</h5>
-                  <i className="bi bi-cone-striped fs-2 text-white-50" />
-                </div>
-                <div className="mt-3">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>Current Traffic</div>
-                    <span className="badge bg-light text-success">Light</span>
+          <div className="row g-4">
+            {/* Left Column */}
+            <div className="col-lg-8">
+              {/* Map Card */}
+              <motion.div
+                className="map-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="map-header">
+                  <div>
+                    <h5><i className="bi bi-geo-alt-fill me-2"></i>Navigation</h5>
+                    <p>Route to customer location</p>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center mt-2">
-                    <div>Expected Travel Time</div>
-                    <div className="h4 mb-0">8 min</div>
-                  </div>
+                  <button className="btn-directions" onClick={getDirections}>
+                    <i className="bi bi-compass me-2"></i>Get Directions
+                  </button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ======= Emergency Contacts ======= */}
-        <motion.div {...fade} transition={{ duration: 0.5 }} className="mb-5">
-          <h3 className="text-center fw-bold">Emergency Contacts</h3>
-          <p className="text-center text-muted">Important numbers for urgent situations</p>
-
-          <div className="row g-3">
-            {[
-              { title: "Dispatch Center", color: "danger", num: "(555) 911-HELP", icon: "bi-telephone-fill" },
-              { title: "Technical Support", color: "primary", num: "(555) 123-TECH", icon: "bi-headset" },
-              { title: "Supervisor", color: "success", num: "(555) 456-BOSS", icon: "bi-person-workspace" },
-            ].map((c, i) => (
-              <div className="col-md-4" key={i}>
-                <div className="p-4 rounded-4 shadow-sm bg-white h-100">
-                  <div className="d-flex align-items-center mb-3">
-                    <div className={`contact-icon bg-${c.color}-subtle text-${c.color}`}>
-                      <i className={`bi ${c.icon}`} />
+                <div className="map-container">
+                  {lat && lon ? (
+                    <iframe
+                      title="map"
+                      src={`https://www.google.com/maps?q=${lat},${lon}&hl=en&z=15&output=embed`}
+                      loading="lazy"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="map-placeholder">
+                      <i className="bi bi-map"></i>
+                      <p>Location not available</p>
                     </div>
-                    <div className="ms-3">
-                      <div className="fw-bold">{c.title}</div>
-                      <div className={`h5 text-${c.color} mb-0`}>{c.num}</div>
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Customer Card */}
+              <motion.div
+                className="customer-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="card-header-custom">
+                  <h5><i className="bi bi-person-fill me-2"></i>Customer Details</h5>
+                </div>
+                <div className="customer-content">
+                  <div className="customer-main">
+                    <div className="customer-avatar">
+                      {(job?.customer?.fullName || "C")[0].toUpperCase()}
+                    </div>
+                    <div className="customer-info">
+                      <h4>{job?.customer?.fullName || "Customer"}</h4>
+                      <p><i className="bi bi-envelope me-2"></i>{job?.customer?.email || "—"}</p>
+                      <p><i className="bi bi-telephone me-2"></i>{job?.customer?.phone || "—"}</p>
                     </div>
                   </div>
-                  <button className={`btn btn-${c.color} w-100`}>Call Now</button>
+                  <div className="customer-actions">
+                    <button className="btn-call" onClick={callCustomer}>
+                      <i className="bi bi-telephone-fill"></i>
+                      Call
+                    </button>
+                    <button className="btn-message">
+                      <i className="bi bi-chat-dots-fill"></i>
+                      Message
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* ======= Sticky Action Bar ======= */}
-      <div className="sticky-action-bar shadow-lg bg-white py-3 px-4 d-flex justify-content-center align-items-center gap-3 flex-wrap">
-        <button className="btn btn-secondary rounded-pill px-4" onClick={cancelJob}>
-          <i className="bi bi-x-lg me-2" /> Cancel Job
-        </button>
-        <button className="btn btn-primary rounded-pill px-4" onClick={callCustomer}>
-          <i className="bi bi-telephone-fill me-2" /> Call Customer
-        </button>
-        <button className="btn btn-success rounded-pill px-4 fw-bold" onClick={getDirections}>
-          <i className="bi bi-geo-alt-fill me-2" /> Get Directions
-        </button>
-        <button className="btn btn-warning rounded-pill px-4 fw-bold" onClick={openOtp}>
-          <i className="bi bi-play-fill me-2" /> Start Job
-        </button>
-      </div>
-
-      {/* ======= OTP Modal ======= */}
-      <Modal show={showOtp} onHide={() => setShowOtp(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Verify OTP</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={verifyOtp}>
-            <div className="d-flex justify-content-center mb-3">
-              {otp.map((d, i) => (
-                <Form.Control
-                  key={i}
-                  id={`otp-${i}`}
-                  value={d}
-                  maxLength={1}
-                  onChange={(e) => handleOtpChange(e, i)}
-                  className="mx-2 text-center"
-                  style={{
-                    width: 50,
-                    height: 50,
-                    fontSize: 20,
-                    borderRadius: 12,
-                  }}
-                />
-              ))}
+                <div className="address-section">
+                  <h6><i className="bi bi-house me-2"></i>Service Address</h6>
+                  <p>{job?.address?.street || "—"}, {job?.address?.city || "—"}</p>
+                </div>
+              </motion.div>
             </div>
-            <Button type="submit" className="w-100">
-              Verify OTP
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+
+            {/* Right Column */}
+            <div className="col-lg-4">
+              {/* Schedule Card */}
+              <motion.div
+                className="schedule-card"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <h5><i className="bi bi-calendar3 me-2"></i>Schedule</h5>
+                <div className="schedule-item">
+                  <span className="schedule-label">Date</span>
+                  <span className="schedule-value">{formattedDate}</span>
+                </div>
+                <div className="schedule-item">
+                  <span className="schedule-label">Time</span>
+                  <span className="schedule-value">{job?.serviceTime || "TBD"}</span>
+                </div>
+                <div className="schedule-item">
+                  <span className="schedule-label">Duration</span>
+                  <span className="schedule-value">~2 hours</span>
+                </div>
+              </motion.div>
+
+              {/* Payment Card */}
+              <motion.div
+                className="payment-card"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h5><i className="bi bi-wallet2 me-2"></i>Payment</h5>
+                <div className="payment-amount">
+                  ₹{job?.payment?.amount || job?.totalAmount || 0}
+                </div>
+                <div className="payment-status">
+                  <span className={`status ${job?.payment?.status === "Paid" ? "paid" : "pending"}`}>
+                    {job?.payment?.status || "Pending"}
+                  </span>
+                </div>
+              </motion.div>
+
+              {/* Weather Card */}
+              {weather && (
+                <motion.div
+                  className="weather-card"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <div className="weather-header">
+                    <h5><i className="bi bi-cloud-sun me-2"></i>Weather</h5>
+                    {weather.icon && (
+                      <img
+                        src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
+                        alt="weather"
+                      />
+                    )}
+                  </div>
+                  <div className="weather-temp">{weather.temp}°C</div>
+                  <div className="weather-desc">{weather.description}</div>
+                </motion.div>
+              )}
+
+              {/* Action Card */}
+              <motion.div
+                className="action-card"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <button className="btn-start-job" onClick={openOtp}>
+                  <i className="bi bi-play-fill me-2"></i>
+                  Arrived - Verify OTP
+                </button>
+                <Link to={`/vendor/${id}`} className="btn-cancel-job">
+                  Cancel Job
+                </Link>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* OTP Modal */}
+      <AnimatePresence>
+        {showOtp && (
+          <motion.div
+            className="otp-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowOtp(false)}
+          >
+            <motion.div
+              className="otp-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="otp-header">
+                <h4>Verify Arrival</h4>
+                <p>Enter the OTP sent to customer's email</p>
+              </div>
+              <form onSubmit={verifyOtp}>
+                <div className="otp-inputs">
+                  {otp.map((d, i) => (
+                    <input
+                      key={i}
+                      id={`otp-${i}`}
+                      value={d}
+                      maxLength={1}
+                      onChange={(e) => handleOtpChange(e, i)}
+                      className="otp-input"
+                    />
+                  ))}
+                </div>
+                <button type="submit" className="btn-verify" disabled={verifying}>
+                  {verifying ? "Verifying..." : "Verify OTP"}
+                </button>
+                <button type="button" className="btn-resend" onClick={openOtp}>
+                  Resend OTP
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Footer />
+
+      <style>{`
+        .job-progress-page {
+          min-height: 100vh;
+          background: var(--bg-light, #f9fafb);
+        }
+
+        .progress-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .job-id {
+          display: inline-block;
+          padding: 0.25rem 0.75rem;
+          background: var(--primary-light, #FFF8E6);
+          color: var(--primary-dark, #E6C200);
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+        }
+
+        .header-info .page-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        .header-info .page-subtitle {
+          color: var(--text-muted, #9ca3af);
+          margin: 0;
+        }
+
+        .status-badge.active {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: #dcfce7;
+          color: #166534;
+          border-radius: 20px;
+          font-weight: 600;
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          background: #22c55e;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        /* Map Card */
+        .map-card {
+          background: white;
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 16px;
+          overflow: hidden;
+          margin-bottom: 1.5rem;
+        }
+
+        .map-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.25rem;
+          border-bottom: 1px solid var(--border, #e5e7eb);
+        }
+
+        .map-header h5 {
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .map-header p {
+          font-size: 0.85rem;
+          color: var(--text-muted, #9ca3af);
+          margin: 0;
+        }
+
+        .btn-directions {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.625rem 1.25rem;
+          background: var(--primary, #FFD600);
+          border: none;
+          border-radius: 10px;
+          font-weight: 600;
+          color: #111827;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .btn-directions:hover {
+          transform: translateY(-2px);
+        }
+
+        .map-container {
+          height: 280px;
+        }
+
+        .map-container iframe {
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+
+        .map-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: var(--bg-subtle, #f3f4f6);
+          color: var(--text-muted, #9ca3af);
+        }
+
+        .map-placeholder i {
+          font-size: 3rem;
+          margin-bottom: 0.5rem;
+        }
+
+        /* Customer Card */
+        .customer-card {
+          background: white;
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 16px;
+          overflow: hidden;
+        }
+
+        .card-header-custom {
+          padding: 1.25rem;
+          border-bottom: 1px solid var(--border, #e5e7eb);
+        }
+
+        .card-header-custom h5 {
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .customer-content {
+          padding: 1.25rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .customer-main {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .customer-avatar {
+          width: 56px;
+          height: 56px;
+          background: linear-gradient(135deg, #FFD600 0%, #FFA000 100%);
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #111827;
+        }
+
+        .customer-info h4 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin: 0 0 0.5rem;
+        }
+
+        .customer-info p {
+          font-size: 0.85rem;
+          color: var(--text-muted, #9ca3af);
+          margin: 0.25rem 0;
+        }
+
+        .customer-actions {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .btn-call, .btn-message {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.625rem 1rem;
+          border: none;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .btn-call {
+          background: #22c55e;
+          color: white;
+        }
+
+        .btn-message {
+          background: var(--bg-subtle, #f3f4f6);
+          color: var(--text-primary, #111827);
+        }
+
+        .address-section {
+          padding: 1.25rem;
+          background: var(--bg-subtle, #f3f4f6);
+        }
+
+        .address-section h6 {
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin: 0 0 0.5rem;
+        }
+
+        .address-section p {
+          margin: 0;
+          color: var(--text-secondary, #4b5563);
+        }
+
+        /* Right Column Cards */
+        .schedule-card, .payment-card, .weather-card, .action-card {
+          background: white;
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 16px;
+          padding: 1.25rem;
+          margin-bottom: 1rem;
+        }
+
+        .schedule-card h5, .payment-card h5, .weather-card h5 {
+          font-weight: 600;
+          margin: 0 0 1rem;
+          font-size: 0.95rem;
+        }
+
+        .schedule-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 0.5rem 0;
+          border-bottom: 1px dashed var(--border, #e5e7eb);
+        }
+
+        .schedule-item:last-child {
+          border-bottom: none;
+        }
+
+        .schedule-label {
+          color: var(--text-muted, #9ca3af);
+          font-size: 0.85rem;
+        }
+
+        .schedule-value {
+          font-weight: 600;
+          color: var(--text-primary, #111827);
+        }
+
+        .payment-amount {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #22c55e;
+          margin-bottom: 0.5rem;
+        }
+
+        .payment-status .status {
+          display: inline-block;
+          padding: 0.375rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        .payment-status .status.paid {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .payment-status .status.pending {
+          background: #fef3c7;
+          color: #92400e;
+        }
+
+        .weather-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .weather-header img {
+          width: 50px;
+          height: 50px;
+        }
+
+        .weather-temp {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--text-primary, #111827);
+        }
+
+        .weather-desc {
+          text-transform: capitalize;
+          color: var(--text-muted, #9ca3af);
+        }
+
+        .btn-start-job {
+          width: 100%;
+          padding: 1rem;
+          background: linear-gradient(135deg, #FFD600 0%, #FFA000 100%);
+          border: none;
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: 700;
+          color: #111827;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .btn-start-job:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(255, 214, 0, 0.4);
+        }
+
+        .btn-cancel-job {
+          display: block;
+          text-align: center;
+          margin-top: 0.75rem;
+          color: var(--text-muted, #9ca3af);
+          text-decoration: none;
+          font-size: 0.9rem;
+        }
+
+        .btn-cancel-job:hover {
+          color: #ef4444;
+        }
+
+        /* OTP Modal */
+        .otp-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1100;
+          padding: 1rem;
+        }
+
+        .otp-modal {
+          background: white;
+          border-radius: 20px;
+          padding: 2rem;
+          max-width: 400px;
+          width: 100%;
+          text-align: center;
+        }
+
+        .otp-header h4 {
+          font-weight: 700;
+          margin: 0 0 0.5rem;
+        }
+
+        .otp-header p {
+          color: var(--text-muted, #9ca3af);
+          margin: 0 0 1.5rem;
+        }
+
+        .otp-inputs {
+          display: flex;
+          justify-content: center;
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .otp-input {
+          width: 50px;
+          height: 60px;
+          border: 2px solid var(--border, #e5e7eb);
+          border-radius: 12px;
+          text-align: center;
+          font-size: 1.5rem;
+          font-weight: 700;
+          transition: all 0.2s ease;
+        }
+
+        .otp-input:focus {
+          outline: none;
+          border-color: var(--primary, #FFD600);
+          box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.2);
+        }
+
+        .btn-verify {
+          width: 100%;
+          padding: 1rem;
+          background: var(--primary, #FFD600);
+          border: none;
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: 700;
+          color: #111827;
+          cursor: pointer;
+          margin-bottom: 0.75rem;
+        }
+
+        .btn-verify:disabled {
+          opacity: 0.7;
+        }
+
+        .btn-resend {
+          background: transparent;
+          border: none;
+          color: var(--text-muted, #9ca3af);
+          cursor: pointer;
+          font-size: 0.9rem;
+        }
+
+        .btn-resend:hover {
+          color: var(--primary-dark, #E6C200);
+        }
+
+        @media (max-width: 768px) {
+          .customer-content {
+            flex-direction: column;
+          }
+
+          .customer-actions {
+            width: 100%;
+          }
+
+          .btn-call, .btn-message {
+            flex: 1;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </>
   );
 };
-
-// Helper
-function degToCompass(num) {
-  const val = Math.floor(num / 22.5 + 0.5);
-  const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-  return arr[val % 16];
-}
 
 export default JobInProgress;
