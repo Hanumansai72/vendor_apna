@@ -22,17 +22,19 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
         const token = getToken();
+        const storedUser = localStorage.getItem('authUser');
+
+        // Try to restore user from localStorage first
+        let restoredUser = null;
+        if (storedUser) {
+            try {
+                restoredUser = JSON.parse(storedUser);
+            } catch { /* ignore */ }
+        }
 
         if (!token) {
-            // Check if user data is stored locally (for session persistence)
-            const storedUser = localStorage.getItem('authUser');
-            if (storedUser) {
-                try {
-                    setUser(JSON.parse(storedUser));
-                } catch {
-                    setUser(null);
-                }
-            }
+            // No token, use stored user if available
+            setUser(restoredUser);
             setLoading(false);
             return;
         }
@@ -47,18 +49,29 @@ export const AuthProvider = ({ children }) => {
             if (response.data.message === 'Success' && response.data.user) {
                 setUser(response.data.user);
                 localStorage.setItem('authUser', JSON.stringify(response.data.user));
+            } else if (restoredUser) {
+                // API didn't return user but we have stored data
+                setUser(restoredUser);
             } else {
                 setUser(null);
                 localStorage.removeItem('authUser');
             }
         } catch (error) {
             console.error('Auth check failed:', error);
-            // If token is invalid, clear it
+            // On 401/403, clear everything
             if (error.response?.status === 401 || error.response?.status === 403) {
                 setToken(null);
                 localStorage.removeItem('authUser');
+                setUser(null);
+            } else {
+                // For other errors (network, CORS), use stored user as fallback
+                if (restoredUser) {
+                    console.log('Using stored user data as fallback');
+                    setUser(restoredUser);
+                } else {
+                    setUser(null);
+                }
             }
-            setUser(null);
         } finally {
             setLoading(false);
         }
