@@ -29,7 +29,6 @@ const ProdWallet = lazy(() => import('./Components/Product/productwallet'));
 const AdminApprovalPending = lazy(() => import('./Components/Vendor/Adminapprovalpage'));
 const VendorChat = lazy(() => import('./Components/Vendor/Vendorchat'));
 const VendorInbox = lazy(() => import('./Components/Vendor/inbox'));
-const ProtectedRoute = lazy(() => import('./Components/Login/Signup/ProtectedRoute'));
 
 const LoadingFallback = () => (
   <div className="d-flex justify-content-center align-items-center vh-100">
@@ -200,12 +199,12 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route path="/product/:id/ViewProduct" element={<Protected element={<ProductList />} />} />
-        <Route path="/addproduct/:id" element={<Protected element={<AddProductForm />} />} />
-        <Route path="/addproduct/:id/BulkUpload" element={<Protected element={<BulkProductUpload />} />} />
-        <Route path="/Product/:id" element={<Protected element={<Product />} />} />
-        <Route path="/Product/:id/order" element={<Protected element={<NewHistory />} />} />
-        <Route path="/Product/:id/order/history" element={<Protected element={<OrderHistory />} />} />
+             <Route path="/product/:id/ViewProduct" element={<ProtectedRoute element={<ProductList />} />} />
+        <Route path="/addproduct/:id" element={<ProtectedRoute element={<AddProductForm />} />} />
+        <Route path="/addproduct/:id/BulkUpload" element={<ProtectedRoute element={<BulkProductUpload />} />} />
+        <Route path="/Product/:id" element={<ProtectedRoute element={<Product />} />} />
+        <Route path="/Product/:id/order" element={<ProtectedRoute element={<NewHistory />} />} />
+        <Route path="/Product/:id/order/history" element={<ProtectedRoute element={<OrderHistory />} />} />
                 <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>} />
 
 
