@@ -158,7 +158,7 @@ export default function LoginPage() {
 
       if (res.data.message === "Success") {
         toast.success("Login successful");
-        login(res.data.vendor || { id: res.data.vendorId });
+        login(res.data.vendor || { id: res.data.vendorId }, res.data.token);
         setVendorId(res.data.vendorId);
       } else if (res.data.message === "User not found") {
         const tempRes = await axios.post(`${API_BASE_URL}/checktempvendor`, {
@@ -196,7 +196,7 @@ export default function LoginPage() {
       if (res.data.message === "Success") {
         toast.success("Google login successful");
         const vId = res.data.vendorId;
-        login({ id: vId });
+        login({ id: vId }, res.data.token);
 
         // Fetch category immediately
         const catRes = await axios.get(`${API_BASE_URL}/api/categories/${vId}`);
