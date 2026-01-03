@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import axios from "axios";
@@ -9,475 +11,583 @@ import { useAuth } from "../Auth/AuthContext";
 
 export default function ProductDashboard() {
   const { user: authUser } = useAuth();
-  const id = authUser?.id;
+  const vendorId = authUser?.id;
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [count, setcount] = useState("")
+  const [stats, setStats] = useState({ count: 0, balance: 0, total_order: 0 });
 
   useEffect(() => {
-    const fetchcount = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/getproductcount/${id}`);
-        setcount(res.data)
+    if (!vendorId) return;
 
-      }
-      catch (err) {
-        console.log(err)
-
-      }
-    };
-    fetchcount();
-
-  }, [id])
-
-  // 🟡 Fetch Orders + Products
-  useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ordersRes, productsRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/wow/${id}`),
-          axios.get(`${API_BASE_URL}/viewproduct/${id}`)
+        const [countRes, ordersRes, productsRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/api/getproductcount/${vendorId}`),
+          axios.get(`${API_BASE_URL}/wow/${vendorId}`),
+          axios.get(`${API_BASE_URL}/viewproduct/${vendorId}`)
         ]);
 
-        const allOrders = ordersRes.data || {};
-        setOrders(allOrders.all || []);
-
-        const mappedProducts = productsRes.data.map((product) => ({
-          id: product._id,
-          name: product.ProductName,
-          price: parseFloat(product.ProductPrice),
-          stock: parseInt(product.quantity),
-          category: product.ProductCategory,
-          subcategory: product.ProductSubCategory,
-          description: product.ProductDescripition,
-          ProductUrl: product.ProductUrl,
-          status:
-            parseInt(product.ProductStock) === 0
-              ? "Out of Stock"
-              : parseInt(product.ProductStock) < 10
-                ? "Low Stock"
-                : "Available",
-        }));
-        setProducts(mappedProducts);
+        setStats(countRes.data || {});
+        setOrders((ordersRes.data?.all || []).slice(0, 5));
+        setProducts((productsRes.data || []).slice(0, 6).map(p => ({
+          id: p._id,
+          name: p.ProductName,
+          price: parseFloat(p.ProductPrice) || 0,
+          stock: parseInt(p.ProductStock) || 0,
+          category: p.ProductCategory,
+          image: Array.isArray(p.ProductUrl) ? p.ProductUrl[0] : p.ProductUrl,
+          status: parseInt(p.ProductStock) === 0 ? "Out of Stock" :
+            parseInt(p.ProductStock) < 10 ? "Low Stock" : "In Stock"
+        })));
       } catch (err) {
-        console.error("Error loading dashboard data:", err);
+        console.error("Dashboard fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [vendorId]);
 
-  // 🟡 Static KPI Data
-  const kpis = [
-    { icon: "bi-bag-fill", title: "Total Products", value: count.count, sub: "+12 this month", subClass: "text-success" },
-    { icon: "bi-coin", title: "Earnings This Month", value: count.balance, sub: "+18.2% from last month", subClass: "text-success" },
-    { icon: "bi-basket2-fill", title: "Total Orders", value: count.total_order, sub: "+24 today", subClass: "text-success" },
-  ];
-
-  const categories = [
-    { title: "Paints & Coatings", value: "₹18,450", trend: "+12.5%", trendClass: "text-success", icon: "🎨", bg: "var(--softBlue)" },
-    { title: "Building Materials", value: "₹15,200", trend: "+8.3%", trendClass: "text-success", icon: "🧱", bg: "var(--softGray)" },
-    { title: "Tools & Equipment", value: "₹8,900", trend: "−2.1%", trendClass: "text-danger", icon: "🛠️", bg: "var(--softOrange)" },
-    { title: "Tiles & Flooring", value: "₹12,680", trend: "+15.7%", trendClass: "text-success", icon: "🧩", bg: "var(--softPurple)" },
-  ];
+  const getStatusColor = (status) => {
+    if (status === "Delivered" || status === "Completed") return "success";
+    if (status === "Pending") return "warning";
+    if (status === "Cancelled") return "danger";
+    return "secondary";
+  };
 
   return (
-    <div>
+    <div className="product-dashboard">
       <ProductNavbar />
 
-      {/* Welcome */}
-      <div className="container mt-4">
-        <h2 className="fw-bold mb-1">
-          Welcome back, Vendor <span className="wave">👋</span>
-        </h2>
-        <p className="text-muted fs-6">Here's your product overview and recent performance.</p>
-      </div>
+      <div className="dashboard-content">
+        <div className="container-xl py-4">
+          {/* Header */}
+          <motion.div
+            className="dashboard-header"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div>
+              <h1 className="page-title">
+                <i className="bi bi-box-seam-fill text-primary me-3"></i>
+                Product Dashboard
+              </h1>
+              <p className="page-subtitle">Manage your products and track orders</p>
+            </div>
+            <Link to={`/vendor/${vendorId}/products/add`} className="btn-add-product">
+              <i className="bi bi-plus-lg me-2"></i>
+              Add Product
+            </Link>
+          </motion.div>
 
-      {/* KPI Cards */}
-      <div className="container">
-        <div className="row g-3">
-          {kpis.map((k, i) => (
-            <div className="col-xl-3 col-md-6" key={i}>
-              <div className="card kpi-card shadow-sm border-0">
-                <div className="card-body">
-                  <div className="d-flex align-items-center justify-content-between">
-                    <div className="kpi-icon">
-                      <i className={`bi ${k.icon}`} />
-                    </div>
-                    <i className="bi bi-three-dots text-muted" />
+          {/* Stats Cards */}
+          <div className="row g-4 mb-4">
+            {[
+              { icon: "bi-box-seam", label: "Total Products", value: stats.count || 0, color: "#3b82f6", bg: "#dbeafe" },
+              { icon: "bi-cart-check", label: "Total Orders", value: stats.total_order || 0, color: "#10b981", bg: "#d1fae5" },
+              { icon: "bi-currency-rupee", label: "Total Earnings", value: `₹${stats.balance || 0}`, color: "#f59e0b", bg: "#fef3c7" },
+              { icon: "bi-graph-up-arrow", label: "This Month", value: "+24.5%", color: "#8b5cf6", bg: "#ede9fe" },
+            ].map((stat, i) => (
+              <div className="col-6 col-lg-3" key={i}>
+                <motion.div
+                  className="stat-card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  style={{ '--stat-color': stat.color, '--stat-bg': stat.bg }}
+                >
+                  <div className="stat-icon">
+                    <i className={`bi ${stat.icon}`}></i>
                   </div>
-                  <div className="mt-3">
-                    <div className="text-muted small">{k.title}</div>
-                    <div className={`display-6 fw-bold ${k.danger ? "text-danger" : "text-dark"}`}>
-                      {loading ? <div className="skeleton skeleton-text w-50"></div> : k.value}
-                    </div>
-                    <div className={`small mt-1 ${k.subClass}`}>
-                      <i className="bi bi-arrow-up-right me-1"></i>
-                      {loading ? <div className="skeleton skeleton-text w-75"></div> : k.sub}
-                    </div>
+                  <div className="stat-info">
+                    <span className="stat-label">{stat.label}</span>
+                    <span className="stat-value">
+                      {loading ? <div className="skeleton-text"></div> : stat.value}
+                    </span>
                   </div>
+                </motion.div>
+              </div>
+            ))}
+          </div>
+
+          <div className="row g-4">
+            {/* Products Grid */}
+            <div className="col-lg-8">
+              <div className="section-card">
+                <div className="section-header">
+                  <h5><i className="bi bi-grid-fill me-2"></i>Recent Products</h5>
+                  <Link to={`/vendor/${vendorId}/products`} className="view-all">View All</Link>
+                </div>
+
+                {loading ? (
+                  <div className="row g-3">
+                    {[1, 2, 3].map(i => (
+                      <div className="col-md-4" key={i}>
+                        <div className="product-card skeleton-card"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="empty-state">
+                    <i className="bi bi-box-seam"></i>
+                    <p>No products yet</p>
+                    <Link to={`/vendor/${vendorId}/products/add`} className="btn btn-primary btn-sm">Add Product</Link>
+                  </div>
+                ) : (
+                  <div className="row g-3">
+                    {products.map((p, i) => (
+                      <div className="col-md-4" key={p.id}>
+                        <motion.div
+                          className="product-card"
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.05 }}
+                        >
+                          <div className="product-image">
+                            <img src={p.image || "https://via.placeholder.com/200"} alt={p.name} />
+                            <span className={`stock-badge ${p.status === 'In Stock' ? 'in-stock' : p.status === 'Low Stock' ? 'low-stock' : 'out-stock'}`}>
+                              {p.status}
+                            </span>
+                          </div>
+                          <div className="product-info">
+                            <span className="product-category">{p.category}</span>
+                            <h6 className="product-name">{p.name}</h6>
+                            <div className="product-meta">
+                              <span className="product-price">₹{p.price}</span>
+                              <span className="product-stock">{p.stock} units</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Recent Orders */}
+            <div className="col-lg-4">
+              <div className="section-card">
+                <div className="section-header">
+                  <h5><i className="bi bi-receipt me-2"></i>Recent Orders</h5>
+                  <Link to={`/vendor/${vendorId}/products/order`} className="view-all">View All</Link>
+                </div>
+
+                {loading ? (
+                  <div className="orders-list">
+                    {[1, 2, 3].map(i => (
+                      <div className="order-item skeleton-order" key={i}></div>
+                    ))}
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="empty-state">
+                    <i className="bi bi-cart-x"></i>
+                    <p>No orders yet</p>
+                  </div>
+                ) : (
+                  <div className="orders-list">
+                    {orders.map((order, i) => (
+                      <motion.div
+                        className="order-item"
+                        key={order._id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                      >
+                        <div className="order-info">
+                          <span className="order-id">#{order._id?.slice(-6)}</span>
+                          <span className="order-product">{order.productName || "Product"}</span>
+                          <span className="order-customer">{order.customerName || "Customer"}</span>
+                        </div>
+                        <div className="order-meta">
+                          <span className="order-amount">₹{order.totalAmount || 0}</span>
+                          <span className={`order-status status-${getStatusColor(order.orderStatus)}`}>
+                            {order.orderStatus || "Pending"}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Actions */}
+              <div className="section-card mt-4">
+                <div className="section-header">
+                  <h5><i className="bi bi-lightning-fill me-2"></i>Quick Actions</h5>
+                </div>
+                <div className="quick-actions">
+                  <Link to={`/vendor/${vendorId}/products/add`} className="quick-action">
+                    <i className="bi bi-plus-circle"></i>
+                    <span>Add Product</span>
+                  </Link>
+                  <Link to={`/vendor/${vendorId}/products/bulk-upload`} className="quick-action">
+                    <i className="bi bi-cloud-upload"></i>
+                    <span>Bulk Upload</span>
+                  </Link>
+                  <Link to={`/product/wallet/${vendorId}`} className="quick-action">
+                    <i className="bi bi-wallet2"></i>
+                    <span>Wallet</span>
+                  </Link>
+                  <Link to={`/vendor/${vendorId}`} className="quick-action">
+                    <i className="bi bi-tools"></i>
+                    <span>Services</span>
+                  </Link>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* My Products */}
-      <div className="container my-4">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h4 className="fw-bold">My Products</h4>
-          <button className="btn btn-am btn-lg">
-            <i className="bi bi-plus-lg me-2"></i> Add New Product
-          </button>
-        </div>
-
-        {loading ? (
-          <div className="row g-4">
-            {[1, 2, 3].map((i) => (
-              <div className="col-xl-4" key={i}>
-                <div className="card product-card border-0 shadow-sm h-100 p-3">
-                  <div className="skeleton skeleton-img mb-3"></div>
-                  <div className="skeleton skeleton-text w-75 mb-2"></div>
-                  <div className="skeleton skeleton-text w-50 mb-2"></div>
-                  <div className="skeleton skeleton-text w-25"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center text-muted py-5">No products found.</div>
-        ) : (
-          <div className="row g-4">
-            {products.map((p, idx) => (
-              <div className="col-xl-4" key={idx}>
-                <div className="card product-card border-0 shadow-sm h-100">
-                  <div className="position-relative">
-                    <img
-                      src={p.ProductUrl?.[0] || "https://via.placeholder.com/300x200?text=No+Image"}
-                      alt={p.name}
-                      className="product-img"
-                    />
-                    <span
-                      className={`badge status-badge ${p.status === "Out of Stock" ? "bg-danger" : p.status === "Low Stock" ? "bg-warning" : "bg-success"
-                        }`}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
-                  <div className="card-body">
-                    <h5 className="fw-bold mb-1">{p.name}</h5>
-                    <div className="text-muted small mb-2">{p.category}</div>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div className="price">₹{p.price}</div>
-                      <div className="small text-muted">Stock: {p.stock}</div>
-                    </div>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-outline-secondary flex-fill">
-                        <i className="bi bi-pencil-square me-1" /> Edit
-                      </button>
-                      <button className="btn btn-outline-danger flex-fill">
-                        <i className="bi bi-trash3-fill me-1" /> Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Recent Orders */}
-      <div className="container mb-5">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h4 className="fw-bold">Recent Orders</h4>
-          <a className="text-warning fw-semibold" href="#!">View All Orders</a>
-        </div>
-
-        <div className="card border-0 shadow-sm">
-          <div className="table-responsive">
-            {loading ? (
-              <div className="p-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="skeleton skeleton-text w-100 mb-2"></div>
-                ))}
-              </div>
-            ) : (
-              <table className="table align-middle mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Product</th>
-                    <th>Customer</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="text-center text-muted py-4">
-                        No orders found.
-                      </td>
-                    </tr>
-                  ) : (
-                    orders.map((order, i) => (
-                      <tr key={i}>
-                        <td className="fw-semibold text-warning">{order._id?.slice(-6) || "N/A"}</td>
-                        <td>{order.productName || "N/A"}</td>
-                        <td>{order.customerName || order.customerId || "Unknown"}</td>
-                        <td>₹{order.totalAmount || "0"}</td>
-                        <td>
-                          <span className={`badge bg-${getStatusBadgeColor(order.orderStatus)}`}>
-                            {order.orderStatus || "Pending"}
-                          </span>
-                        </td>
-                        <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Styles */}
+      <Footer />
+
       <style>{`
-        :root {
-          --amYellow: #FFD600;
-          --amYellowDark: #E6C200;
-          --amYellowLight: #FFF8E6;
-          --softBlue: #DBEAFE;
-          --softGray: #F3F4F6;
-          --softOrange: #FEF3C7;
-          --softPurple: #F3E8FF;
-          --textPrimary: #111827;
-          --textSecondary: #4B5563;
-          --textMuted: #9CA3AF;
-          --borderLight: #E5E7EB;
-        }
-        
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: #F9FAFB;
-        }
-        
-        .wave { 
-          animation: wave 1.2s ease-in-out infinite; 
-          display: inline-block; 
-          transform-origin: 70% 70%; 
-        }
-        @keyframes wave { 
-          0% { transform: rotate(0) } 
-          50% { transform: rotate(12deg) } 
-          100% { transform: rotate(0) } 
+        .product-dashboard {
+          min-height: 100vh;
+          background: #f8fafc;
         }
 
-        /* KPI Cards */
-        .kpi-card { 
-          border-radius: 16px; 
-          background: #fff;
-          transition: all 0.3s ease;
-          border: 1px solid var(--borderLight);
+        .dashboard-content {
+          padding-top: 1rem;
         }
-        .kpi-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-          border-color: var(--amYellow);
+
+        .dashboard-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
         }
-        .kpi-icon { 
-          width: 52px; 
-          height: 52px; 
-          border-radius: 14px; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          background: var(--amYellowLight); 
-          color: var(--amYellowDark);
-          font-size: 1.25rem;
+
+        .page-title {
+          font-size: 1.75rem;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0;
         }
-        
-        /* Primary Button */
-        .btn-am { 
-          background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%); 
-          border: none; 
-          color: var(--textPrimary); 
-          font-weight: 600;
+
+        .page-subtitle {
+          color: #64748b;
+          margin: 0.25rem 0 0;
+        }
+
+        .btn-add-product {
+          display: inline-flex;
+          align-items: center;
           padding: 0.75rem 1.5rem;
-          border-radius: 10px;
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white;
+          border-radius: 12px;
+          font-weight: 600;
+          text-decoration: none;
           transition: all 0.2s ease;
-          box-shadow: 0 2px 8px rgba(255, 214, 0, 0.3);
         }
-        .btn-am:hover {
+
+        .btn-add-product:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(255, 214, 0, 0.4);
-          background: linear-gradient(135deg, #E6C200 0%, #F5A400 100%);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+          color: white;
         }
-        
-        /* Wallet Banner */
-        .wallet-banner { 
-          background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%); 
-          color: var(--textPrimary);
+
+        /* Stat Cards */
+        .stat-card {
+          background: white;
+          border: 1px solid #e2e8f0;
           border-radius: 16px;
+          padding: 1.25rem;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          transition: all 0.2s ease;
         }
-        .wallet-icon { 
-          width: 44px; 
-          height: 44px; 
-          border-radius: 12px; 
-          background: rgba(255,255,255,0.9); 
-          color: var(--textPrimary); 
-          display: inline-flex; 
-          align-items: center; 
-          justify-content: center; 
+
+        .stat-card:hover {
+          border-color: var(--stat-color);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+          width: 48px;
+          height: 48px;
+          background: var(--stat-bg);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--stat-color);
           font-size: 1.25rem;
         }
-        .wallet-coin { 
-          font-size: 72px; 
-          color: rgba(255,255,255,.25);
+
+        .stat-info {
+          display: flex;
+          flex-direction: column;
         }
-        
-        /* Product Cards */
-        .product-card { 
-          border-radius: 16px;
-          background: #fff;
-          border: 1px solid var(--borderLight);
-          transition: all 0.3s ease;
-          overflow: hidden;
+
+        .stat-label {
+          font-size: 0.8rem;
+          color: #64748b;
         }
-        .product-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-          border-color: var(--amYellow);
-        }
-        .product-img { 
-          width: 100%; 
-          height: 200px; 
-          object-fit: cover;
-        }
-        .status-badge { 
-          position: absolute; 
-          top: 12px; 
-          right: 12px; 
-          padding: 0.4rem 0.75rem; 
-          border-radius: 999px; 
-          font-weight: 600;
-          font-size: 0.75rem;
-        }
-        .price {
+
+        .stat-value {
           font-size: 1.25rem;
           font-weight: 700;
-          color: var(--textPrimary);
-        }
-        
-        /* Category Cards */
-        .cat-icon { 
-          width: 64px; 
-          height: 64px; 
-          border-radius: 16px; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          font-size: 1.75rem; 
-          margin: 0 auto;
-        }
-        
-        /* Table Improvements */
-        .table th {
-          font-size: 0.75rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--textSecondary);
-          background: var(--softGray);
-          padding: 1rem 1.25rem;
-          border-bottom: 1px solid var(--borderLight);
-        }
-        .table td {
-          padding: 1rem 1.25rem;
-          vertical-align: middle;
-          border-bottom: 1px solid #F3F4F6;
-        }
-        .table tbody tr {
-          transition: background-color 0.15s ease;
-        }
-        .table tbody tr:hover {
-          background-color: var(--amYellowLight);
-        }
-        
-        /* Improved Buttons */
-        .btn-outline-secondary {
-          border-color: var(--borderLight);
-          color: var(--textSecondary);
-          border-radius: 8px;
-          transition: all 0.2s ease;
-        }
-        .btn-outline-secondary:hover {
-          background: var(--amYellowLight);
-          border-color: var(--amYellow);
-          color: var(--textPrimary);
-        }
-        .btn-outline-danger {
-          border-radius: 8px;
+          color: #1e293b;
         }
 
-        /* 🦴 Skeleton Styles */
-        .skeleton {
-          background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
-          border-radius: 8px;
-          animation: shimmer 1.5s infinite;
-          background-size: 200% 100%;
+        /* Section Cards */
+        .section-card {
+          background: white;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 1.25rem;
         }
-        .skeleton-text { 
-          height: 14px; 
-          margin: 6px 0;
+
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
         }
-        .skeleton-img { 
-          height: 200px; 
-          width: 100%; 
+
+        .section-header h5 {
+          margin: 0;
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        .view-all {
+          font-size: 0.85rem;
+          color: #3b82f6;
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        /* Product Cards */
+        .product-card {
+          background: #f8fafc;
           border-radius: 12px;
+          overflow: hidden;
+          transition: all 0.2s ease;
         }
-        @keyframes shimmer { 
-          0% { background-position: 200% 0; } 
-          100% { background-position: -200% 0; } 
+
+        .product-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        
-        /* Section Headers */
-        h4.fw-bold {
-          color: var(--textPrimary);
+
+        .product-image {
+          position: relative;
+          height: 120px;
+          overflow: hidden;
+        }
+
+        .product-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .stock-badge {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          padding: 0.25rem 0.5rem;
+          border-radius: 6px;
+          font-size: 0.7rem;
+          font-weight: 600;
+        }
+
+        .stock-badge.in-stock { background: #d1fae5; color: #059669; }
+        .stock-badge.low-stock { background: #fef3c7; color: #d97706; }
+        .stock-badge.out-stock { background: #fee2e2; color: #dc2626; }
+
+        .product-info {
+          padding: 0.75rem;
+        }
+
+        .product-category {
+          font-size: 0.7rem;
+          color: #64748b;
+          text-transform: uppercase;
+        }
+
+        .product-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          margin: 0.25rem 0;
+          color: #1e293b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .product-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .product-price {
+          font-weight: 700;
+          color: #3b82f6;
+        }
+
+        .product-stock {
+          font-size: 0.75rem;
+          color: #64748b;
+        }
+
+        /* Orders List */
+        .orders-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .order-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem;
+          background: #f8fafc;
+          border-radius: 10px;
+        }
+
+        .order-info {
+          display: flex;
+          flex-direction: column;
+          gap: 0.125rem;
+        }
+
+        .order-id {
+          font-weight: 600;
+          color: #3b82f6;
+          font-size: 0.8rem;
+        }
+
+        .order-product {
+          font-size: 0.85rem;
+          color: #1e293b;
+        }
+
+        .order-customer {
+          font-size: 0.75rem;
+          color: #64748b;
+        }
+
+        .order-meta {
+          text-align: right;
+        }
+
+        .order-amount {
+          display: block;
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        .order-status {
+          font-size: 0.7rem;
+          padding: 0.125rem 0.5rem;
+          border-radius: 4px;
+        }
+
+        .status-success { background: #d1fae5; color: #059669; }
+        .status-warning { background: #fef3c7; color: #d97706; }
+        .status-danger { background: #fee2e2; color: #dc2626; }
+        .status-secondary { background: #e2e8f0; color: #64748b; }
+
+        /* Quick Actions */
+        .quick-actions {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+
+        .quick-action {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 1rem;
+          background: #f8fafc;
+          border-radius: 12px;
+          text-decoration: none;
+          color: #64748b;
+          transition: all 0.2s ease;
+        }
+
+        .quick-action:hover {
+          background: #dbeafe;
+          color: #3b82f6;
+        }
+
+        .quick-action i {
           font-size: 1.25rem;
         }
-        
-        /* Responsive */
+
+        .quick-action span {
+          font-size: 0.75rem;
+          font-weight: 500;
+        }
+
+        /* Empty State */
+        .empty-state {
+          text-align: center;
+          padding: 2rem;
+          color: #64748b;
+        }
+
+        .empty-state i {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+        }
+
+        /* Skeletons */
+        .skeleton-card {
+          height: 200px;
+          background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 12px;
+        }
+
+        .skeleton-order {
+          height: 60px;
+          background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 10px;
+        }
+
+        .skeleton-text {
+          height: 1.25rem;
+          width: 60%;
+          background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 4px;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
         @media (max-width: 768px) {
-          .product-img {
-            height: 180px;
+          .dashboard-header {
+            flex-direction: column;
           }
-          .kpi-icon {
-            width: 44px;
-            height: 44px;
+
+          .btn-add-product {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>
-      <Footer></Footer>
     </div>
   );
-}
-
-// 🔸 Badge Color Helper
-function getStatusBadgeColor(status) {
-  switch ((status || "").toLowerCase()) {
-    case "pending": return "warning";
-    case "delivered": return "success";
-    case "cancelled": return "danger";
-    case "shipped": return "info";
-    case "processing": return "secondary";
-    default: return "light";
-  }
 }
