@@ -3,27 +3,27 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 
-import JobListings from './Componets/Vendor/accpet';
-import JobHistory from './Componets/Vendor/jobhistory';
-import NewHistory from './Componets/Product/neworder';
-import JobInProgress from './Componets/Vendor/next_accpet';
-import OrderHistory from './Componets/Product/orderhistory';
-import OrderStatus from './Componets/Product/orderstatusproduct';
-import JobPaymentSummary from './Componets/Vendor/payment_order_tech';
-import JobProgress from './Componets/Product/payment_tech_non';
-import Product from './Componets/Product/product._vendor';
-import Registration from './Componets/Login/Signup/Registration';
-import TechnicalNonDashboard from './Componets/Vendor/Technical_Non_Dashboard';
-import VendorProfileSettings from './Componets/Vendor/vendor_profile_settings';
-import LoginPage from './Componets/Login/Signup/login';
-import AddProductForm from './Componets/Product/addnewproduct';
-import BulkProductUpload from './Componets/Product/Bulkupload';
-import ProductList from './Componets/Product/viewproduct';
-import ProtectedRoute from './Componets/Login/Signup/ProtectedRoute';
-import VendorCard from './Componets/Vendor/projectupload';
-import VendorProjects from './Componets/Vendor/viewprojecs';
-import Wallet from './Componets/Vendor/wallet';
-import ProdWallet from './Componets/Product/productwallet';
+import JobListings from './Components/Vendor/accpet';
+import JobHistory from './Components/Vendor/jobhistory';
+import NewHistory from './Components/Product/neworder';
+import JobInProgress from './Components/Vendor/next_accpet';
+import OrderHistory from './Components/Product/orderhistory';
+import OrderStatus from './Components/Product/orderstatusproduct';
+import JobPaymentSummary from './Components/Vendor/payment_order_tech';
+import JobProgress from './Components/Product/payment_tech_non';
+import Product from './Components/Product/product._vendor';
+import Registration from './Components/Login/Signup/Registration';
+import TechnicalNonDashboard from './Components/Vendor/Technical_Non_Dashboard';
+import VendorProfileSettings from './Components/Vendor/vendor_profile_settings';
+import LoginPage from './Components/Login/Signup/login';
+import AddProductForm from './Components/Product/addnewproduct';
+import BulkProductUpload from './Components/Product/Bulkupload';
+import ProductList from './Components/Product/viewproduct';
+import ProtectedRoute from './Components/Login/Signup/ProtectedRoute';
+import VendorCard from './Components/Vendor/projectupload';
+import VendorProjects from './Components/Vendor/viewprojecs';
+import Wallet from './Components/Vendor/wallet';
+import ProdWallet from './Components/Product/productwallet';
 
 const Protected = ({ element }) => (
   <ProtectedRoute>
@@ -37,13 +37,13 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
-        <Route path='/wallet/:id' element={<Wallet></Wallet>}/>
+        <Route path='/wallet/:id' element={<Wallet></Wallet>} />
         <Route path="/signup" element={<Registration />} />
-                <Route path='/vendor/Viewproject/:id' element={<VendorProjects></VendorProjects>}/>
+        <Route path='/vendor/Viewproject/:id' element={<VendorProjects></VendorProjects>} />
 
-        <Route path='/vendor/projectupload/:id' element={<VendorCard></VendorCard>}/>
-        <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>}/>
-        
+        <Route path='/vendor/projectupload/:id' element={<VendorCard></VendorCard>} />
+        <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>} />
+
 
         {/* Protected Routes */}
         <Route path="/vendor/:id/" element={<Protected element={<TechnicalNonDashboard />} />} />
