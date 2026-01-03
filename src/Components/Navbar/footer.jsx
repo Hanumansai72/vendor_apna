@@ -1,95 +1,237 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import {
-  FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn,
-  FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaRegClock
-} from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const Footer = () => {
-  return (
-    <footer className="bg-dark text-light pt-5 pb-3 border-top border-secondary">
-      <Container>
-        <Row className="mb-5">
-          {/* Brand Info */}
-          <Col md={3}>
-            
-              <div className="mb-3 d-flex align-items-center">
-  <img
-    src={`${process.env.PUBLIC_URL}/Changed_logo.png`}
-    alt="Apna Mestri Logo"
-    style={{
-      width: '130px',   // adjust size as needed
-      height: '130px',
-      objectFit: 'contain',
-      marginRight: '10px',
-      paddingTop:"20px",
-      paddingRight:"-5px"
-    }}
-  />
-<sub style={{ fontSize: "10px", opacity: 0.8,float:"left" ,position:"relative",right:"28px",top:"9px"}}>
-    Powered By Smart Mestri Solutions
-  </sub>  
-</div>
+  const currentYear = new Date().getFullYear();
 
-            <p className="text-white-50 small">
-              Your trusted platform for civil engineering services and construction materials. Building dreams with quality and precision across India.
+  return (
+    <footer className="footer-section">
+      <Container>
+        <Row className="g-4 mb-5">
+          {/* Brand Section */}
+          <Col lg={4} md={6}>
+            <div className="footer-brand mb-4">
+              <div className="brand-icon">
+                <img src="/comapny_logo.ico" alt="Apna Mestri" />
+              </div>
+              <span className="brand-text">Apna Mestri</span>
+            </div>
+            <p className="footer-desc">
+              Empowering skilled professionals to grow their business.
+              Join thousands of trusted vendors delivering excellence across the country.
             </p>
-            <div className="d-flex gap-3 mt-3">
-              <a href="/" className="text-light"><FaFacebookF /></a>
-              <a href="/" className="text-light"><FaTwitter /></a>
-              <a href="/" className="text-light"><FaInstagram /></a>
-              <a href="/" className="text-light"><FaLinkedinIn /></a>
+            <div className="social-links">
+              <a href="#" className="social-link"><i className="bi bi-facebook"></i></a>
+              <a href="#" className="social-link"><i className="bi bi-instagram"></i></a>
+              <a href="#" className="social-link"><i className="bi bi-twitter-x"></i></a>
+              <a href="#" className="social-link"><i className="bi bi-linkedin"></i></a>
             </div>
           </Col>
 
-          {/* Services */}
-          <Col md={3}>
-            <h6 className="fw-bold text-light">Services</h6>
-            <ul className="list-unstyled text-white-50 small">
-              <li>Civil Engineer</li>
-              <li>Contractor</li>
-              <li>Mason</li>
-              <li>Site Engineer</li>
-              <li>Equipment Rental</li>
-              <li>Material Supplier</li>
+          {/* Quick Links */}
+          <Col lg={2} md={6}>
+            <h5 className="footer-heading">Dashboard</h5>
+            <ul className="footer-links">
+              <li><Link to="/vendor/dashboard">Overview</Link></li>
+              <li><Link to="/vendor/jobs">My Jobs</Link></li>
+              <li><Link to="/vendor/products">Products</Link></li>
+              <li><Link to="/vendor/wallet">Earnings</Link></li>
             </ul>
           </Col>
 
-          {/* Materials */}
-          <Col md={3}>
-            <h6 className="fw-bold text-light">Materials</h6>
-            <ul className="list-unstyled text-white-50 small">
-              <li>Cement & Concrete</li>
-              <li>Steel & Rebar</li>
-              <li>Bricks & Blocks</li>
-              <li>Paints & Coatings</li>
-              <li>Construction Tools</li>
-              <li>Safety Equipment</li>
+          {/* Support */}
+          <Col lg={3} md={6}>
+            <h5 className="footer-heading">Support</h5>
+            <ul className="footer-links">
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">Terms of Service</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Vendor Guidelines</a></li>
             </ul>
           </Col>
 
-          {/* Contact */}
-          <Col md={3}>
-            <h6 className="fw-bold text-light">Contact</h6>
-            <ul className="list-unstyled text-white-50 small">
-              <li><FaPhoneAlt className="me-2 text-warning" />+91 7093832122</li>
-              <li><FaEnvelope className="me-2 text-danger" />help@apnamestri.com</li>
-              <li><FaMapMarkerAlt className="me-2 text-warning" />Hyderabadm India</li>
-              <li><FaRegClock className="me-2 text-info" />24/7 Available</li>
+          {/* Contact - Updated to match color scheme */}
+          <Col lg={3} md={6}>
+            <h5 className="footer-heading">Contact Us</h5>
+            <ul className="contact-info">
+              <li>
+                <i className="bi bi-geo-alt-fill text-warning"></i>
+                <span>123 Business Park, Tech City</span>
+              </li>
+              <li>
+                <i className="bi bi-envelope-fill text-warning"></i>
+                <span>support@apnamestri.com</span>
+              </li>
+              <li>
+                <i className="bi bi-telephone-fill text-warning"></i>
+                <span>+91 1800-123-4567</span>
+              </li>
             </ul>
           </Col>
         </Row>
 
-        {/* Bottom links */}
-        <div className="d-flex justify-content-between border-top border-secondary pt-3 text-white-50 small flex-column flex-md-row">
-          <p className="mb-2 mb-md-0">© 2025 Smart Mestri Solutions. All rights reserved.</p>
-          <div className="d-flex gap-3">
-            <a href="/" className="text-white-50">Privacy Policy</a>
-            <a href="/" className="text-white-50">Terms of Service</a>
-            <a href="/" className="text-white-50">Support</a>
-          </div>
+        {/* Bottom Bar */}
+        <div className="footer-bottom">
+          <Row className="align-items-center">
+            <Col md={6} className="text-center text-md-start">
+              <p className="copyright mb-0">
+                &copy; {currentYear} Apna Mestri. All rights reserved.
+              </p>
+            </Col>
+            <Col md={6} className="text-center text-md-end mt-3 mt-md-0">
+              <div className="app-badges">
+                <span className="secure-badge">
+                  <i className="bi bi-shield-lock-fill me-2"></i>
+                  100% Secure Payments
+                </span>
+              </div>
+            </Col>
+          </Row>
         </div>
       </Container>
+
+      <style>{`
+                .footer-section {
+                    background-color: #111827;
+                    color: #9ca3af;
+                    padding: 4rem 0 2rem;
+                    margin-top: auto;
+                    border-top: 4px solid #FFD600;
+                }
+
+                .footer-brand {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .brand-icon {
+                    width: 40px;
+                    height: 40px;
+                    background: white;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 4px;
+                }
+
+                .brand-icon img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                }
+
+                .brand-text {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: #fff;
+                    letter-spacing: -0.5px;
+                }
+
+                .footer-desc {
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                    margin-bottom: 1.5rem;
+                    max-width: 320px;
+                }
+
+                .footer-heading {
+                    color: #fff;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    margin-bottom: 1.5rem;
+                }
+
+                .footer-links {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .footer-links li {
+                    margin-bottom: 0.75rem;
+                }
+
+                .footer-links a {
+                    color: #9ca3af;
+                    text-decoration: none;
+                    transition: all 0.2s ease;
+                    font-size: 0.95rem;
+                }
+
+                .footer-links a:hover {
+                    color: #FFD600;
+                    padding-left: 5px;
+                }
+
+                .contact-info {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .contact-info li {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 1rem;
+                    margin-bottom: 1rem;
+                    font-size: 0.95rem;
+                }
+
+                .contact-info i {
+                    margin-top: 0.2rem;
+                }
+
+                .social-links {
+                    display: flex;
+                    gap: 1rem;
+                }
+
+                .social-link {
+                    width: 36px;
+                    height: 36px;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #fff;
+                    transition: all 0.3s ease;
+                    text-decoration: none;
+                }
+
+                .social-link:hover {
+                    background: #FFD600;
+                    color: #111827;
+                    transform: translateY(-3px);
+                }
+
+                .footer-bottom {
+                    margin-top: 3rem;
+                    padding-top: 2rem;
+                    border-top: 1px solid rgba(255,255,255,0.1);
+                }
+
+                .copyright {
+                    font-size: 0.9rem;
+                }
+
+                .secure-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 0.5rem 1rem;
+                    background: rgba(40, 167, 69, 0.1);
+                    color: #2fb344;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    border: 1px solid rgba(40, 167, 69, 0.2);
+                }
+            `}</style>
     </footer>
   );
 };
