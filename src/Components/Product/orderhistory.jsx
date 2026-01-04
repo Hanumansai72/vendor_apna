@@ -61,13 +61,13 @@ const OrderHistory = () => {
 
   const getStatusStyle = (status) => {
     const styles = {
-      Delivered: { bg: "#d1fae5", color: "#059669" },
-      Processing: { bg: "#dbeafe", color: "#2563eb" },
-      Pending: { bg: "#fef3c7", color: "#d97706" },
-      Shipped: { bg: "#e0e7ff", color: "#4f46e5" },
-      Cancelled: { bg: "#fee2e2", color: "#dc2626" },
+      Delivered: { bg: "#d1fae5", color: "#059669", icon: "bi-check-circle-fill" },
+      Processing: { bg: "#fef9c3", color: "#ca8a04", icon: "bi-arrow-repeat" },
+      Pending: { bg: "#fff7ed", color: "#ea580c", icon: "bi-clock-fill" },
+      Shipped: { bg: "#dbeafe", color: "#2563eb", icon: "bi-truck" },
+      Cancelled: { bg: "#fee2e2", color: "#dc2626", icon: "bi-x-circle-fill" },
     };
-    return styles[status] || { bg: "#f3f4f6", color: "#6b7280" };
+    return styles[status] || { bg: "#f3f4f6", color: "#6b7280", icon: "bi-question-circle" };
   };
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -76,6 +76,7 @@ const OrderHistory = () => {
   const stats = {
     total: orders.length,
     delivered: orders.filter(o => o.orderStatus === "Delivered").length,
+    pending: orders.filter(o => o.orderStatus === "Pending").length,
     revenue: orders.reduce((sum, o) => sum + (o.totalPrice || o.totalAmount || 0), 0),
   };
 
@@ -90,98 +91,127 @@ const OrderHistory = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div>
-            <h1 className="page-title">
-              <i className="bi bi-clock-history text-primary me-3"></i>
-              Order History
-            </h1>
-            <p className="page-subtitle">View all past orders and transactions</p>
+          <div className="header-content">
+            <div className="header-icon">
+              <i className="bi bi-clock-history"></i>
+            </div>
+            <div>
+              <h1 className="page-title">Order History</h1>
+              <p className="page-subtitle">View and manage all your past orders and transactions</p>
+            </div>
           </div>
           <div className="header-actions">
-            <button className="btn-action" onClick={fetchOrders}>
-              <i className="bi bi-arrow-clockwise me-2"></i>
-              Refresh
+            <button className="btn-action btn-refresh" onClick={fetchOrders}>
+              <i className="bi bi-arrow-clockwise"></i>
+              <span>Refresh</span>
             </button>
-            <button className="btn-action">
-              <i className="bi bi-download me-2"></i>
-              Export
+            <button className="btn-action btn-export">
+              <i className="bi bi-download"></i>
+              <span>Export</span>
             </button>
           </div>
         </motion.div>
 
-        {/* Stats */}
-        <div className="row g-3 mb-4">
+        {/* Stats Cards */}
+        <div className="stats-grid">
           {[
-            { label: "Total Orders", value: stats.total, icon: "bi-receipt", color: "#3b82f6" },
-            { label: "Delivered", value: stats.delivered, icon: "bi-check-circle", color: "#10b981" },
-            { label: "Total Revenue", value: `₹${stats.revenue.toLocaleString()}`, icon: "bi-currency-rupee", color: "#f59e0b" },
+            { label: "Total Orders", value: stats.total, icon: "bi-box-seam", gradient: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)" },
+            { label: "Delivered", value: stats.delivered, icon: "bi-check-circle", gradient: "linear-gradient(135deg, #34d399 0%, #10b981 100%)" },
+            { label: "Pending", value: stats.pending, icon: "bi-hourglass-split", gradient: "linear-gradient(135deg, #fb923c 0%, #ea580c 100%)" },
+            { label: "Total Revenue", value: `₹${stats.revenue.toLocaleString()}`, icon: "bi-currency-rupee", gradient: "linear-gradient(135deg, #fbbf24 0%, #d97706 100%)" },
           ].map((stat, i) => (
-            <div className="col-md-4" key={i}>
-              <motion.div
-                className="stat-card"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="stat-icon" style={{ background: `${stat.color}20`, color: stat.color }}>
-                  <i className={`bi ${stat.icon}`}></i>
-                </div>
-                <div className="stat-info">
-                  <span className="stat-value">{loading ? "-" : stat.value}</span>
-                  <span className="stat-label">{stat.label}</span>
-                </div>
-              </motion.div>
-            </div>
+            <motion.div
+              className="stat-card"
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <div className="stat-icon-wrapper" style={{ background: stat.gradient }}>
+                <i className={`bi ${stat.icon}`}></i>
+              </div>
+              <div className="stat-content">
+                <span className="stat-value">{loading ? "—" : stat.value}</span>
+                <span className="stat-label">{stat.label}</span>
+              </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Filters */}
-        <div className="filters-bar">
-          <div className="filter-group">
-            <select
-              className="filter-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="All">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Processing">Processing</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Delivered">Delivered</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
+        <motion.div
+          className="filters-section"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="filter-tabs">
+            {["All", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"].map((status) => (
+              <button
+                key={status}
+                className={`filter-tab ${statusFilter === status ? 'active' : ''}`}
+                onClick={() => setStatusFilter(status)}
+              >
+                {status}
+                {status === "All" && <span className="tab-count">{orders.length}</span>}
+              </button>
+            ))}
           </div>
-          <div className="search-box">
-            <i className="bi bi-search"></i>
+          <div className="search-wrapper">
+            <i className="bi bi-search search-icon"></i>
             <input
               type="text"
-              placeholder="Search orders..."
+              className="search-input"
+              placeholder="Search by order ID, product or customer..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {search && (
+              <button className="search-clear" onClick={() => setSearch("")}>
+                <i className="bi bi-x"></i>
+              </button>
+            )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Orders Table */}
-        <div className="orders-card">
+        <motion.div
+          className="orders-container"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           {loading ? (
             <div className="loading-state">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="skeleton-row"></div>
+                <div key={i} className="skeleton-row">
+                  <div className="skeleton-cell skeleton-id"></div>
+                  <div className="skeleton-cell skeleton-product"></div>
+                  <div className="skeleton-cell skeleton-customer"></div>
+                  <div className="skeleton-cell skeleton-date"></div>
+                  <div className="skeleton-cell skeleton-amount"></div>
+                  <div className="skeleton-cell skeleton-status"></div>
+                </div>
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="empty-state">
-              <i className="bi bi-inbox"></i>
-              <p>No orders found</p>
+              <div className="empty-icon">
+                <i className="bi bi-inbox"></i>
+              </div>
+              <h3>No Orders Found</h3>
+              <p>There are no orders matching your current filters.</p>
+              <button className="btn-reset" onClick={() => { setSearch(""); setStatusFilter("All"); }}>
+                Reset Filters
+              </button>
             </div>
           ) : (
             <>
-              <div className="table-responsive">
+              <div className="table-wrapper">
                 <table className="orders-table">
                   <thead>
                     <tr>
-                      <th>Order</th>
+                      <th>Order ID</th>
                       <th>Product</th>
                       <th>Customer</th>
                       <th>Date</th>
@@ -194,39 +224,41 @@ const OrderHistory = () => {
                       {paginated.map((order, i) => (
                         <motion.tr
                           key={order._id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ delay: i * 0.02 }}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          transition={{ delay: i * 0.03 }}
+                          className="order-row"
                         >
                           <td>
                             <span className="order-id">#{order._id?.slice(-6)}</span>
                           </td>
                           <td>
-                            <div className="product-cell">
+                            <div className="product-info">
                               <img
-                                src={order.productImage || "https://via.placeholder.com/40"}
+                                src={order.productImage || "https://via.placeholder.com/50"}
                                 alt=""
-                                className="product-thumb"
+                                className="product-image"
                               />
                               <span className="product-name">{order.productName || "Product"}</span>
                             </div>
                           </td>
                           <td>
-                            <div className="customer-cell">
-                              <img
-                                src={`https://ui-avatars.com/api/?name=${order.customerName}&background=3b82f6&color=fff&size=32`}
-                                alt=""
-                                className="customer-avatar"
-                              />
-                              <span>{order.customerName || "Customer"}</span>
+                            <div className="customer-info">
+                              <div className="customer-avatar">
+                                {(order.customerName || "C")[0].toUpperCase()}
+                              </div>
+                              <span className="customer-name">{order.customerName || "Customer"}</span>
                             </div>
                           </td>
-                          <td className="date-cell">
-                            {new Date(order.orderedAt || order.createdAt).toLocaleDateString()}
+                          <td>
+                            <div className="date-info">
+                              <span className="date-day">{new Date(order.orderedAt || order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                              <span className="date-year">{new Date(order.orderedAt || order.createdAt).getFullYear()}</span>
+                            </div>
                           </td>
-                          <td className="amount-cell">
-                            ₹{(order.totalPrice || order.totalAmount || 0).toLocaleString()}
+                          <td>
+                            <span className="amount">₹{(order.totalPrice || order.totalAmount || 0).toLocaleString()}</span>
                           </td>
                           <td>
                             <span
@@ -236,6 +268,7 @@ const OrderHistory = () => {
                                 color: getStatusStyle(order.orderStatus).color
                               }}
                             >
+                              <i className={`bi ${getStatusStyle(order.orderStatus).icon}`}></i>
                               {order.orderStatus || "Pending"}
                             </span>
                           </td>
@@ -248,13 +281,13 @@ const OrderHistory = () => {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="pagination-bar">
+                <div className="pagination-section">
                   <span className="pagination-info">
-                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length}
+                    Showing <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{Math.min(currentPage * itemsPerPage, filtered.length)}</strong> of <strong>{filtered.length}</strong> orders
                   </span>
                   <div className="pagination-controls">
                     <button
-                      className="page-btn"
+                      className="page-btn nav-btn"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
@@ -277,7 +310,7 @@ const OrderHistory = () => {
                       );
                     })}
                     <button
-                      className="page-btn"
+                      className="page-btn nav-btn"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
                     >
@@ -288,146 +321,284 @@ const OrderHistory = () => {
               )}
             </>
           )}
-        </div>
+        </motion.div>
       </div>
 
       <Footer />
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
         .order-history-page {
           min-height: 100vh;
-          background: #f8fafc;
+          background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #ffffff 100%);
+          font-family: 'Inter', sans-serif;
         }
 
+        /* Header */
         .page-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
           flex-wrap: wrap;
+          gap: 1.5rem;
+          margin-bottom: 2rem;
+          padding: 1.5rem 2rem;
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+          border-radius: 20px;
+          box-shadow: 0 10px 40px rgba(251, 191, 36, 0.3);
+        }
+
+        .header-content {
+          display: flex;
+          align-items: center;
           gap: 1rem;
-          margin-bottom: 1.5rem;
+        }
+
+        .header-icon {
+          width: 60px;
+          height: 60px;
+          background: rgba(255, 255, 255, 0.25);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.75rem;
+          color: white;
+          backdrop-filter: blur(10px);
         }
 
         .page-title {
-          font-size: 1.75rem;
+          font-size: 1.875rem;
           font-weight: 700;
-          color: #1e293b;
+          color: white;
           margin: 0;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .page-subtitle {
-          color: #64748b;
+          color: rgba(255, 255, 255, 0.9);
           margin: 0.25rem 0 0;
+          font-size: 0.95rem;
         }
 
         .header-actions {
           display: flex;
-          gap: 0.5rem;
+          gap: 0.75rem;
         }
 
         .btn-action {
           display: inline-flex;
           align-items: center;
-          padding: 0.625rem 1rem;
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          font-weight: 500;
-          color: #475569;
+          gap: 0.5rem;
+          padding: 0.75rem 1.25rem;
+          background: rgba(255, 255, 255, 0.95);
+          border: none;
+          border-radius: 12px;
+          font-weight: 600;
+          color: #92400e;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .btn-action:hover {
-          background: #f1f5f9;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* Stats */
+        .btn-action i {
+          font-size: 1.1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1.25rem;
+          margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 576px) {
+          .stats-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
         .stat-card {
           background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 1.25rem;
+          border-radius: 16px;
+          padding: 1.5rem;
           display: flex;
           align-items: center;
           gap: 1rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+          border: 1px solid #fef3c7;
+          transition: all 0.3s ease;
         }
 
-        .stat-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 12px;
+        .stat-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 30px rgba(251, 191, 36, 0.15);
+        }
+
+        .stat-icon-wrapper {
+          width: 56px;
+          height: 56px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.25rem;
+          flex-shrink: 0;
         }
 
-        .stat-info {
+        .stat-icon-wrapper i {
+          font-size: 1.5rem;
+          color: white;
+        }
+
+        .stat-content {
           display: flex;
           flex-direction: column;
         }
 
         .stat-value {
-          font-size: 1.5rem;
+          font-size: 1.75rem;
           font-weight: 700;
-          color: #1e293b;
+          color: #1f2937;
+          line-height: 1.2;
         }
 
         .stat-label {
-          font-size: 0.85rem;
-          color: #64748b;
+          font-size: 0.875rem;
+          color: #6b7280;
+          font-weight: 500;
         }
 
         /* Filters */
-        .filters-bar {
+        .filters-section {
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
           gap: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .filter-select {
-          padding: 0.625rem 1rem;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          margin-bottom: 1.5rem;
+          padding: 1rem 1.5rem;
           background: white;
-          font-size: 0.9rem;
+          border-radius: 16px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+          border: 1px solid #fef3c7;
         }
 
-        .search-box {
+        .filter-tabs {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+
+        .filter-tab {
+          padding: 0.625rem 1rem;
+          background: #fef9c3;
+          border: 1px solid #fcd34d;
+          border-radius: 10px;
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #92400e;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .filter-tab:hover {
+          background: #fde68a;
+        }
+
+        .filter-tab.active {
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+          border-color: transparent;
+          color: white;
+          box-shadow: 0 4px 15px rgba(251, 191, 36, 0.35);
+        }
+
+        .tab-count {
+          background: rgba(255, 255, 255, 0.3);
+          padding: 0.125rem 0.5rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+        }
+
+        .search-wrapper {
           position: relative;
+          min-width: 320px;
         }
 
-        .search-box i {
+        .search-icon {
           position: absolute;
-          left: 12px;
+          left: 14px;
           top: 50%;
           transform: translateY(-50%);
-          color: #94a3b8;
+          color: #9ca3af;
+          font-size: 1rem;
         }
 
-        .search-box input {
-          padding: 0.625rem 1rem 0.625rem 2.5rem;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          width: 280px;
+        .search-input {
+          width: 100%;
+          padding: 0.75rem 2.5rem 0.75rem 2.75rem;
+          border: 2px solid #fde68a;
+          border-radius: 12px;
           font-size: 0.9rem;
+          background: #fffbeb;
+          transition: all 0.3s ease;
         }
 
-        .search-box input:focus {
+        .search-input:focus {
           outline: none;
-          border-color: #3b82f6;
+          border-color: #fbbf24;
+          background: white;
+          box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
         }
 
-        /* Orders Card */
-        .orders-card {
+        .search-input::placeholder {
+          color: #9ca3af;
+        }
+
+        .search-clear {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: #fbbf24;
+          border: none;
+          border-radius: 50%;
+          width: 22px;
+          height: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: white;
+          font-size: 1rem;
+        }
+
+        /* Orders Container */
+        .orders-container {
           background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 16px;
+          border-radius: 20px;
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+          border: 1px solid #fef3c7;
           overflow: hidden;
+        }
+
+        .table-wrapper {
+          overflow-x: auto;
         }
 
         .orders-table {
@@ -436,168 +607,295 @@ const OrderHistory = () => {
         }
 
         .orders-table th {
-          background: #f8fafc;
-          padding: 1rem;
+          background: linear-gradient(135deg, #fffbeb 0%, #fef9c3 100%);
+          padding: 1rem 1.25rem;
           text-align: left;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #64748b;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #92400e;
           text-transform: uppercase;
-          border-bottom: 1px solid #e2e8f0;
+          letter-spacing: 0.5px;
+          border-bottom: 2px solid #fde68a;
         }
 
         .orders-table td {
-          padding: 1rem;
-          border-bottom: 1px solid #f1f5f9;
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid #fef3c7;
           font-size: 0.9rem;
+          vertical-align: middle;
         }
 
-        .orders-table tr:hover {
-          background: #f8fafc;
+        .order-row {
+          transition: all 0.2s ease;
+        }
+
+        .order-row:hover {
+          background: linear-gradient(90deg, #fffbeb 0%, transparent 100%);
         }
 
         .order-id {
-          font-weight: 600;
-          color: #3b82f6;
+          font-weight: 700;
+          color: #d97706;
+          background: #fef9c3;
+          padding: 0.375rem 0.75rem;
+          border-radius: 8px;
+          font-size: 0.85rem;
         }
 
-        .product-cell {
+        .product-info {
+          display: flex;
+          align-items: center;
+          gap: 0.875rem;
+        }
+
+        .product-image {
+          width: 48px;
+          height: 48px;
+          border-radius: 10px;
+          object-fit: cover;
+          border: 2px solid #fde68a;
+        }
+
+        .product-name {
+          font-weight: 600;
+          color: #1f2937;
+        }
+
+        .customer-info {
           display: flex;
           align-items: center;
           gap: 0.75rem;
         }
 
-        .product-thumb {
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
-          object-fit: cover;
-        }
-
-        .product-name {
-          font-weight: 500;
-          color: #1e293b;
-        }
-
-        .customer-cell {
+        .customer-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          justify-content: center;
+          color: white;
+          font-weight: 700;
+          font-size: 0.9rem;
         }
 
-        .customer-avatar {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
+        .customer-name {
+          font-weight: 500;
+          color: #374151;
         }
 
-        .date-cell {
-          color: #64748b;
+        .date-info {
+          display: flex;
+          flex-direction: column;
         }
 
-        .amount-cell {
+        .date-day {
           font-weight: 600;
-          color: #1e293b;
+          color: #1f2937;
+        }
+
+        .date-year {
+          font-size: 0.75rem;
+          color: #9ca3af;
+        }
+
+        .amount {
+          font-weight: 700;
+          color: #047857;
+          font-size: 1rem;
         }
 
         .status-badge {
-          padding: 0.375rem 0.75rem;
-          border-radius: 6px;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.375rem;
+          padding: 0.5rem 0.875rem;
+          border-radius: 8px;
           font-size: 0.8rem;
-          font-weight: 500;
+          font-weight: 600;
+        }
+
+        .status-badge i {
+          font-size: 0.75rem;
         }
 
         /* Pagination */
-        .pagination-bar {
+        .pagination-section {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1rem;
-          border-top: 1px solid #e2e8f0;
+          padding: 1.25rem 1.5rem;
+          border-top: 2px solid #fef3c7;
+          background: #fffbeb;
         }
 
         .pagination-info {
-          font-size: 0.85rem;
-          color: #64748b;
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+
+        .pagination-info strong {
+          color: #92400e;
+          font-weight: 600;
         }
 
         .pagination-controls {
           display: flex;
-          gap: 0.25rem;
+          gap: 0.375rem;
         }
 
         .page-btn {
-          width: 36px;
-          height: 36px;
+          min-width: 40px;
+          height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid #e2e8f0;
+          border: 2px solid #fde68a;
           background: white;
-          border-radius: 8px;
-          color: #475569;
+          border-radius: 10px;
+          color: #92400e;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
         }
 
         .page-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #fef9c3;
+          border-color: #fbbf24;
         }
 
         .page-btn.active {
-          background: #3b82f6;
-          border-color: #3b82f6;
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+          border-color: transparent;
           color: white;
+          box-shadow: 0 4px 12px rgba(251, 191, 36, 0.35);
         }
 
         .page-btn:disabled {
-          opacity: 0.5;
+          opacity: 0.4;
           cursor: not-allowed;
         }
 
-        /* Empty & Loading */
-        .empty-state {
-          text-align: center;
-          padding: 3rem;
-          color: #94a3b8;
+        .nav-btn {
+          background: #fef9c3;
         }
 
-        .empty-state i {
+        /* Empty & Loading States */
+        .empty-state {
+          text-align: center;
+          padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+          width: 100px;
+          height: 100px;
+          background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1.5rem;
+        }
+
+        .empty-icon i {
           font-size: 2.5rem;
-          margin-bottom: 0.5rem;
+          color: #d97706;
+        }
+
+        .empty-state h3 {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #1f2937;
+          margin: 0 0 0.5rem;
+        }
+
+        .empty-state p {
+          color: #6b7280;
+          margin: 0 0 1.5rem;
+        }
+
+        .btn-reset {
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 10px;
+          color: white;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .btn-reset:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
         }
 
         .loading-state {
-          padding: 1rem;
+          padding: 1rem 1.5rem;
         }
 
         .skeleton-row {
-          height: 60px;
-          background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+          display: flex;
+          gap: 1rem;
+          padding: 1rem 0;
+          border-bottom: 1px solid #fef3c7;
+        }
+
+        .skeleton-cell {
+          height: 20px;
+          background: linear-gradient(90deg, #fef9c3 25%, #fde68a 50%, #fef9c3 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite;
-          border-radius: 8px;
-          margin-bottom: 0.5rem;
+          border-radius: 6px;
         }
+
+        .skeleton-id { width: 80px; }
+        .skeleton-product { width: 180px; }
+        .skeleton-customer { width: 140px; }
+        .skeleton-date { width: 100px; }
+        .skeleton-amount { width: 90px; }
+        .skeleton-status { width: 100px; }
 
         @keyframes shimmer {
           0% { background-position: 200% 0; }
           100% { background-position: -200% 0; }
         }
 
+        /* Responsive */
         @media (max-width: 768px) {
-          .filters-bar {
+          .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+            padding: 1.25rem;
+          }
+
+          .header-content {
+            flex-direction: column;
+          }
+
+          .header-actions {
+            justify-content: center;
+          }
+
+          .filters-section {
             flex-direction: column;
             align-items: stretch;
           }
 
-          .search-box input {
-            width: 100%;
+          .filter-tabs {
+            justify-content: center;
           }
 
-          .pagination-bar {
+          .search-wrapper {
+            min-width: 100%;
+          }
+
+          .pagination-section {
             flex-direction: column;
             gap: 1rem;
+            text-align: center;
           }
         }
       `}</style>

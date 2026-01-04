@@ -82,13 +82,13 @@ const NewOrders = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      Pending: { bg: "#fef3c7", color: "#d97706" },
-      Processing: { bg: "#dbeafe", color: "#2563eb" },
-      Shipped: { bg: "#e0e7ff", color: "#4f46e5" },
-      Delivered: { bg: "#d1fae5", color: "#059669" },
-      Cancelled: { bg: "#fee2e2", color: "#dc2626" },
+      Pending: { bg: "#FEF3C7", color: "#92400E", icon: "bi-clock" },
+      Processing: { bg: "#DBEAFE", color: "#1E40AF", icon: "bi-arrow-repeat" },
+      Shipped: { bg: "#E0E7FF", color: "#4338CA", icon: "bi-truck" },
+      Delivered: { bg: "#DCFCE7", color: "#166534", icon: "bi-check-circle" },
+      Cancelled: { bg: "#FEE2E2", color: "#991B1B", icon: "bi-x-circle" },
     };
-    return colors[status] || { bg: "#f3f4f6", color: "#6b7280" };
+    return colors[status] || { bg: "#f3f4f6", color: "#6b7280", icon: "bi-question-circle" };
   };
 
   const stats = {
@@ -102,55 +102,61 @@ const NewOrders = () => {
     <div className="orders-page">
       <ProductNavbar />
 
-      <div className="container-xl py-4">
+      <div className="orders-container">
         {/* Header */}
         <motion.div
-          className="page-header"
+          className="page-header-card"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div>
-            <h1 className="page-title">
-              <i className="bi bi-cart-check-fill text-primary me-3"></i>
-              Manage Orders
-            </h1>
-            <p className="page-subtitle">Track and update your product orders</p>
+          <div className="header-content">
+            <div className="header-icon">
+              <i className="bi bi-cart-check-fill"></i>
+            </div>
+            <div className="header-text">
+              <h1 className="page-title">Manage Orders</h1>
+              <p className="page-subtitle">Track and update your product orders</p>
+            </div>
           </div>
           <button className="btn-refresh" onClick={fetchOrders}>
-            <i className="bi bi-arrow-clockwise me-2"></i>
-            Refresh
+            <i className="bi bi-arrow-clockwise"></i>
+            <span>Refresh</span>
           </button>
         </motion.div>
 
-        {/* Stats */}
-        <div className="row g-3 mb-4">
+        {/* Stats Cards */}
+        <div className="stats-grid">
           {[
-            { label: "Total Orders", value: stats.total, icon: "bi-receipt", color: "#3b82f6" },
-            { label: "Pending", value: stats.pending, icon: "bi-clock", color: "#f59e0b" },
-            { label: "Processing", value: stats.processing, icon: "bi-arrow-repeat", color: "#8b5cf6" },
-            { label: "Delivered", value: stats.delivered, icon: "bi-check-circle", color: "#10b981" },
+            { label: "Total Orders", value: stats.total, icon: "bi-receipt", gradient: "linear-gradient(135deg, #FFD600 0%, #FFC107 100%)" },
+            { label: "Pending", value: stats.pending, icon: "bi-clock", gradient: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)" },
+            { label: "Processing", value: stats.processing, icon: "bi-arrow-repeat", gradient: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)" },
+            { label: "Delivered", value: stats.delivered, icon: "bi-check-circle", gradient: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)" },
           ].map((stat, i) => (
-            <div className="col-6 col-lg-3" key={i}>
-              <motion.div
-                className="stat-card"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="stat-icon" style={{ background: `${stat.color}20`, color: stat.color }}>
-                  <i className={`bi ${stat.icon}`}></i>
-                </div>
-                <div className="stat-info">
-                  <span className="stat-value">{loading ? "-" : stat.value}</span>
-                  <span className="stat-label">{stat.label}</span>
-                </div>
-              </motion.div>
-            </div>
+            <motion.div
+              className="stat-card"
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <div className="stat-icon" style={{ background: stat.gradient }}>
+                <i className={`bi ${stat.icon}`}></i>
+              </div>
+              <div className="stat-info">
+                <span className="stat-value">{loading ? "-" : stat.value}</span>
+                <span className="stat-label">{stat.label}</span>
+              </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Filters */}
-        <div className="filters-bar">
+        <motion.div
+          className="filters-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           <div className="status-tabs">
             {statuses.map(status => (
               <button
@@ -158,10 +164,13 @@ const NewOrders = () => {
                 className={`status-tab ${statusFilter === status ? 'active' : ''}`}
                 onClick={() => setStatusFilter(status)}
               >
+                {status !== "All" && (
+                  <span className="tab-dot" style={{ background: getStatusColor(status).color }}></span>
+                )}
                 {status}
                 {status !== "All" && (
                   <span className="tab-count">
-                    {orders.filter(o => status === "All" || o.orderStatus === status).length}
+                    {orders.filter(o => o.orderStatus === status).length}
                   </span>
                 )}
               </button>
@@ -175,11 +184,21 @@ const NewOrders = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {search && (
+              <button className="search-clear" onClick={() => setSearch("")}>
+                <i className="bi bi-x"></i>
+              </button>
+            )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Orders Table */}
-        <div className="orders-card">
+        <motion.div
+          className="orders-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           {loading ? (
             <div className="orders-loading">
               {[1, 2, 3, 4].map(i => (
@@ -188,8 +207,11 @@ const NewOrders = () => {
             </div>
           ) : filtered.length === 0 ? (
             <div className="empty-state">
-              <i className="bi bi-inbox"></i>
-              <p>No orders found</p>
+              <div className="empty-icon">
+                <i className="bi bi-inbox"></i>
+              </div>
+              <h4>No orders found</h4>
+              <p>There are no orders matching your criteria</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -220,13 +242,28 @@ const NewOrders = () => {
                           <span className="order-id">#{order._id?.slice(-6)}</span>
                         </td>
                         <td>
-                          <span className="product-name">{order.productName || "Product"}</span>
+                          <div className="product-cell">
+                            <span className="product-name">{order.productName || "Product"}</span>
+                          </div>
                         </td>
-                        <td>{order.customerName || "Customer"}</td>
-                        <td>{order.quantity || 1}</td>
+                        <td>
+                          <div className="customer-cell">
+                            <div className="customer-avatar">
+                              {(order.customerName || "C")[0].toUpperCase()}
+                            </div>
+                            <span>{order.customerName || "Customer"}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="qty-badge">{order.quantity || 1}</span>
+                        </td>
                         <td className="order-total">₹{order.totalPrice || order.totalAmount || 0}</td>
                         <td className="order-date">
-                          {new Date(order.orderedAt || order.createdAt).toLocaleDateString()}
+                          {new Date(order.orderedAt || order.createdAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
                         </td>
                         <td>
                           <span
@@ -236,21 +273,25 @@ const NewOrders = () => {
                               color: getStatusColor(order.orderStatus).color
                             }}
                           >
+                            <i className={`bi ${getStatusColor(order.orderStatus).icon}`}></i>
                             {order.orderStatus || "Pending"}
                           </span>
                         </td>
                         <td>
-                          <select
-                            className="status-select"
-                            value={order.orderStatus || "Pending"}
-                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Delivered">Delivered</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
+                          <div className="action-wrapper">
+                            <select
+                              className="status-select"
+                              value={order.orderStatus || "Pending"}
+                              onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Processing">Processing</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Delivered">Delivered</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <i className="bi bi-chevron-down select-arrow"></i>
+                          </div>
                         </td>
                       </motion.tr>
                     ))}
@@ -259,7 +300,14 @@ const NewOrders = () => {
               </table>
             </div>
           )}
-        </div>
+        </motion.div>
+
+        {/* Results Count */}
+        {!loading && filtered.length > 0 && (
+          <div className="results-info">
+            Showing <strong>{filtered.length}</strong> of <strong>{orders.length}</strong> orders
+          </div>
+        )}
       </div>
 
       {/* Toast */}
@@ -267,12 +315,14 @@ const NewOrders = () => {
         {toast.show && (
           <motion.div
             className={`toast-notification ${toast.type}`}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
           >
-            <i className={`bi ${toast.type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'}`}></i>
-            {toast.message}
+            <div className="toast-icon">
+              <i className={`bi ${toast.type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}`}></i>
+            </div>
+            <span>{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -280,69 +330,132 @@ const NewOrders = () => {
       <Footer />
 
       <style>{`
+        /* =============================================
+           Orders Page - Yellow & White Theme
+           ============================================= */
+        
         .orders-page {
           min-height: 100vh;
-          background: #f8fafc;
+          background: linear-gradient(180deg, #FFFBEB 0%, #FEF9C3 50%, #FFFFFF 100%);
         }
 
-        .page-header {
+        .orders-container {
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 2rem 1.5rem 4rem;
+        }
+
+        /* Page Header */
+        .page-header-card {
+          background: #ffffff;
+          border-radius: 20px;
+          padding: 1.5rem 2rem;
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
           flex-wrap: wrap;
           gap: 1rem;
           margin-bottom: 1.5rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+          border: 1px solid #FDE68A;
+        }
+
+        .header-content {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .header-icon {
+          width: 56px;
+          height: 56px;
+          background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 6px 20px rgba(255, 214, 0, 0.35);
+        }
+
+        .header-icon i {
+          font-size: 1.5rem;
+          color: #1a1a1a;
         }
 
         .page-title {
           font-size: 1.75rem;
-          font-weight: 700;
-          color: #1e293b;
+          font-weight: 800;
+          color: #1a1a1a;
           margin: 0;
+          letter-spacing: -0.02em;
         }
 
         .page-subtitle {
-          color: #64748b;
+          color: #6b7280;
           margin: 0.25rem 0 0;
+          font-size: 0.95rem;
         }
 
         .btn-refresh {
           display: inline-flex;
           align-items: center;
-          padding: 0.625rem 1.25rem;
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          font-weight: 500;
-          color: #475569;
+          gap: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          background: #ffffff;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          font-weight: 600;
+          color: #374151;
           cursor: pointer;
           transition: all 0.2s ease;
         }
 
         .btn-refresh:hover {
-          background: #f1f5f9;
-          border-color: #cbd5e1;
+          border-color: #FFD600;
+          background: #FFFBEB;
+          color: #1a1a1a;
         }
 
-        /* Stat Cards */
+        .btn-refresh i {
+          font-size: 1.125rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
         .stat-card {
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 1rem;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 1.25rem;
           display: flex;
           align-items: center;
           gap: 1rem;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          border-color: #FDE68A;
         }
 
         .stat-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 10px;
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.1rem;
+          font-size: 1.375rem;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .stat-info {
@@ -351,24 +464,31 @@ const NewOrders = () => {
         }
 
         .stat-value {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #1e293b;
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: #1a1a1a;
+          line-height: 1.2;
         }
 
         .stat-label {
           font-size: 0.8rem;
-          color: #64748b;
+          color: #6b7280;
+          font-weight: 500;
         }
 
-        /* Filters */
-        .filters-bar {
+        /* Filters Card */
+        .filters-card {
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 1rem 1.25rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
           gap: 1rem;
           margin-bottom: 1rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
 
         .status-tabs {
@@ -378,67 +498,109 @@ const NewOrders = () => {
         }
 
         .status-tab {
-          padding: 0.5rem 1rem;
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          font-size: 0.85rem;
-          font-weight: 500;
-          color: #64748b;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.625rem 1rem;
+          background: #f9fafb;
+          border: 2px solid transparent;
+          border-radius: 10px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #6b7280;
           cursor: pointer;
           transition: all 0.2s ease;
         }
 
         .status-tab:hover {
-          border-color: #3b82f6;
-          color: #3b82f6;
+          background: #FFFBEB;
+          border-color: #FDE68A;
+          color: #1a1a1a;
         }
 
         .status-tab.active {
-          background: #3b82f6;
-          border-color: #3b82f6;
-          color: white;
+          background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%);
+          border-color: transparent;
+          color: #1a1a1a;
+          box-shadow: 0 4px 12px rgba(255, 214, 0, 0.3);
+        }
+
+        .tab-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
+
+        .status-tab.active .tab-dot {
+          background: #1a1a1a !important;
         }
 
         .tab-count {
-          background: rgba(255,255,255,0.2);
-          padding: 0.125rem 0.375rem;
-          border-radius: 4px;
-          margin-left: 0.5rem;
+          background: rgba(0, 0, 0, 0.1);
+          padding: 0.125rem 0.5rem;
+          border-radius: 6px;
           font-size: 0.75rem;
+          font-weight: 700;
+        }
+
+        .status-tab.active .tab-count {
+          background: rgba(0, 0, 0, 0.15);
         }
 
         .search-box {
           position: relative;
+          display: flex;
+          align-items: center;
         }
 
-        .search-box i {
+        .search-box > i {
           position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #94a3b8;
+          left: 14px;
+          color: #9ca3af;
+          font-size: 1rem;
         }
 
         .search-box input {
-          padding: 0.625rem 1rem 0.625rem 2.5rem;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          padding: 0.75rem 2.5rem 0.75rem 2.75rem;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
           width: 280px;
           font-size: 0.9rem;
+          transition: all 0.2s ease;
         }
 
         .search-box input:focus {
           outline: none;
-          border-color: #3b82f6;
+          border-color: #FFD600;
+          box-shadow: 0 0 0 4px rgba(255, 214, 0, 0.15);
+        }
+
+        .search-clear {
+          position: absolute;
+          right: 10px;
+          width: 24px;
+          height: 24px;
+          background: #f3f4f6;
+          border: none;
+          border-radius: 6px;
+          color: #6b7280;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .search-clear:hover {
+          background: #e5e7eb;
         }
 
         /* Orders Card */
         .orders-card {
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 16px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 20px;
           overflow: hidden;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
         }
 
         .orders-table {
@@ -447,90 +609,176 @@ const NewOrders = () => {
         }
 
         .orders-table th {
-          background: #f8fafc;
-          padding: 1rem;
+          background: #FEFCE8;
+          padding: 1rem 1.25rem;
           text-align: left;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #64748b;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #92400E;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          border-bottom: 1px solid #e2e8f0;
+          letter-spacing: 0.05em;
+          border-bottom: 2px solid #FDE68A;
         }
 
         .orders-table td {
-          padding: 1rem;
-          border-bottom: 1px solid #f1f5f9;
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid #f3f4f6;
           font-size: 0.9rem;
-          color: #334155;
+          color: #374151;
+          vertical-align: middle;
         }
 
         .orders-table tr:hover {
-          background: #f8fafc;
+          background: #FFFBEB;
         }
 
         .order-id {
-          font-weight: 600;
-          color: #3b82f6;
+          font-weight: 700;
+          color: #D4A200;
+          background: #FEF3C7;
+          padding: 0.25rem 0.625rem;
+          border-radius: 6px;
+          font-size: 0.85rem;
+        }
+
+        .product-cell {
+          display: flex;
+          flex-direction: column;
         }
 
         .product-name {
-          font-weight: 500;
-          color: #1e293b;
+          font-weight: 600;
+          color: #1a1a1a;
+        }
+
+        .customer-cell {
+          display: flex;
+          align-items: center;
+          gap: 0.625rem;
+        }
+
+        .customer-avatar {
+          width: 32px;
+          height: 32px;
+          background: linear-gradient(135deg, #FFD600 0%, #FFC107 100%);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.8rem;
+          color: #1a1a1a;
+        }
+
+        .qty-badge {
+          background: #f3f4f6;
+          padding: 0.25rem 0.75rem;
+          border-radius: 6px;
+          font-weight: 600;
+          color: #374151;
         }
 
         .order-total {
-          font-weight: 600;
-          color: #1e293b;
+          font-weight: 700;
+          color: #1a1a1a;
+          font-size: 0.95rem;
         }
 
         .order-date {
-          color: #64748b;
+          color: #6b7280;
+          font-size: 0.85rem;
         }
 
         .status-badge {
-          padding: 0.25rem 0.75rem;
-          border-radius: 6px;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.375rem;
+          padding: 0.375rem 0.75rem;
+          border-radius: 8px;
           font-size: 0.8rem;
-          font-weight: 500;
+          font-weight: 600;
+        }
+
+        .status-badge i {
+          font-size: 0.7rem;
+        }
+
+        .action-wrapper {
+          position: relative;
         }
 
         .status-select {
-          padding: 0.375rem 0.75rem;
-          border: 1px solid #e2e8f0;
-          border-radius: 6px;
+          padding: 0.5rem 2rem 0.5rem 0.875rem;
+          border: 2px solid #e5e7eb;
+          border-radius: 10px;
           font-size: 0.85rem;
-          background: white;
+          font-weight: 500;
+          background: #ffffff;
           cursor: pointer;
+          appearance: none;
+          transition: all 0.2s ease;
+          min-width: 130px;
         }
 
         .status-select:focus {
           outline: none;
-          border-color: #3b82f6;
+          border-color: #FFD600;
+          box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.15);
+        }
+
+        .action-wrapper .select-arrow {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 0.7rem;
+          color: #9ca3af;
+          pointer-events: none;
         }
 
         /* Empty & Loading */
         .empty-state {
           text-align: center;
-          padding: 3rem;
-          color: #94a3b8;
+          padding: 4rem 2rem;
         }
 
-        .empty-state i {
-          font-size: 2.5rem;
+        .empty-icon {
+          width: 80px;
+          height: 80px;
+          background: #FEF3C7;
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1rem;
+        }
+
+        .empty-icon i {
+          font-size: 2rem;
+          color: #D4A200;
+        }
+
+        .empty-state h4 {
+          font-weight: 700;
+          color: #1a1a1a;
           margin-bottom: 0.5rem;
         }
 
+        .empty-state p {
+          color: #6b7280;
+          margin: 0;
+        }
+
         .orders-loading {
-          padding: 1rem;
+          padding: 1.5rem;
         }
 
         .skeleton-row {
-          height: 60px;
-          background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+          height: 64px;
+          background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite;
-          border-radius: 8px;
+          border-radius: 12px;
           margin-bottom: 0.75rem;
         }
 
@@ -539,33 +787,97 @@ const NewOrders = () => {
           100% { background-position: -200% 0; }
         }
 
+        /* Results Info */
+        .results-info {
+          text-align: center;
+          padding: 1rem;
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+
+        .results-info strong {
+          color: #1a1a1a;
+        }
+
         /* Toast */
         .toast-notification {
           position: fixed;
           bottom: 2rem;
           right: 2rem;
           padding: 1rem 1.5rem;
-          border-radius: 12px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           gap: 0.75rem;
-          font-weight: 500;
+          font-weight: 600;
           z-index: 9999;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
         }
 
         .toast-notification.success {
-          background: #d1fae5;
-          color: #059669;
+          background: #DCFCE7;
+          color: #166534;
+          border: 1px solid #86EFAC;
         }
 
         .toast-notification.error {
-          background: #fee2e2;
-          color: #dc2626;
+          background: #FEE2E2;
+          color: #991B1B;
+          border: 1px solid #FECACA;
+        }
+
+        .toast-icon {
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.125rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 992px) {
+          .page-header-card {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .btn-refresh {
+            width: 100%;
+            justify-content: center;
+          }
         }
 
         @media (max-width: 768px) {
-          .filters-bar {
+          .orders-container {
+            padding: 1rem;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .stat-card {
+            padding: 1rem;
+          }
+
+          .stat-icon {
+            width: 44px;
+            height: 44px;
+            font-size: 1.125rem;
+          }
+
+          .stat-value {
+            font-size: 1.25rem;
+          }
+
+          .filters-card {
             flex-direction: column;
             align-items: stretch;
           }
@@ -577,6 +889,23 @@ const NewOrders = () => {
           .status-tabs {
             overflow-x: auto;
             padding-bottom: 0.5rem;
+            flex-wrap: nowrap;
+          }
+
+          .status-tab {
+            white-space: nowrap;
+          }
+
+          .orders-table th,
+          .orders-table td {
+            padding: 0.75rem;
+            font-size: 0.8rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .stats-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>

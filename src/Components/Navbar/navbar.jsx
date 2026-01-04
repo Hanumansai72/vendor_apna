@@ -50,7 +50,6 @@ function Navbar() {
   const navLinks = [
     { path: `/vendor/${vendorId}`, label: "Dashboard", icon: "bi-grid-fill" },
     { path: `/vendor/${vendorId}/jobs`, label: "Jobs", icon: "bi-briefcase-fill" },
-    { path: `/vendor/${vendorId}/products`, label: "Products", icon: "bi-box-seam-fill" },
     { path: `/vendor/${vendorId}/job/history`, label: "History", icon: "bi-clock-history" },
   ];
 
@@ -60,7 +59,6 @@ function Navbar() {
     { path: `/vendor/wallet/${vendorId}`, label: "Wallet", icon: "bi-wallet2" },
     { path: `/vendor/viewproject/${vendorId}`, label: "Portfolio", icon: "bi-folder-fill" },
     { path: `/vendor/projectupload/${vendorId}`, label: "Upload Project", icon: "bi-cloud-arrow-up-fill" },
-    { path: `/vendor/${vendorId}/products/order/history`, label: "Product Orders", icon: "bi-receipt" },
     { path: "/user/inbox", label: "Inbox", icon: "bi-envelope-fill" },
   ];
 

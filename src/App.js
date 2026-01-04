@@ -199,14 +199,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route path="/product/:id/ViewProduct" element={<ProtectedRoute element={<MyProducts />} />} />
-        <Route path="/addproduct/:id" element={<ProtectedRoute element={<AddProductForm />} />} />
-        <Route path="/addproduct/:id/BulkUpload" element={<ProtectedRoute element={<BulkProductUpload />} />} />
-        <Route path="/Product/:id" element={<ProtectedRoute element={<ProductDashboard />} />} />
-        <Route path="/Product/:id/order" element={<ProtectedRoute element={<NewOrders />} />} />
-        <Route path="/Product/:id/order/history" element={<ProtectedRoute element={<OrderHistory />} />} />
-                <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>} />
-
+             
 
           </Routes>
         </Suspense>
