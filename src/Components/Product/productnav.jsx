@@ -59,7 +59,6 @@ function ProductNavbar() {
     { path: `/vendor/${vendorId}/products/add`, label: "Add Product", icon: "bi-plus-circle-fill" },
     { path: `/vendor/${vendorId}/products/bulk-upload`, label: "Bulk Upload", icon: "bi-cloud-arrow-up-fill" },
     { path: `/product/wallet/${vendorId}`, label: "Wallet", icon: "bi-wallet2" },
-    { path: `/vendor/${vendorId}`, label: "Service Dashboard", icon: "bi-tools" },
   ];
 
   return (

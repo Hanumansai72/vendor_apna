@@ -177,7 +177,7 @@ function App() {
               path="/vendor/:id/products/all"
               element={
                 <ProtectedRoute>
-                  <Product />
+                  <ProductDashboard />
                 </ProtectedRoute>
               }
             />
