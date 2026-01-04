@@ -8,20 +8,20 @@ import ProtectedRoute from './Components/Login/Signup/ProtectedRoute';
 // Lazy load components
 const JobListings = lazy(() => import('./Components/Vendor/accpet'));
 const JobHistory = lazy(() => import('./Components/Vendor/jobhistory'));
-const NewHistory = lazy(() => import('./Components/Product/neworder'));
+const NewOrders = lazy(() => import('./Components/Product/neworder'));
 const JobInProgress = lazy(() => import('./Components/Vendor/next_accpet'));
 const OrderHistory = lazy(() => import('./Components/Product/orderhistory'));
 const OrderStatus = lazy(() => import('./Components/Product/orderstatusproduct'));
 const JobPaymentSummary = lazy(() => import('./Components/Vendor/payment_order_tech'));
 const JobProgress = lazy(() => import('./Components/Product/payment_tech_non'));
-const Product = lazy(() => import('./Components/Product/product._vendor'));
+const ProductDashboard = lazy(() => import('./Components/Product/product._vendor'));
 const Registration = lazy(() => import('./Components/Login/Signup/Registration'));
 const TechnicalNonDashboard = lazy(() => import('./Components/Vendor/Technical_Non_Dashboard'));
 const VendorProfileSettings = lazy(() => import('./Components/Vendor/vendor_profile_settings'));
 const LoginPage = lazy(() => import('./Components/Login/Signup/login'));
 const AddProductForm = lazy(() => import('./Components/Product/addnewproduct'));
 const BulkProductUpload = lazy(() => import('./Components/Product/Bulkupload'));
-const ProductList = lazy(() => import('./Components/Product/viewproduct'));
+const MyProducts = lazy(() => import('./Components/Product/viewproduct'));
 const VendorCard = lazy(() => import('./Components/Vendor/projectupload'));
 const VendorProjects = lazy(() => import('./Components/Vendor/viewprojecs'));
 const Wallet = lazy(() => import('./Components/Vendor/wallet'));
@@ -150,7 +150,7 @@ function App() {
               path="/vendor/:id/products"
               element={
                 <ProtectedRoute>
-                  <ProductList />
+                  <MyProducts />
                 </ProtectedRoute>
               }
             />
@@ -186,7 +186,7 @@ function App() {
               path="/vendor/:id/products/order"
               element={
                 <ProtectedRoute>
-                  <NewHistory />
+                  <NewOrders />
                 </ProtectedRoute>
               }
             />
@@ -199,11 +199,11 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route path="/product/:id/ViewProduct" element={<ProtectedRoute element={<ProductList />} />} />
+             <Route path="/product/:id/ViewProduct" element={<ProtectedRoute element={<MyProducts />} />} />
         <Route path="/addproduct/:id" element={<ProtectedRoute element={<AddProductForm />} />} />
         <Route path="/addproduct/:id/BulkUpload" element={<ProtectedRoute element={<BulkProductUpload />} />} />
-        <Route path="/Product/:id" element={<ProtectedRoute element={<Product />} />} />
-        <Route path="/Product/:id/order" element={<ProtectedRoute element={<NewHistory />} />} />
+        <Route path="/Product/:id" element={<ProtectedRoute element={<ProductDashboard />} />} />
+        <Route path="/Product/:id/order" element={<ProtectedRoute element={<NewOrders />} />} />
         <Route path="/Product/:id/order/history" element={<ProtectedRoute element={<OrderHistory />} />} />
                 <Route path='/product/wallet/:id' element={<ProdWallet></ProdWallet>} />
 
