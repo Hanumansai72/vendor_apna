@@ -206,7 +206,7 @@ export default function LoginPage() {
         if (category === "technical" || category === "non-technical") {
           navigate(`/vendor/${vId}`);
         } else {
-          navigate(`/product/${vId}`);
+          navigate(`vendor/${vId}/products/all`);
         }
       } else if (res.data.message === "User pending approval") {
         setIsPendingApproval(true);
