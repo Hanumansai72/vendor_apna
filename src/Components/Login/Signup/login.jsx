@@ -1,5 +1,4 @@
-import axios from "axios";
-import API_BASE_URL from "../../../config";
+import { api } from \"../../../config\";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -77,7 +76,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      await axios.post(`${API_BASE_URL}/sendotp`, { Email: username });
+      await api.post('/sendotp', { Email: username });
       toast.success("OTP sent to your email");
       setOtpSent(true);
       setLoginMethod("otp");
@@ -99,7 +98,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/verifyotp`, {
+      const res = await api.post('/verifyotp', {
         Email: username,
         otp: otpString,
       });
@@ -109,15 +108,16 @@ export default function LoginPage() {
         setOtpVerified(true);
 
         // After OTP verified, login via OTP
-        const loginRes = await axios.post(`${API_BASE_URL}/loginwith-otp`, {
+        const loginRes = await api.post('/loginwith-otp', {
           email: username,
         });
 
         if (loginRes.data.message === "Success" && loginRes.data.vendorId) {
+          // Token is handled by cookies now
           login(loginRes.data.vendor || { id: loginRes.data.vendorId });
           setVendorId(loginRes.data.vendorId);
         } else if (loginRes.data.message === "User not found") {
-          const tempRes = await axios.post(`${API_BASE_URL}/checktempvendor`, {
+          const tempRes = await api.post('/checktempvendor', {
             Email_address: username,
           });
 
@@ -151,17 +151,17 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/postusername`, {
+      const res = await api.post('/postusername', {
         username,
         password,
       });
 
       if (res.data.message === "Success") {
         toast.success("Login successful");
-        login(res.data.vendor || { id: res.data.vendorId }, res.data.token);
+        login(res.data.vendor || { id: res.data.vendorId });
         setVendorId(res.data.vendorId);
       } else if (res.data.message === "User not found") {
-        const tempRes = await axios.post(`${API_BASE_URL}/checktempvendor`, {
+        const tempRes = await api.post('/checktempvendor', {
           Email_address: username,
         });
 
@@ -188,7 +188,7 @@ export default function LoginPage() {
       const decoded = jwtDecode(credentialResponse.credential);
       const { email, name } = decoded;
 
-      const res = await axios.post(`${API_BASE_URL}/google-login`, {
+      const res = await api.post('/google-login', {
         email,
         name,
       });
@@ -196,10 +196,10 @@ export default function LoginPage() {
       if (res.data.message === "Success") {
         toast.success("Google login successful");
         const vId = res.data.vendorId;
-        login({ id: vId }, res.data.token);
+        login({ id: vId });
 
         // Fetch category immediately
-        const catRes = await axios.get(`${API_BASE_URL}/api/categories/${vId}`);
+        const catRes = await api.get(`/api/categories/${vId}`);
         const category = catRes.data.Category.toLowerCase();
 
         // Navigate based on category
@@ -223,8 +223,8 @@ export default function LoginPage() {
   // Fetch category after login
   useEffect(() => {
     if (!vendorId) return;
-    axios
-      .get(`${API_BASE_URL}/api/categories/${vendorId}`)
+    api
+      .get(`/api/categories/${vendorId}`)
       .then((res) => {
         setTech(res.data.Category);
       })

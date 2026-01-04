@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Navbar/footer";
 import { useAuth } from "../Auth/AuthContext";
@@ -19,7 +18,7 @@ const VendorProjects = () => {
   const fetchProjects = useCallback(async () => {
     if (!vendorId) return;
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/projects/${vendorId}`);
+      const res = await api.get(`/api/projects/${vendorId}`);
       setProjects(res.data);
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -30,7 +29,7 @@ const VendorProjects = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/projects/${id}`);
+      await api.delete(`/api/projects/${id}`);
       setProjects(projects.filter((p) => p._id !== id));
       setDeleteId(null);
     } catch (error) {

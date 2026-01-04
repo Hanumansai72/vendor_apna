@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import Navbar from "../Navbar/navbar";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
@@ -35,8 +34,8 @@ const JobListings = () => {
   useEffect(() => {
     if (!vendorId) return;
     setLoading(true);
-    axios
-      .get(`${API_BASE_URL}/api/newjob/${vendorId}`)
+    api
+      .get(`/api/newjob/${vendorId}`)
       .then((res) => setJobs(Array.isArray(res.data) ? res.data : []))
       .catch((e) => console.error("Fetch jobs error:", e))
       .finally(() => setLoading(false));
@@ -85,7 +84,7 @@ const JobListings = () => {
   // Update status
   const updateStatus = async (job, target) => {
     try {
-      const { data } = await axios.put(`${API_BASE_URL}/api/bookings/${job._id}/status`, { status: target });
+      const { data } = await api.put(`/api/bookings/${job._id}/status`, { status: target });
       setJobs((prev) => prev.map((j) => (j._id === job._id ? { ...j, status: data.status } : j)));
       if (target === "In Progress") {
         localStorage.setItem("JObid", job._id);

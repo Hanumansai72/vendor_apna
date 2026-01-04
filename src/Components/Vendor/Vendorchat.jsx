@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import { api } from "../../config";
 import { socket } from "../Login/Signup/socket";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useAuth } from "../Auth/AuthContext";
-import API_BASE_URL from "../../config";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Navbar/footer";
 
@@ -24,8 +23,8 @@ export default function VendorChat() {
   useEffect(() => {
     if (!vendorId) return;
 
-    axios
-      .get(`${API_BASE_URL}/api/chat/conversations/vendor/${vendorId}`)
+    api
+      .get(`/api/chat/conversations/vendor/${vendorId}`)
       .then((res) => {
         setConversations(res.data);
 
@@ -75,8 +74,8 @@ export default function VendorChat() {
 
     setMessages([]); // reset when switching chats
 
-    axios
-      .get(`${API_BASE_URL}/api/chat/messages/${activeConversation._id}`)
+    api
+      .get(`/api/chat/messages/${activeConversation._id}`)
       .then((res) => setMessages(res.data))
       .catch((err) => console.error("Load messages failed", err));
   }, [activeConversation]);
@@ -114,7 +113,7 @@ export default function VendorChat() {
     socket.emit("sendMessage", payload);
 
     try {
-      await axios.post(`${API_BASE_URL}/api/chat/message`, payload);
+      await api.post(`/api/chat/message`, payload);
     } catch (err) {
       console.error("Message send failed", err);
     }

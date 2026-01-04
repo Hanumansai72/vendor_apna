@@ -1,8 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Navbar/footer";
 import { useAuth } from "../Auth/AuthContext";
@@ -93,7 +92,7 @@ const ProjectUpload = () => {
       data.append("vendorId", vendorId);
       data.append("image", imageFile);
 
-      await axios.post(`${API_BASE_URL}/projecteatils/vendor`, data, {
+      await api.post(`/projecteatils/vendor`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

@@ -9,8 +9,7 @@ import {
   Pagination,
   Row,
 } from "react-bootstrap";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import Navbar from "../Navbar/navbar";
 import { useAuth } from "../Auth/AuthContext";
 import "./jobhistory.css";
@@ -59,8 +58,8 @@ const JobHistory = () => {
       return;
     }
     setLoading(true);
-    axios
-      .get(`${API_BASE_URL}/jobhistry/${vendorId}`)
+    api
+      .get(`/jobhistry/${vendorId}`)
       .then((res) => {
         console.log("Job history response:", res.data);
         const normalized = (res.data || []).map((j) => ({

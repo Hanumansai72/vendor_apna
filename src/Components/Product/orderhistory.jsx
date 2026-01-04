@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import ProductNavbar from "./productnav";
 import Footer from "../Navbar/footer";
 import { useAuth } from "../Auth/AuthContext";
@@ -28,7 +27,7 @@ const OrderHistory = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/wow/${vendorId}`);
+      const res = await api.get(`/wow/${vendorId}`);
       const data = res.data?.all || [];
       setOrders(data);
       setFiltered(data);

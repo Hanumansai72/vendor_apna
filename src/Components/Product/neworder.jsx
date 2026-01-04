@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import ProductNavbar from "./productnav";
 import Footer from "../Navbar/footer";
 import { useAuth } from "../Auth/AuthContext";
@@ -29,7 +28,7 @@ const NewOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/pending-orders/${vendorId}`);
+      const res = await api.get(`/pending-orders/${vendorId}`);
       const data = Array.isArray(res.data) ? res.data : res.data.orders || [];
       setOrders(data);
       setFiltered(data);
@@ -67,7 +66,7 @@ const NewOrders = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await axios.put(`${API_BASE_URL}/update-order-status/${orderId}`, {
+      await api.put(`/update-order-status/${orderId}`, {
         orderStatus: newStatus,
       });
       setOrders(prev => prev.map(o =>

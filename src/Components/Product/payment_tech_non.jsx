@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import axios from 'axios';
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import { useAuth } from "../Auth/AuthContext";
 import ProductNavbar from "./productnav";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -23,7 +22,7 @@ const JobProgress = () => {
 
   useEffect(() => {
     if (currentVendorId) {
-      axios.get(`${API_BASE_URL}/services/jobs/${currentVendorId}`)
+      api.get(`/services/jobs/${currentVendorId}`)
         .then(res => {
           setJob(res.data);
           setLoading(false);
@@ -57,7 +56,7 @@ const JobProgress = () => {
 
     setSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}/api/bookings/${jobId}/status`, {
+      await api.put(`/api/bookings/${jobId}/status`, {
         status: "Completed"
       });
 

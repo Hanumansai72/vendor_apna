@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaArrowDown, FaArrowUp, FaWallet, FaHistory, FaExchangeAlt } from "react-icons/fa";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import Footer from "../Navbar/footer";
 import Navbar from "../Navbar/navbar";
 import { useAuth } from "../Auth/AuthContext";
@@ -19,7 +18,7 @@ const Wallet = () => {
     async function fetchWallet() {
       if (!vendorId) return;
       try {
-        const res = await axios.get(`${API_BASE_URL}/wallet/${vendorId}`);
+        const res = await api.get(`/wallet/${vendorId}`);
         setWallet(res.data);
       } catch (err) {
         console.error(err);

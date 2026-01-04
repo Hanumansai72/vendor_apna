@@ -5,7 +5,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import API_BASE_URL from "../../../config";
+import { api } from "../../../config";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence } from "framer-motion";
@@ -129,7 +129,7 @@ export default function Registration() {
       return toast.warning("Please enter a valid email address");
     }
     try {
-      await axios.post(`${API_BASE_URL}/sendotp`, {
+      await api.post(`/sendotp`, {
         Email: formData.Email_address,
       });
       toast.success("OTP sent to your email!");
@@ -163,7 +163,7 @@ export default function Registration() {
     const otpString = otp.join("");
     if (otpString.length !== 6) return toast.warning("Enter complete OTP");
     try {
-      await axios.post(`${API_BASE_URL}/verifyotp`, {
+      await api.post(`/verifyotp`, {
         Email: formData.Email_address,
         otp: otpString,
       });
@@ -193,7 +193,7 @@ export default function Registration() {
       if (registrationType === "Product") {
         const data = new FormData();
         Object.keys(formData).forEach((k) => data.append(k, formData[k]));
-        await axios.post(`${API_BASE_URL}/register`, data, {
+        await api.post(`/register`, data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Registered successfully with Google!");
@@ -309,7 +309,7 @@ export default function Registration() {
       imageFiles.forEach((f) => data.append("productImages", f));
       if (profilePic) data.append("profileImage", profilePic);
 
-      await axios.post(`${API_BASE_URL}/register`, data, {
+      await api.post(`/register`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Registration successful!");

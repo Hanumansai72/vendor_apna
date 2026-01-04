@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../config";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "../Navbar/navbar";
-import API_BASE_URL from "../../config";
 import { useAuth } from "../Auth/AuthContext";
 import Footer from "../Navbar/footer";
 
@@ -20,7 +19,7 @@ export default function VendorInbox() {
 
     const fetchInbox = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/chat/inbox/vendor/${vendorId}`);
+        const res = await api.get(`/api/chat/inbox/vendor/${vendorId}`);
         setConversations(res.data);
       } catch (err) {
         console.error("Vendor inbox error:", err);

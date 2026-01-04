@@ -4,7 +4,7 @@ import ProductNavbar from "./productnav";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
 import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
@@ -110,7 +110,7 @@ const AddProductForm = () => {
     }
     setLoadingAI(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/generate-content`, {
+      const res = await api.post(`/generate-content`, {
         category,
         subCategory,
       });
@@ -185,7 +185,7 @@ const AddProductForm = () => {
         isAvailable: formData.isAvailable,
       };
 
-      await axios.post(`${API_BASE_URL}/addproduct`, productPayload);
+      await api.post(`/addproduct`, productPayload);
       toast.success("Product submitted successfully!");
     } catch (error) {
       console.error("Error submitting product:", error);

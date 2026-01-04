@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -30,8 +29,8 @@ const MyProducts = () => {
   const [count, setcount] = useState({});
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/api/vendor/${vendorId}/totalviews`)
+    api
+      .get(`/api/vendor/${vendorId}/totalviews`)
       .then((res) => {
         setcount(res.data);
       })
@@ -41,8 +40,8 @@ const MyProducts = () => {
   }, [vendorId]);
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/viewproduct/${vendorId}`)
+    api
+      .get(`/viewproduct/${vendorId}`)
       .then((res) => {
         const mapped = (res.data || []).map((p) => ({
           id: p._id,
@@ -99,8 +98,8 @@ const MyProducts = () => {
   // Delete product
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      axios
-        .delete(`${API_BASE_URL}/delete/${id}`)
+      api
+        .delete(`/delete/${id}`)
         .then(() => {
           toast.success("Product deleted successfully!");
           setProducts((prev) => prev.filter((p) => p.id !== id));
@@ -116,8 +115,8 @@ const MyProducts = () => {
   };
 
   const handleEditSave = () => {
-    axios
-      .put(`${API_BASE_URL}/updatedetails/${editProduct.id}`, {
+    api
+      .put(`/updatedetails/${editProduct.id}`, {
         ProductName: editProduct.name,
         ProductPrice: editProduct.price,
         ProductStock: editProduct.stock,

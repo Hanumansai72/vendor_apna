@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../Navbar/navbar";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import { motion, AnimatePresence } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Techincal.css";
@@ -31,15 +30,15 @@ const TechnicalNonDashboard = () => {
 
   // Data fetching
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/count/service/${id}`)
+    api.get(`/count/service/${id}`)
       .then((res) => setCount(res.data))
       .catch(console.error);
 
-    axios.get(`${API_BASE_URL}/upcomingworks/${id}`)
+    api.get(`/upcomingworks/${id}`)
       .then((res) => setWorks(res.data.show_works || []))
       .catch(console.error);
 
-    axios.get(`${API_BASE_URL}/upcomingjobs/${id}`)
+    api.get(`/upcomingjobs/${id}`)
       .then((res) => {
         setUpcomingJobs(res.data || []);
         if (res.data && res.data.length > 0) {
@@ -51,7 +50,7 @@ const TechnicalNonDashboard = () => {
   }, [id]);
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/vendor/${id}/analytics`)
+    api.get(`/vendor/${id}/analytics`)
       .then((res) => setAnalytics(res.data))
       .catch(console.error);
   }, [id]);

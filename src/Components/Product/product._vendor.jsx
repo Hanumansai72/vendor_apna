@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import ProductNavbar from "./productnav";
 import Footer from "../Navbar/footer";
 import { useAuth } from "../Auth/AuthContext";
@@ -23,9 +22,9 @@ export default function ProductDashboard() {
     const fetchData = async () => {
       try {
         const [countRes, ordersRes, productsRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/api/getproductcount/${vendorId}`),
-          axios.get(`${API_BASE_URL}/wow/${vendorId}`),
-          axios.get(`${API_BASE_URL}/viewproduct/${vendorId}`)
+          api.get(`/api/getproductcount/${vendorId}`),
+          api.get(`/wow/${vendorId}`),
+          api.get(`/viewproduct/${vendorId}`)
         ]);
 
         setStats(countRes.data || {});

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Navbar/footer";
 import "./Techincal.css";
@@ -27,8 +27,8 @@ const JobInProgress = () => {
       setLoading(false);
       return;
     }
-    axios
-      .get(`${API_BASE_URL}/services/jobs/${vendorId}`)
+    api
+      .get(`/services/jobs/${vendorId}`)
       .then((res) => {
         const data = Array.isArray(res.data)
           ? res.data.find((j) => j._id === id || j.jobId === id) || res.data[0]
@@ -74,7 +74,7 @@ const JobInProgress = () => {
   const openOtp = async () => {
     setShowOtp(true);
     try {
-      await axios.post(`${API_BASE_URL}/sendotp`, { Email: job?.customer?.email });
+      await api.post(`/sendotp`, { Email: job?.customer?.email });
     } catch {
       console.error("Failed to send OTP");
     }
@@ -92,7 +92,7 @@ const JobInProgress = () => {
     e.preventDefault();
     setVerifying(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/verifyotp`, {
+      const res = await api.post(`/verifyotp`, {
         Email: job?.customer?.email,
         otp: otp.join(""),
       });

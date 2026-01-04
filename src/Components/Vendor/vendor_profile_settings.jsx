@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
-import API_BASE_URL from "../../config";
+import { api } from "../../config";
 import Footer from "../Navbar/footer";
 import Navbar from "../Navbar/navbar";
 import { useAuth } from "../Auth/AuthContext";
@@ -63,7 +63,7 @@ function VendorProfileSettings() {
   // Fetch vendor data
   useEffect(() => {
     if (vendorId) {
-      axios.get(`${API_BASE_URL}/${vendorId}/settings`)
+      api.get(`/${vendorId}/settings`)
         .then((res) => {
           const data = res.data?.datasettings || {};
           setFormData({
@@ -124,7 +124,7 @@ function VendorProfileSettings() {
       });
       if (profilePic) sendData.append("profileImage", profilePic);
 
-      await axios.put(`${API_BASE_URL}/update/userdetailes/${vendorId}`, sendData, {
+      await api.put(`/update/userdetailes/${vendorId}`, sendData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("Changes saved successfully!");
