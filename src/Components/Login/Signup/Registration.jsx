@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -15,6 +15,7 @@ export default function Registration() {
   const navigate = useNavigate();
   const location = useLocation();
   const formRef = useRef(null);
+  const stepTimeoutRef = useRef(null);
 
   const getRegistrationType = () =>
     new URLSearchParams(location.search).get("tab") === "product" ? "Product" : "Service";
@@ -274,21 +275,50 @@ export default function Registration() {
     }
   };
 
-  const nextStep = () => {
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (stepTimeoutRef.current) {
+        clearTimeout(stepTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Safety: ensure loadingStep never stays true for more than 2 seconds
+  useEffect(() => {
+    if (loadingStep) {
+      const safetyTimeout = setTimeout(() => {
+        setLoadingStep(false);
+      }, 2000);
+      return () => clearTimeout(safetyTimeout);
+    }
+  }, [loadingStep]);
+
+  const nextStep = useCallback(() => {
     if (!validateStep(step)) return;
 
+    // Clear any existing timeout
+    if (stepTimeoutRef.current) {
+      clearTimeout(stepTimeoutRef.current);
+    }
+
     setLoadingStep(true);
-    setTimeout(() => {
+    stepTimeoutRef.current = setTimeout(() => {
       setStep((s) => Math.min(6, s + 1));
       setLoadingStep(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 400);
-  };
+  }, [step]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
+    // Clear any existing timeout
+    if (stepTimeoutRef.current) {
+      clearTimeout(stepTimeoutRef.current);
+    }
+    setLoadingStep(false);
     setStep((s) => Math.max(1, s - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
