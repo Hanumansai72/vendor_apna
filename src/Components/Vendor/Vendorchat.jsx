@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useAuth } from "../Auth/AuthContext";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Navbar/footer";
+import axios from "axios";
 
 export default function VendorChat() {
   const { user: authUser } = useAuth();
@@ -16,8 +17,15 @@ export default function VendorChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isCustomerTyping, setIsCustomerTyping] = useState(false);
+  const [customerOnlineStatus, setCustomerOnlineStatus] = useState({});
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const scrollRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   /* ---------------- LOAD VENDOR CONVERSATIONS ---------------- */
   useEffect(() => {
@@ -34,7 +42,7 @@ export default function VendorChat() {
           const foundConvo = res.data.find(c => c._id === storedConvoId);
           if (foundConvo) {
             setActiveConversation(foundConvo);
-            localStorage.removeItem("activeConversationId"); // Clear after use
+            localStorage.removeItem("activeConversationId");
             return;
           }
         }
@@ -48,13 +56,14 @@ export default function VendorChat() {
       .finally(() => setLoading(false));
   }, [vendorId]);
 
-  /* ---------------- JOIN SOCKET ROOM ---------------- */
+  /* ---------------- JOIN SOCKET ROOM & LISTEN FOR EVENTS ---------------- */
   useEffect(() => {
     if (!activeConversation?._id) return;
 
     socket.emit("joinConversation", activeConversation._id);
 
-    const handler = (msg) => {
+    // Listen for new messages
+    const messageHandler = (msg) => {
       if (msg.conversationId === activeConversation._id) {
         setMessages((prev) => {
           if (prev.find(m => m._id === msg._id)) return prev;
@@ -63,22 +72,83 @@ export default function VendorChat() {
       }
     };
 
-    socket.on("receiveMessage", handler);
+    // Listen for typing events
+    const typingHandler = (data) => {
+      if (data.conversationId === activeConversation._id && data.userType === 'user') {
+        setIsCustomerTyping(data.isTyping);
+      }
+    };
 
-    return () => socket.off("receiveMessage", handler);
+    // Listen for messages seen
+    const seenHandler = (data) => {
+      if (data.conversationId === activeConversation._id) {
+        setMessages(prev => prev.map(m =>
+          m.senderType === 'vendor' ? { ...m, seen: true, seenAt: data.seenAt } : m
+        ));
+      }
+    };
+
+    socket.on("receiveMessage", messageHandler);
+    socket.on("userTyping", typingHandler);
+    socket.on("messagesSeen", seenHandler);
+
+    return () => {
+      socket.off("receiveMessage", messageHandler);
+      socket.off("userTyping", typingHandler);
+      socket.off("messagesSeen", seenHandler);
+    };
   }, [activeConversation]);
+
+  /* ---------------- ONLINE STATUS TRACKING ---------------- */
+  useEffect(() => {
+    const onlineHandler = (data) => {
+      setCustomerOnlineStatus(prev => ({ ...prev, [data.userId]: true }));
+    };
+    const offlineHandler = (data) => {
+      setCustomerOnlineStatus(prev => ({ ...prev, [data.userId]: false }));
+    };
+
+    socket.on("userOnline", onlineHandler);
+    socket.on("userOffline", offlineHandler);
+
+    // Check online status for all customers in conversations
+    conversations.forEach(convo => {
+      if (convo.userId?._id) {
+        socket.emit("checkOnline", convo.userId._id, (data) => {
+          setCustomerOnlineStatus(prev => ({
+            ...prev,
+            [convo.userId._id]: data?.online || false
+          }));
+        });
+      }
+    });
+
+    return () => {
+      socket.off("userOnline", onlineHandler);
+      socket.off("userOffline", offlineHandler);
+    };
+  }, [conversations]);
 
   /* ---------------- LOAD MESSAGES ---------------- */
   useEffect(() => {
     if (!activeConversation?._id) return;
 
-    setMessages([]); // reset when switching chats
+    setMessages([]);
 
     api
       .get(`/api/chat/messages/${activeConversation._id}`)
-      .then((res) => setMessages(res.data))
+      .then((res) => {
+        setMessages(res.data);
+
+        // Mark messages as seen
+        socket.emit("messageSeen", {
+          conversationId: activeConversation._id,
+          viewerId: vendorId,
+          viewerType: 'vendor'
+        });
+      })
       .catch((err) => console.error("Load messages failed", err));
-  }, [activeConversation]);
+  }, [activeConversation, vendorId]);
 
   /* ---------------- AUTO SCROLL ---------------- */
   useEffect(() => {
@@ -88,35 +158,199 @@ export default function VendorChat() {
         behavior: "smooth"
       });
     }
-  }, [messages]);
+  }, [messages, isCustomerTyping]);
+
+  /* ---------------- TYPING INDICATOR ---------------- */
+  const handleInputChange = (e) => {
+    setInput(e.target.value);
+
+    if (!activeConversation) return;
+
+    socket.emit("startTyping", {
+      conversationId: activeConversation._id,
+      senderId: vendorId,
+      senderType: "vendor"
+    });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stopTyping", {
+        conversationId: activeConversation._id,
+        senderId: vendorId,
+        senderType: "vendor"
+      });
+    }, 2000);
+  };
+
+  /* ---------------- FILE SELECTION ---------------- */
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const maxFiles = 5;
+    const maxSize = 10 * 1024 * 1024;
+
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        alert(`${file.name} is too large. Maximum size is 10MB.`);
+        return false;
+      }
+      return true;
+    }).slice(0, maxFiles);
+
+    setSelectedFiles(prev => [...prev, ...validFiles].slice(0, maxFiles));
+    e.target.value = '';
+  };
+
+  const removeFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  /* ---------------- UPLOAD FILES TO CLOUDINARY ---------------- */
+  const uploadFilesToCloudinary = async (files) => {
+    const uploadedFiles = [];
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'ml_default');
+
+      try {
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'your-cloud-name'}/auto/upload`,
+          formData,
+          {
+            onUploadProgress: (progressEvent) => {
+              const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadProgress(progress);
+            }
+          }
+        );
+
+        uploadedFiles.push({
+          url: response.data.secure_url,
+          type: file.type.startsWith('image/') ? 'image' :
+            file.type.startsWith('audio/') ? 'audio' :
+              file.type.startsWith('video/') ? 'video' : 'document',
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type
+        });
+      } catch (err) {
+        console.error('Upload failed for:', file.name, err);
+      }
+    }
+
+    return uploadedFiles;
+  };
 
   /* ---------------- SEND MESSAGE ---------------- */
   const handleSend = async () => {
-    if (!input.trim() || !activeConversation) return;
+    if ((!input.trim() && selectedFiles.length === 0) || !activeConversation) return;
 
-    const payload = {
+    socket.emit("stopTyping", {
+      conversationId: activeConversation._id,
+      senderId: vendorId,
+      senderType: "vendor"
+    });
+
+    const messageText = input.trim();
+    setInput("");
+
+    let attachments = [];
+    if (selectedFiles.length > 0) {
+      setIsUploading(true);
+      try {
+        attachments = await uploadFilesToCloudinary(selectedFiles);
+        setSelectedFiles([]);
+      } catch (err) {
+        console.error("File upload failed:", err);
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+
+    const tempId = Date.now().toString();
+    const tempMessage = {
+      _id: tempId,
       conversationId: activeConversation._id,
       senderId: vendorId,
       senderType: "vendor",
-      message: input.trim(),
+      message: messageText,
+      attachments,
+      messageType: attachments.length > 0 ? (messageText ? 'mixed' : 'file') : 'text',
+      createdAt: new Date()
     };
-
-    setInput("");
-
-    // Optimistic UI
-    const tempId = Date.now().toString();
-    setMessages((prev) => [
-      ...prev,
-      { ...payload, _id: tempId, createdAt: new Date() },
-    ]);
-
-    socket.emit("sendMessage", payload);
+    setMessages((prev) => [...prev, tempMessage]);
 
     try {
-      await api.post(`/api/chat/message`, payload);
+      if (attachments.length > 0) {
+        socket.emit("sendMessageWithFile", {
+          conversationId: activeConversation._id,
+          senderId: vendorId,
+          senderType: "vendor",
+          message: messageText,
+          attachments
+        });
+      } else {
+        socket.emit("sendMessage", {
+          conversationId: activeConversation._id,
+          senderId: vendorId,
+          senderType: "vendor",
+          message: messageText
+        });
+      }
     } catch (err) {
       console.error("Message send failed", err);
     }
+  };
+
+  /* ---------------- RENDER FILE PREVIEW ---------------- */
+  const renderFilePreview = (file, index) => {
+    const isImage = file.type?.startsWith('image/');
+    return (
+      <div key={index} className="file-preview-item">
+        {isImage ? (
+          <img src={URL.createObjectURL(file)} alt={file.name} />
+        ) : (
+          <div className="file-icon">
+            <i className="bi bi-file-earmark"></i>
+          </div>
+        )}
+        <span className="file-name">{file.name}</span>
+        <button className="remove-file" onClick={() => removeFile(index)}>
+          <i className="bi bi-x"></i>
+        </button>
+      </div>
+    );
+  };
+
+  /* ---------------- RENDER MESSAGE ATTACHMENTS ---------------- */
+  const renderAttachments = (attachments) => {
+    if (!attachments || attachments.length === 0) return null;
+
+    return (
+      <div className="message-attachments">
+        {attachments.map((att, i) => {
+          if (att.type === 'image') {
+            return (
+              <a key={i} href={att.url} target="_blank" rel="noopener noreferrer" className="attachment-image">
+                <img src={att.url} alt={att.fileName} />
+              </a>
+            );
+          }
+          return (
+            <a key={i} href={att.url} target="_blank" rel="noopener noreferrer" className="attachment-file">
+              <i className="bi bi-file-earmark-arrow-down"></i>
+              <span>{att.fileName}</span>
+            </a>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -222,10 +456,148 @@ export default function VendorChat() {
           border-color: #ffd700;
         }
         .status-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .status-dot.online { background: #22c55e; }
+        .status-dot.offline { background: #9ca3af; }
+        .typing-indicator {
+          display: flex;
+          align-items: center;
+          padding: 12px 16px;
+          background: #fff;
+          border-radius: 18px;
+          border: 1px solid #f0f0f0;
+          width: fit-content;
+          margin-bottom: 16px;
+        }
+        .typing-dots {
+          display: flex;
+          gap: 4px;
+        }
+        .typing-dots span {
           width: 8px;
           height: 8px;
-          background: #22c55e;
+          background: #999;
           border-radius: 50%;
+          animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+          0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+          40% { transform: scale(1); opacity: 1; }
+        }
+        .file-preview-area {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          padding: 10px 0;
+          max-height: 100px;
+          overflow-y: auto;
+        }
+        .file-preview-item {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          background: #f0f2f5;
+          border-radius: 10px;
+          max-width: 180px;
+        }
+        .file-preview-item img {
+          width: 36px;
+          height: 36px;
+          object-fit: cover;
+          border-radius: 6px;
+        }
+        .file-preview-item .file-icon {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #fff;
+          border-radius: 6px;
+          font-size: 1rem;
+        }
+        .file-preview-item .file-name {
+          font-size: 0.7rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 80px;
+        }
+        .file-preview-item .remove-file {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #ff4444;
+          color: white;
+          border: none;
+          font-size: 0.6rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+        .upload-progress {
+          height: 3px;
+          background: #e0e0e0;
+          border-radius: 2px;
+          overflow: hidden;
+          margin: 8px 0;
+        }
+        .upload-progress-bar {
+          height: 100%;
+          background: linear-gradient(90deg, #ffd700, #ffb700);
+          transition: width 0.3s;
+        }
+        .message-attachments {
+          margin-top: 8px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .attachment-image img {
+          max-width: 180px;
+          max-height: 180px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: transform 0.2s;
+        }
+        .attachment-image img:hover {
+          transform: scale(1.02);
+        }
+        .attachment-file {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: rgba(255,255,255,0.2);
+          border-radius: 6px;
+          color: inherit;
+          text-decoration: none;
+          font-size: 0.8rem;
+          transition: background 0.2s;
+        }
+        .msg-vendor .attachment-file {
+          background: rgba(255,255,255,0.15);
+        }
+        .msg-vendor .attachment-file:hover {
+          background: rgba(255,255,255,0.25);
+        }
+        .msg-customer .attachment-file {
+          background: rgba(0,0,0,0.05);
+        }
+        .msg-customer .attachment-file:hover {
+          background: rgba(0,0,0,0.1);
         }
         @media (max-width: 992px) {
           .sidebar { width: 80px; }
@@ -248,14 +620,20 @@ export default function VendorChat() {
                   className={`convo-item ${activeConversation?._id === c._id ? "active" : ""}`}
                   onClick={() => setActiveConversation(c)}
                 >
-                  <img
-                    src={c.userId?.Profile_Image || `https://ui-avatars.com/api/?name=${c.userId?.Full_Name || 'C'}&background=random`}
-                    className="rounded-circle me-3"
-                    width="44"
-                    height="44"
-                    style={{ objectFit: 'cover' }}
-                    alt=""
-                  />
+                  <div className="position-relative">
+                    <img
+                      src={c.userId?.Profile_Image || `https://ui-avatars.com/api/?name=${c.userId?.Full_Name || 'C'}&background=random`}
+                      className="rounded-circle me-3"
+                      width="44"
+                      height="44"
+                      style={{ objectFit: 'cover' }}
+                      alt=""
+                    />
+                    <span
+                      className={`status-dot position-absolute ${customerOnlineStatus[c.userId?._id] ? 'online' : 'offline'}`}
+                      style={{ bottom: 2, right: 14, border: '2px solid #fff' }}
+                    ></span>
+                  </div>
                   <div className="convo-info overflow-hidden">
                     <div className="fw-bold text-truncate" style={{ fontSize: '0.9rem' }}>
                       {c.userId?.Full_Name || "Customer"}
@@ -274,18 +652,22 @@ export default function VendorChat() {
             {activeConversation ? (
               <>
                 <div className="chat-header">
-                  <img
-                    src={activeConversation.userId?.Profile_Image || `https://ui-avatars.com/api/?name=${activeConversation.userId?.Full_Name || 'C'}&background=random`}
-                    className="rounded-circle me-3"
-                    width="40"
-                    height="40"
-                    alt=""
-                  />
+                  <div className="position-relative">
+                    <img
+                      src={activeConversation.userId?.Profile_Image || `https://ui-avatars.com/api/?name=${activeConversation.userId?.Full_Name || 'C'}&background=random`}
+                      className="rounded-circle me-3"
+                      width="40"
+                      height="40"
+                      alt=""
+                    />
+                  </div>
                   <div className="flex-grow-1">
                     <h6 className="mb-0 fw-bold">{activeConversation.userId?.Full_Name || "Customer"}</h6>
                     <div className="d-flex align-items-center gap-2">
-                      <div className="status-dot"></div>
-                      <small className="text-muted" style={{ fontSize: '0.7rem' }}>Active now</small>
+                      <span className={`status-dot ${customerOnlineStatus[activeConversation.userId?._id] ? 'online' : 'offline'}`}></span>
+                      <small className="text-muted" style={{ fontSize: '0.7rem' }}>
+                        {customerOnlineStatus[activeConversation.userId?._id] ? 'Online now' : 'Offline'}
+                      </small>
                     </div>
                   </div>
                   <div className="d-flex gap-2">
@@ -302,30 +684,80 @@ export default function VendorChat() {
                         animate={{ opacity: 1, scale: 1 }}
                         className={`msg-bubble ${m.senderType === "vendor" ? "msg-vendor" : "msg-customer"}`}
                       >
-                        {m.message}
+                        {m.message && <div style={{ wordBreak: 'break-word' }}>{m.message}</div>}
+                        {renderAttachments(m.attachments)}
                         <div className={`mt-1 text-end ${m.senderType === "vendor" ? "text-light" : "text-muted"}`} style={{ fontSize: '0.65rem', opacity: 0.8 }}>
                           {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {m.senderType === "vendor" && (
+                            <i className={`bi ${m.seen ? 'bi-check2-all' : 'bi-check2'} ms-1`}></i>
+                          )}
                         </div>
                       </motion.div>
                     ))}
                   </AnimatePresence>
+
+                  {/* Typing Indicator */}
+                  {isCustomerTyping && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="typing-indicator"
+                    >
+                      <div className="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <span className="ms-2 text-muted" style={{ fontSize: '0.8rem' }}>typing...</span>
+                    </motion.div>
+                  )}
                 </div>
 
                 <div className="chat-input-area">
+                  {/* File Preview */}
+                  {selectedFiles.length > 0 && (
+                    <div className="file-preview-area">
+                      {selectedFiles.map((file, index) => renderFilePreview(file, index))}
+                    </div>
+                  )}
+
+                  {/* Upload Progress */}
+                  {isUploading && (
+                    <div className="upload-progress">
+                      <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                  )}
+
                   <div className="d-flex align-items-center gap-3">
-                    <button className="btn btn-link link-dark"><i className="bi bi-paperclip fs-5"></i></button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileSelect}
+                      multiple
+                      accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      className="btn btn-link link-dark"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      <i className="bi bi-paperclip fs-5"></i>
+                    </button>
                     <div className="flex-grow-1">
                       <input
                         className="form-control vendor-input shadow-none"
                         placeholder="Write a message..."
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                        onChange={handleInputChange}
+                        onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                        disabled={isUploading}
                       />
                     </div>
                     <button
-                      className="btn btn-warning px-4 fw-bold rounded-3 shadow-sm"
+                      className={`btn btn-warning px-4 fw-bold rounded-3 shadow-sm ${(!input.trim() && selectedFiles.length === 0) || isUploading ? 'opacity-50' : ''}`}
                       onClick={handleSend}
+                      disabled={(!input.trim() && selectedFiles.length === 0) || isUploading}
                     >
                       Send <i className="bi bi-send-fill ms-1"></i>
                     </button>
