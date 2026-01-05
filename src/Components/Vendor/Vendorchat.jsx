@@ -210,6 +210,7 @@ export default function VendorChat() {
   /* ---------------- UPLOAD FILES TO CLOUDINARY ---------------- */
   const uploadFilesToCloudinary = async (files) => {
     const uploadedFiles = [];
+    const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'dqr7bfglk';
 
     for (const file of files) {
       const formData = new FormData();
@@ -218,9 +219,12 @@ export default function VendorChat() {
 
       try {
         const response = await axios.post(
-          `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'your-cloud-name'}/auto/upload`,
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
           formData,
           {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            },
             onUploadProgress: (progressEvent) => {
               const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
               setUploadProgress(progress);
@@ -239,6 +243,7 @@ export default function VendorChat() {
         });
       } catch (err) {
         console.error('Upload failed for:', file.name, err);
+        alert(`Failed to upload ${file.name}. Please try again.`);
       }
     }
 
