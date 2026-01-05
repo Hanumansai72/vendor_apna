@@ -335,7 +335,24 @@ export default function Registration() {
     setIsSubmitting(true);
     try {
       const data = new FormData();
-      Object.keys(formData).forEach((k) => data.append(k, formData[k]));
+
+      // Handle each field, converting empty strings to null for optional fields
+      Object.keys(formData).forEach((k) => {
+        const value = formData[k];
+
+        // Handle Sub_Category array specially
+        if (k === "Sub_Category" && Array.isArray(value)) {
+          value.forEach((item) => data.append("Sub_Category", item));
+        } else if (k === "Account_Number" || k === "IFSC_Code") {
+          // Only append if not empty - let backend use null default
+          if (value && value.trim()) {
+            data.append(k, value);
+          }
+        } else {
+          data.append(k, value);
+        }
+      });
+
       imageFiles.forEach((f) => data.append("productImages", f));
       if (profilePic) data.append("profileImage", profilePic);
 
@@ -344,8 +361,9 @@ export default function Registration() {
       });
       toast.success("Registration successful!");
       setTimeout(() => navigate("/"), 1500);
-    } catch {
-      toast.error("Registration failed");
+    } catch (err) {
+      const message = err.response?.data?.message || err.response?.data?.error || "Registration failed";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

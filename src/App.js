@@ -29,6 +29,7 @@ const ProdWallet = lazy(() => import('./Components/Product/productwallet'));
 const AdminApprovalPending = lazy(() => import('./Components/Vendor/Adminapprovalpage'));
 const VendorChat = lazy(() => import('./Components/Vendor/Vendorchat'));
 const VendorInbox = lazy(() => import('./Components/Vendor/inbox'));
+const ErrorPage = lazy(() => import('./Components/Common/ErrorPage'));
 
 const LoadingFallback = () => (
   <div className="d-flex justify-content-center align-items-center vh-100">
@@ -49,6 +50,14 @@ function App() {
             <Route path="/" element={<LoginPage />} />
             <Route path="/signup" element={<Registration />} />
             <Route path="/admin" element={<AdminApprovalPending />} />
+
+            {/* Error Pages */}
+            <Route path="/error/404" element={<ErrorPage type="404" />} />
+            <Route path="/error/403" element={<ErrorPage type="403" />} />
+            <Route path="/error/401" element={<ErrorPage type="401" />} />
+            <Route path="/error/500" element={<ErrorPage type="500" />} />
+            <Route path="/access-denied" element={<ErrorPage type="403" />} />
+            <Route path="/unauthorized" element={<ErrorPage type="401" />} />
 
             {/* Vendor Project Public Routes */}
             <Route path="/vendor/viewproject/:id" element={<VendorProjects />} />
@@ -199,7 +208,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             
+
+            {/* Catch-all 404 route - must be last */}
+            <Route path="*" element={<ErrorPage type="404" />} />
 
           </Routes>
         </Suspense>
