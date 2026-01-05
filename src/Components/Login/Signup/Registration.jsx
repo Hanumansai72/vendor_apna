@@ -216,7 +216,7 @@ export default function Registration() {
     setProfilePreview(f ? URL.createObjectURL(f) : null);
   };
 
-  const validateStep = (currentStep) => {
+  const validateStep = useCallback((currentStep) => {
     switch (currentStep) {
       case 2:
         if (!formData.Business_Name.trim()) {
@@ -273,7 +273,7 @@ export default function Registration() {
       default:
         return true;
     }
-  };
+  }, [formData, isGoogleUser, otpVerified, confirmPassword, registrationType]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -308,7 +308,7 @@ export default function Registration() {
       setLoadingStep(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 400);
-  }, [step]);
+  }, [step, validateStep]);
 
   const prevStep = useCallback(() => {
     // Clear any existing timeout
