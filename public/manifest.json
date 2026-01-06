@@ -1,6 +1,7 @@
 {
-  "short_name": "Apna Mestri Vendor",
-  "name": "Apna Mestri Vendor",
+  "short_name": "Apna Mestri Partner",
+  "name": "Apna Mestri Partner - Vendor Portal",
+  "description": "Become an Apna Mestri Partner. Get service bookings, grow your technician business, and sell construction materials with fast delivery.",
   "icons": [
     {
       "src": "comapny_logo.ico",
@@ -10,16 +11,25 @@
     {
       "src": "new.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "new.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#FFD700",
+  "background_color": "#ffffff",
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ]
 }
