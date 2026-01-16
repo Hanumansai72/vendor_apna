@@ -255,7 +255,7 @@ const OrderStatus = () => {
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Tracking Number</span>
-                  <a href="#" className="tracking-link">{order.delivery.tracking}</a>
+                  <a href="/" className="tracking-link">{order.delivery.tracking}</a>
                 </div>
               </div>
             </motion.div>

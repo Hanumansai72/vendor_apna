@@ -6,7 +6,6 @@ import "react-toastify/dist/ReactToastify.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import AdminApprovalPending from "../../Vendor/Adminapprovalpage";
 import { useAuth } from "../../Auth/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import "./Login.css";
@@ -264,11 +263,7 @@ export default function LoginPage() {
     setPassword("");
   };
 
-  const fadeVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 },
-  };
+
 
   if (isPendingApproval) {
     return (

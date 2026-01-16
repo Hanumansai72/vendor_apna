@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ProductNavbar from "./productnav";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
 import axios from "axios";
 import { api } from "../../config";
@@ -42,7 +41,6 @@ const categoryBrands = {
 const AddProductForm = () => {
   const { user: authUser } = useAuth();
   const vendorId = authUser?.id;
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     productName: "",
@@ -61,7 +59,6 @@ const AddProductForm = () => {
 
   const [weight, setWeight] = useState("");
   const [dimensions, setDimensions] = useState("");
-  const [material, setMaterial] = useState("");
   const [uom, setUom] = useState("Piece");
   const [moq, setMoq] = useState("1");
   const [agree, setAgree] = useState(false);
@@ -652,7 +649,7 @@ const AddProductForm = () => {
                 />
                 <span className="checkbox-custom"></span>
                 <span className="agreement-text">
-                  I agree to the <a href="#">Terms of Service</a> and <a href="#">Product Guidelines</a>
+                  I agree to the <a href="/">Terms of Service</a> and <a href="/">Product Guidelines</a>
                 </span>
               </label>
             </div>

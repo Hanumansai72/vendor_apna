@@ -24,10 +24,10 @@ const Footer = () => {
               Join thousands of trusted vendors delivering excellence across the country.
             </p>
             <div className="social-links">
-              <a href="#" className="social-link"><i className="bi bi-facebook"></i></a>
-              <a href="#" className="social-link"><i className="bi bi-instagram"></i></a>
-              <a href="#" className="social-link"><i className="bi bi-twitter-x"></i></a>
-              <a href="#" className="social-link"><i className="bi bi-linkedin"></i></a>
+              <a href="/" className="social-link"><i className="bi bi-facebook"></i></a>
+              <a href="/" className="social-link"><i className="bi bi-instagram"></i></a>
+              <a href="/" className="social-link"><i className="bi bi-twitter-x"></i></a>
+              <a href="/" className="social-link"><i className="bi bi-linkedin"></i></a>
             </div>
           </Col>
 
@@ -46,10 +46,10 @@ const Footer = () => {
           <Col lg={3} md={6}>
             <h5 className="footer-heading">Support</h5>
             <ul className="footer-links">
-              <li><a href="#">Help Center</a></li>
-              <li><a href="#">Terms of Service</a></li>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Vendor Guidelines</a></li>
+              <li><a href="/">Help Center</a></li>
+              <li><a href="/">Terms of Service</a></li>
+              <li><a href="/">Privacy Policy</a></li>
+              <li><a href="/">Vendor Guidelines</a></li>
             </ul>
           </Col>
 
