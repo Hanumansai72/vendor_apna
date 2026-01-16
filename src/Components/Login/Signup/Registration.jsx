@@ -336,6 +336,9 @@ export default function Registration() {
     try {
       const data = new FormData();
 
+      // DEBUG: Log what we're sending
+      console.log("Submitting formData:", formData);
+
       // Handle each field, converting empty strings to null for optional fields
       Object.keys(formData).forEach((k) => {
         const value = formData[k];
@@ -365,6 +368,7 @@ export default function Registration() {
       toast.success("Registration successful!");
       setTimeout(() => navigate("/"), 1500);
     } catch (err) {
+      console.error("Registration error:", err.response?.data);
       const message = err.response?.data?.message || err.response?.data?.error || "Registration failed";
       toast.error(message);
     } finally {
