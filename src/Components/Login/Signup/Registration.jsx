@@ -184,15 +184,36 @@ export default function Registration() {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
       setIsGoogleUser(true);
+
+      const newOwnerName = decoded.name || "";
+      const newEmail = decoded.email || "";
+
       setFormData((prev) => ({
         ...prev,
-        Owner_name: decoded.name || "",
-        Email_address: decoded.email || "",
+        Owner_name: newOwnerName,
+        Email_address: newEmail,
       }));
 
       if (registrationType === "Product") {
         const data = new FormData();
-        Object.keys(formData).forEach((k) => data.append(k, formData[k]));
+        // Use the updated values directly to avoid stale state issues (first-time signup error)
+        Object.keys(formData).forEach((k) => {
+          if (k === "Sub_Category" && Array.isArray(formData[k])) {
+            formData[k].forEach((item) => data.append("Sub_Category", item));
+          } else if (k === "Owner_name") {
+            data.append(k, newOwnerName);
+          } else if (k === "Email_address") {
+            data.append(k, newEmail);
+          } else {
+            data.append(k, formData[k]);
+          }
+        });
+
+        // CRITICAL: Send selectedTab to backend for role assignment
+        const selectedTabValue = "product";
+        data.append("selectedTab", selectedTabValue);
+        data.append("isGoogleSignup", "true");
+
         await api.post(`/register`, data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -202,7 +223,8 @@ export default function Registration() {
         toast.info("Google linked! Continue setup.");
         setStep(2);
       }
-    } catch {
+    } catch (err) {
+      console.error("Google signup error:", err);
       toast.error("Google signup failed");
     }
   };
