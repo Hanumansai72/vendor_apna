@@ -19,6 +19,14 @@ const NewOrders = () => {
 
   const statuses = ["All", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
 
+  const showToast = useCallback((message, type = "success") => {
+    setToast({ show: true, message, type });
+
+    setTimeout(() => {
+      setToast({ show: false, message: "", type });
+    }, 3000);
+  }, []);
+
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
@@ -32,17 +40,14 @@ const NewOrders = () => {
     } finally {
       setLoading(false);
     }
-  }, [vendorId]);
+  }, [vendorId, showToast]);
 
   useEffect(() => {
     if (!vendorId) return;
     fetchOrders();
   }, [vendorId, fetchOrders]);
 
-  const showToast = (message, type = "success") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ ...toast, show: false }), 3000);
-  };
+
 
   useEffect(() => {
     let result = orders;
