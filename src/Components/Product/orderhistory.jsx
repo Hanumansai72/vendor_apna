@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../config";
 import ProductNavbar from "./productnav";
@@ -19,12 +18,7 @@ const OrderHistory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    if (!vendorId) return;
-    fetchOrders();
-  }, [vendorId]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get(`/wow/${vendorId}`);
@@ -36,7 +30,12 @@ const OrderHistory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vendorId]);
+
+  useEffect(() => {
+    if (!vendorId) return;
+    fetchOrders();
+  }, [vendorId, fetchOrders]);
 
   useEffect(() => {
     let result = orders;
