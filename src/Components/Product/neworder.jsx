@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../config";
 import ProductNavbar from "./productnav";
@@ -19,12 +19,7 @@ const NewOrders = () => {
 
   const statuses = ["All", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
 
-  useEffect(() => {
-    if (!vendorId) return;
-    fetchOrders();
-  }, [vendorId]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get(`/pending-orders/${vendorId}`);
@@ -37,7 +32,12 @@ const NewOrders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vendorId]);
+
+  useEffect(() => {
+    if (!vendorId) return;
+    fetchOrders();
+  }, [vendorId, fetchOrders]);
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
