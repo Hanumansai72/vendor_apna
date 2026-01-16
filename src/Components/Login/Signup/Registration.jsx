@@ -357,7 +357,16 @@ export default function Registration() {
       });
 
       // CRITICAL: Send selectedTab to backend for role assignment
-      data.append("selectedTab", registrationType === "Product" ? "product" : "service");
+      console.log("registrationType:", registrationType);
+      const selectedTabValue = registrationType === "Product" ? "product" : "service";
+      console.log("Appending selectedTab:", selectedTabValue);
+      data.append("selectedTab", selectedTabValue);
+
+      // Debug: Log all FormData entries
+      console.log("FormData entries:");
+      for (let [key, value] of data.entries()) {
+        console.log(`  ${key}:`, value);
+      }
 
       imageFiles.forEach((f) => data.append("productImages", f));
       if (profilePic) data.append("profileImage", profilePic);
