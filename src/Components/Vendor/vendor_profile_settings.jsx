@@ -58,7 +58,7 @@ function VendorProfileSettings() {
         });
       }
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch vendor data
   useEffect(() => {

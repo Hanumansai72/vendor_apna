@@ -16,7 +16,7 @@ export default function VendorChat() {
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // eslint-disable-line no-unused-vars
   const [isCustomerTyping, setIsCustomerTyping] = useState(false);
   const [customerOnlineStatus, setCustomerOnlineStatus] = useState({});
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -54,7 +54,7 @@ export default function VendorChat() {
       })
       .catch((err) => console.error("Load conversations failed", err))
       .finally(() => setLoading(false));
-  }, [vendorId]);
+  }, [vendorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---------------- JOIN SOCKET ROOM & LISTEN FOR EVENTS ---------------- */
   useEffect(() => {

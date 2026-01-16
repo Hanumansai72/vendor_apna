@@ -212,21 +212,21 @@ const Wallet = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <a href="#" className="wallet-link">
+                <button type="button" className="wallet-link">
                   <i className="bi bi-file-text"></i>
                   <span>Download Statement</span>
                   <i className="bi bi-chevron-right"></i>
-                </a>
-                <a href="#" className="wallet-link">
+                </button>
+                <button type="button" className="wallet-link">
                   <i className="bi bi-bank"></i>
                   <span>Bank Details</span>
                   <i className="bi bi-chevron-right"></i>
-                </a>
-                <a href="#" className="wallet-link">
+                </button>
+                <button type="button" className="wallet-link">
                   <i className="bi bi-question-circle"></i>
                   <span>Payment Help</span>
                   <i className="bi bi-chevron-right"></i>
-                </a>
+                </button>
               </motion.div>
             </div>
           </div>
