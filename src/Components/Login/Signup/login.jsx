@@ -158,8 +158,18 @@ export default function LoginPage() {
 
       if (res.data.message === "Success") {
         toast.success("Login successful");
-        login(res.data.vendor || { id: res.data.vendorId });
-        setVendorId(res.data.vendorId);
+        const vendor = res.data.vendor || { id: res.data.vendorId };
+        login(vendor);
+
+        // ROLE-BASED ROUTING: Check role field first
+        const vendorRole = vendor.role || res.data.role;
+        if (vendorRole === 'product') {
+          // Product vendor → product dashboard
+          navigate(`/product/${res.data.vendorId}`);
+        } else {
+          // Service vendor → service dashboard
+          setVendorId(res.data.vendorId);
+        }
       } else if (res.data.message === "User not found") {
         const tempRes = await api.post('/checktempvendor', {
           Email_address: username,
@@ -196,17 +206,15 @@ export default function LoginPage() {
       if (res.data.message === "Success") {
         toast.success("Google login successful");
         const vId = res.data.vendorId;
-        login({ id: vId });
+        const vendor = res.data.vendor || { id: vId };
+        login(vendor);
 
-        // Fetch category immediately
-        const catRes = await api.get(`/api/categories/${vId}`);
-        const category = catRes.data.Category.toLowerCase();
-
-        // Navigate based on category
-        if (category === "technical" || category === "non-technical") {
-          navigate(`/vendor/${vId}`);
+        // ROLE-BASED ROUTING: Check role field first
+        const vendorRole = vendor.role || res.data.role;
+        if (vendorRole === 'product') {
+          navigate(`/product/${vId}`);
         } else {
-          navigate(`vendor/${vId}/products/all`);
+          navigate(`/vendor/${vId}`);
         }
       } else if (res.data.message === "User pending approval") {
         setIsPendingApproval(true);

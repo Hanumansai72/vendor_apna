@@ -353,6 +353,9 @@ export default function Registration() {
         }
       });
 
+      // CRITICAL: Send selectedTab to backend for role assignment
+      data.append("selectedTab", registrationType === "Product" ? "product" : "service");
+
       imageFiles.forEach((f) => data.append("productImages", f));
       if (profilePic) data.append("profileImage", profilePic);
 
